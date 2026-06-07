@@ -14,7 +14,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=Share+Tech+Mono&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=Playfair+Display:ital,wght@0,700;1,600;1,700&family=Share+Tech+Mono&display=swap');
 
         :root {
             --bg-beige: #F7F6F3;
@@ -98,6 +98,15 @@
             font-weight: 600;
         }
 
+        .brand-art { font-family: 'Playfair Display', 'Noto Serif SC', serif; font-style: italic; font-weight: 700; line-height: 1.05; }
+
+        .hscroll { overflow: hidden; position: relative; }
+        .hscroll-track { display: flex; gap: 14px; width: max-content; animation: hscrollmove 32s linear infinite; }
+        .hscroll:hover .hscroll-track { animation-play-state: paused; }
+        .hscroll-track img { height: var(--h, 180px); width: auto; object-fit: cover; border-radius: 6px; transition: transform .35s ease, box-shadow .35s ease; cursor: zoom-in; flex: none; }
+        .hscroll-track img:hover { transform: scale(1.16); box-shadow: 0 12px 34px -10px rgba(0,0,0,0.35); position: relative; z-index: 5; }
+        @keyframes hscrollmove { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
         /* Scanline and print grain overlay to simulate physical architectural collage */
         .collage-grain {
             position: fixed;
@@ -145,8 +154,8 @@
     <!-- Header Navigation -->
     <header class="w-full px-8 py-6 flex justify-between items-center z-50">
         <div>
-            <div class="text-xl font-bold tracking-[0.25em] uppercase text-[#2D2D2A]">Variant</div>
-            <div class="text-[9px] tracking-[0.35em] uppercase text-[#8C8A84] mt-1">Spatial UX Research & Systems Lab</div>
+            <div class="brand-art text-3xl text-[#2D2D2A]" style="letter-spacing:0.02em;">Personal Portfolio</div>
+            <div class="text-[9px] tracking-[0.3em] uppercase text-[#8C8A84] mt-1.5">AI Product &amp; Design Intern · Open to Opportunities in the Yangtze Delta &amp; Beijing</div>
         </div>
         <div class="flex items-center gap-3">
             <span class="hidden lg:block text-[9px] tracking-[0.25em] uppercase text-[#8C8A84] mr-1">切换项目</span>
@@ -325,42 +334,34 @@
     <section class="w-full max-w-[1680px] mx-auto px-6 py-4 grid grid-cols-1 md:grid-cols-2 gap-8 mb-8 z-20">
         
         <!-- Project Detail Panel (driven by clicking voxels in the sandbox) -->
-        <div id="project-panel" class="bg-white p-6 border border-black/5 shadow-sm rounded-sm flex flex-col justify-between min-h-[340px]">
-            <div>
-                <div class="flex justify-between items-center pb-3 border-b border-black/5">
-                    <span id="proj-tag" class="text-[10px] uppercase tracking-widest text-[#C9463D] font-bold">点击左侧方块查看项目 · Click a voxel</span>
-                    <span id="proj-year" class="text-[10px] text-[#aaa]">--</span>
-                </div>
-                <div class="mt-4">
-                    <h3 id="proj-title" class="text-2xl font-normal text-[#2D2D2A] mb-2">我的项目案例</h3>
-                    <p id="proj-desc" class="text-xs text-[#6B6964] leading-relaxed">
-                        移动鼠标牵引方块，或体验左下角手势控制器。点击方块可逐个查看我的真实项目：AI 心理疗愈 App（全栈 Vibe Coding 独立落地）、COMPAS 算法公平性研究、B端智能中控大屏，以及 K12 儿童建筑启蒙 App。
-                    </p>
-                </div>
-
-                <div id="proj-metrics" class="hidden mt-4 bg-[#F7F6F3] p-3 border border-black/5 rounded-sm">
-                    <h4 class="text-[9px] uppercase tracking-wider text-[#8C8A84] mb-2">项目亮点 · Highlights</h4>
-                    <div class="grid grid-cols-2 gap-4 text-xs">
-                        <div>
-                            <span class="text-[#8C8A84] text-[10px]">核心产出</span>
-                            <p id="metric-1" class="font-semibold text-[#2D2D2A] mt-0.5">--</p>
-                        </div>
-                        <div>
-                            <span class="text-[#8C8A84] text-[10px]">工具 / 方法</span>
-                            <p id="metric-2" class="font-semibold text-[#2D2D2A] mt-0.5">--</p>
-                        </div>
-                    </div>
-                </div>
+        <!-- 关于我 · 生活照影集 + 生活化简介（替换原项目面板）-->
+        <div class="bg-white p-6 border border-black/5 shadow-sm rounded-sm flex flex-col min-h-[340px]">
+            <div class="flex items-center justify-between pb-3 border-b border-black/5">
+                <span class="text-[10px] uppercase tracking-widest text-[#C9463D] font-bold">关于我 · Life</span>
+                <span class="text-[10px] text-[#aaa]">Off the screen</span>
             </div>
-
-            <div class="mt-6 flex justify-between items-center border-t border-black/5 pt-4">
-                <span class="text-[10px] text-[#8C8A84] flex items-center gap-1.5">
-                    <i data-lucide="compass" class="w-3.5 h-3.5"></i>
-                    UX &amp; Architecture Fusion
-                </span>
-                <a id="proj-link" href="#" class="hidden text-xs font-bold uppercase tracking-widest text-[#2D2D2A] border-b-2 border-black hover:opacity-70 transition-opacity pb-0.5">
-                    查看详情 &rarr;
-                </a>
+            <p class="text-sm text-[#5C5A54] leading-relaxed mt-4">
+                我是张琳媛，一个从建筑学一路走到 AI 产品设计的人。比起停留在图纸上，我更喜欢把想法真正做出来——无论是 3D 建模、原型，还是自己上手写代码。镜头之外，我相信好的设计既要有清晰的体系，也要带一点生活的温度。
+            </p>
+            <div class="hscroll mt-5 flex-grow flex items-center" style="--h:200px;">
+                <div class="hscroll-track">
+                    <img src="assets/life/life-1.jpg" alt="生活照 1" />
+                    <img src="assets/life/life-2.jpg" alt="生活照 2" />
+                    <img src="assets/life/life-3.jpg" alt="生活照 3" />
+                    <img src="assets/life/life-4.jpg" alt="生活照 4" />
+                    <img src="assets/life/life-5.jpg" alt="生活照 5" />
+                    <img src="assets/life/life-6.jpg" alt="生活照 6" />
+                    <img src="assets/life/life-7.jpg" alt="生活照 7" />
+                    <img src="assets/life/life-8.jpg" alt="生活照 8" />
+                    <img src="assets/life/life-1.jpg" alt="" aria-hidden="true" />
+                    <img src="assets/life/life-2.jpg" alt="" aria-hidden="true" />
+                    <img src="assets/life/life-3.jpg" alt="" aria-hidden="true" />
+                    <img src="assets/life/life-4.jpg" alt="" aria-hidden="true" />
+                    <img src="assets/life/life-5.jpg" alt="" aria-hidden="true" />
+                    <img src="assets/life/life-6.jpg" alt="" aria-hidden="true" />
+                    <img src="assets/life/life-7.jpg" alt="" aria-hidden="true" />
+                    <img src="assets/life/life-8.jpg" alt="" aria-hidden="true" />
+                </div>
             </div>
         </div>
 
@@ -484,12 +485,20 @@
                     </div>
                 </div>
             </div>
-            <div class="grid grid-cols-2 gap-4 mt-4">
-                <div class="bg-white border border-black/5 rounded-sm overflow-hidden">
-                    <img src="assets/mootain-snow.png" alt="MOOTAIN 冷色情绪地形" class="w-full h-full object-cover" />
-                </div>
-                <div class="bg-white border border-black/5 rounded-sm overflow-hidden">
-                    <img src="assets/mootain-terrain.png" alt="MOOTAIN 等距地形视图" class="w-full h-full object-cover" />
+            <div class="hscroll mt-4 rounded-sm border border-black/5 bg-[#f6f7f4] py-3" style="--h:165px;">
+                <div class="hscroll-track px-3">
+                    <img src="assets/terrain/terrain-1.jpg" alt="地形效果 1" />
+                    <img src="assets/terrain/terrain-2.jpg" alt="地形效果 2" />
+                    <img src="assets/terrain/terrain-3.jpg" alt="地形效果 3" />
+                    <img src="assets/terrain/terrain-4.jpg" alt="地形效果 4" />
+                    <img src="assets/terrain/terrain-5.jpg" alt="地形效果 5" />
+                    <img src="assets/terrain/terrain-6.jpg" alt="地形效果 6" />
+                    <img src="assets/terrain/terrain-1.jpg" alt="" aria-hidden="true" />
+                    <img src="assets/terrain/terrain-2.jpg" alt="" aria-hidden="true" />
+                    <img src="assets/terrain/terrain-3.jpg" alt="" aria-hidden="true" />
+                    <img src="assets/terrain/terrain-4.jpg" alt="" aria-hidden="true" />
+                    <img src="assets/terrain/terrain-5.jpg" alt="" aria-hidden="true" />
+                    <img src="assets/terrain/terrain-6.jpg" alt="" aria-hidden="true" />
                 </div>
             </div>
 
@@ -1310,6 +1319,7 @@
 
         function selectProject(id) {
             const data = projects[id];
+            if (!document.getElementById('proj-title')) return; // 项目面板已替换为生活区，忽略点击
             if (data) {
                 document.getElementById('proj-tag').innerText = data.tag;
                 document.getElementById('proj-year').innerText = data.year;

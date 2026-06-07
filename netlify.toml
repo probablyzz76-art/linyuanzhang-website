@@ -1,0 +1,14 @@
+# Netlify 配置：纯静态站点 + serverless 函数
+[build]
+  publish = "."
+  # 纯静态，无需构建命令
+
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
+
+# 让前端原本调用的 /api/generate-terrain 重写到函数（前端代码无需改动）
+[[redirects]]
+  from = "/api/generate-terrain"
+  to = "/.netlify/functions/generate-terrain"
+  status = 200
