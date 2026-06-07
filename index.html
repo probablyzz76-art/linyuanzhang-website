@@ -1,0 +1,1340 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Variant | 张琳媛 · AI 产品设计作品集</title>
+    <!-- Tailwind CSS for layout -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Three.js (Core 3D Engine) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- MediaPipe Camera Utils & Hands for Live Gesture Recognition -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=Share+Tech+Mono&display=swap');
+
+        :root {
+            --bg-beige: #F7F6F3;
+            --accent-red: #C9463D;
+            --accent-blue: #3E5F7A;
+            --accent-green: #5E7A68;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background-color: var(--bg-beige);
+            color: #2D2D2A;
+            overflow-x: hidden;
+        }
+
+        h1, h2, h3, .serif-font {
+            font-family: 'Plus Jakarta Sans', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+        }
+
+        /* monospace kept only for the sandbox terminal / system readout */
+        .pixel-mono {
+            font-family: 'Share Tech Mono', monospace;
+        }
+
+        .skill-chip {
+            display: inline-block;
+            background: #F7F6F3;
+            border: 1px solid rgba(0,0,0,0.06);
+            border-radius: 3px;
+            padding: 3px 9px;
+            font-size: 11px;
+            color: #2D2D2A;
+        }
+
+        /* MOOTAIN blue-tinted tech chips (keeps the project's blue tone) */
+        .proj-nav-btn {
+            display:inline-flex; align-items:center; gap:6px;
+            font-size:11px; font-weight:700; letter-spacing:0.06em; text-transform:uppercase;
+            color:#8C8A84; background:#fff; padding:6px 11px;
+            border:1px solid rgba(0,0,0,0.08); border-radius:3px; transition:all .2s; cursor:pointer;
+        }
+        .proj-nav-btn:hover { color:#2D2D2A; border-color:rgba(0,0,0,0.28); }
+        .proj-nav-btn .num { font-size:9px; color:#C9463D; }
+        .proj-nav-btn.active { background:#2D2D2A; color:#fff; border-color:#2D2D2A; }
+        .proj-nav-btn.active .num { color:#4594e8; }
+
+        .dd-tab { cursor:pointer; border:1px solid rgba(0,0,0,0.08); border-radius:5px; overflow:hidden; background:#fff; transition:all .2s; }
+        .dd-tab:hover { border-color:rgba(69,148,232,0.5); transform:translateY(-2px); }
+        .dd-tab-active { border-color:#4594e8; box-shadow:0 8px 22px -8px rgba(69,148,232,0.45); }
+
+        .mootain-tech {
+            display: inline-block;
+            background: rgba(69, 148, 232, 0.08);
+            border: 1px solid rgba(69, 148, 232, 0.22);
+            border-radius: 3px;
+            padding: 3px 9px;
+            font-size: 11px;
+            color: #0160a8;
+            font-weight: 600;
+        }
+
+        .compas-tech {
+            display: inline-block;
+            background: rgba(201, 70, 61, 0.08);
+            border: 1px solid rgba(201, 70, 61, 0.22);
+            border-radius: 3px;
+            padding: 3px 9px;
+            font-size: 11px;
+            color: #a5392f;
+            font-weight: 600;
+        }
+
+        .kid-tech {
+            display: inline-block;
+            background: rgba(21, 127, 116, 0.08);
+            border: 1px solid rgba(21, 127, 116, 0.22);
+            border-radius: 3px;
+            padding: 3px 9px;
+            font-size: 11px;
+            color: #0f6b61;
+            font-weight: 600;
+        }
+
+        /* Scanline and print grain overlay to simulate physical architectural collage */
+        .collage-grain {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 999;
+            opacity: 0.18;
+            mix-blend-mode: multiply;
+        }
+
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(0,0,0,0.1);
+            border-radius: 2px;
+        }
+
+        /* Gesture Controller Overlay UI */
+        .video-preview-wrapper {
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between">
+
+    <!-- Print/Paper Texture Noise Layer -->
+    <svg class="collage-grain">
+        <filter id="collage-noise">
+            <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="4" stitchTiles="stitch"/>
+            <feColorMatrix type="saturate" values="0"/>
+            <feComponentTransfer>
+                <feFuncR type="linear" slope="0.85"/>
+                <feFuncG type="linear" slope="0.85"/>
+                <feFuncB type="linear" slope="0.85"/>
+            </feComponentTransfer>
+            <feBlend mode="multiply" in="SourceGraphic"/>
+        </filter>
+        <rect width="100%" height="100%" filter="url(#collage-noise)"/>
+    </svg>
+
+    <!-- Header Navigation -->
+    <header class="w-full px-8 py-6 flex justify-between items-center z-50">
+        <div>
+            <div class="text-xl font-bold tracking-[0.25em] uppercase text-[#2D2D2A]">Variant</div>
+            <div class="text-[9px] tracking-[0.35em] uppercase text-[#8C8A84] mt-1">Spatial UX Research & Systems Lab</div>
+        </div>
+        <div class="flex items-center gap-3">
+            <span class="hidden lg:block text-[9px] tracking-[0.25em] uppercase text-[#8C8A84] mr-1">切换项目</span>
+            <nav class="hidden md:flex items-center gap-2">
+                <button onclick="switchProject(1)" id="nav-proj-1" class="proj-nav-btn active"><span class="num">01</span> MOOTAIN</button>
+                <button onclick="switchProject(2)" id="nav-proj-2" class="proj-nav-btn"><span class="num">02</span> COMPAS</button>
+                <button onclick="switchProject(3)" id="nav-proj-3" class="proj-nav-btn"><span class="num">03</span> 中控大屏</button>
+                <button onclick="switchProject(4)" id="nav-proj-4" class="proj-nav-btn"><span class="num">04</span> 小小建筑师</button>
+            </nav>
+            <button onclick="triggerAssembleEffect()" title="重置体素方块" class="border border-[#2D2D2A]/30 text-[#2D2D2A] p-2 rounded-sm hover:bg-[#2D2D2A] hover:text-white transition-all">
+                <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Dynamic Workspace -->
+    <main class="flex-grow w-full max-w-[1680px] mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 px-6 py-4 items-center z-20">
+        
+        <!-- LEFT: Interactive Voxel Sandbox Viewport (7 Grids) -->
+        <div class="lg:col-span-7 h-[650px] w-full relative flex items-center justify-center bg-white border border-black/5 rounded-sm overflow-hidden shadow-inner">
+            <div class="absolute top-4 left-4 z-30 pointer-events-none">
+                <span class="text-[10px] tracking-[0.25em] text-[#8C8A84] uppercase flex items-center gap-2">
+                    <span class="w-2.5 h-2.5 rounded-full bg-[#C9463D] animate-pulse"></span>
+                    Interactive WebGL Voxel Sandbox
+                </span>
+                <p class="text-[11px] text-[#6B6964] mt-1">移动鼠标牵引方块。使用下方手势模拟器或开启相机，体验升级版的多维度动力学手势！</p>
+            </div>
+
+            <!-- Three.js Container -->
+            <div id="voxel-viewport" class="w-full h-full absolute inset-0 z-10 cursor-crosshair"></div>
+
+            <!-- Typography Design Strip (Floating inside Hero) -->
+            <div class="absolute inset-x-0 bottom-24 h-14 bg-white/70 backdrop-blur-md z-20 flex items-center justify-center border-y border-black/5 pointer-events-none">
+                <div class="pixel-mono text-[10px] font-bold tracking-[0.65em] text-[#2D2D2A] uppercase flex items-center gap-4">
+                    SYS.V_02 // <span id="current-gesture-indicator" class="text-[#C9463D]">SPARSE MATRIX NORMAL</span> // MULTI-GESTURE CONTROL
+                </div>
+            </div>
+
+            <!-- Floating Manual Gesture Override Simulators (Expanded with 4 Gesture States) -->
+            <div class="absolute bottom-4 left-4 z-30 flex flex-wrap gap-2 items-center max-w-[90%]">
+                <span class="text-[9px] uppercase tracking-widest text-gray-400 font-bold mr-1">Simulator:</span>
+                <button onclick="simulateGesture('open')" class="bg-gray-100 hover:bg-gray-200 border border-gray-300 rounded px-2.5 py-1 text-[9.5px] font-mono font-bold tracking-wider text-gray-700">🖐️ Open Hand</button>
+                <button onclick="simulateGesture('fist')" class="bg-gray-100 hover:bg-gray-200 border border-gray-300 rounded px-2.5 py-1 text-[9.5px] font-mono font-bold tracking-wider text-gray-700">✊ Fist Clump</button>
+                <button onclick="simulateGesture('vortex')" class="bg-gray-100 hover:bg-gray-200 border border-gray-300 rounded px-2.5 py-1 text-[9.5px] font-mono font-bold tracking-wider text-gray-700">☝️ Vortex</button>
+                <button onclick="simulateGesture('wave')" class="bg-gray-100 hover:bg-gray-200 border border-gray-300 rounded px-2.5 py-1 text-[9.5px] font-mono font-bold tracking-wider text-gray-700">🌊 Wave Pulse</button>
+                <button onclick="simulateGesture('none')" class="bg-gray-200 hover:bg-gray-300 border border-gray-400 rounded px-2.5 py-1 text-[9.5px] font-mono font-bold tracking-wider text-gray-800">Normalize</button>
+            </div>
+
+            <!-- Real-time Webcam Feed Preview Toggle Overlay -->
+            <div class="absolute top-4 right-4 z-30 flex flex-col items-end gap-2">
+                <button id="camera-toggle" onclick="toggleWebcam()" class="flex items-center gap-2 bg-[#2D2D2A] text-white hover:bg-black font-bold px-3 py-1.5 rounded-sm text-[10px] uppercase tracking-widest transition-all">
+                    <i data-lucide="video" class="w-3.5 h-3.5"></i>
+                    <span>Start Gesture Camera</span>
+                </button>
+                
+                <!-- Camera view area (Initially collapsed) -->
+                <div id="video-wrapper" class="video-preview-wrapper w-0 h-0 opacity-0 overflow-hidden rounded-md border border-black/10 bg-black/5 shadow-md flex items-center justify-center relative">
+                    <video id="webcam" class="w-full h-full object-cover scale-x-[-1]"></video>
+                    <div id="gesture-badge" class="absolute bottom-1 right-1 bg-red-600 text-white font-mono text-[8px] font-bold px-1.5 py-0.5 rounded uppercase">No Signal</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT: Full Personal Introduction & Skills -->
+        <div class="lg:col-span-5 h-[650px] w-full">
+            <div class="bg-white border border-black/5 shadow-sm rounded-sm h-full overflow-y-auto p-7 flex flex-col gap-6">
+
+                <!-- Identity -->
+                <div>
+                    <div class="flex justify-between items-start gap-3">
+                        <div>
+                            <h2 class="text-3xl font-bold tracking-tight">张琳媛</h2>
+                            <p class="text-xs text-[#8C8A84] mt-1.5 tracking-wide">东南大学设计学硕士 · 四川美术学院建筑学学士</p>
+                        </div>
+                        <span class="bg-[#C9463D]/10 text-[#C9463D] text-[9px] px-2.5 py-1 rounded-sm uppercase tracking-widest font-bold whitespace-nowrap">AI 产品 · 设计实习生</span>
+                    </div>
+                    <div class="flex flex-wrap gap-x-4 gap-y-1.5 mt-3 text-[11px] text-[#6B6964]">
+                        <span class="flex items-center gap-1.5"><i data-lucide="mail" class="w-3 h-3"></i>probablyzz76@gmail.com</span>
+                        <span class="flex items-center gap-1.5"><i data-lucide="phone" class="w-3 h-3"></i>173-4781-8499</span>
+                        <span class="flex items-center gap-1.5"><i data-lucide="message-circle" class="w-3 h-3"></i>微信 xhn11111110000</span>
+                    </div>
+                </div>
+
+                <!-- About -->
+                <div class="border-t border-black/5 pt-5">
+                    <h3 class="text-[10px] uppercase tracking-[0.2em] text-[#8C8A84] font-bold mb-3">自我介绍 · About</h3>
+                    <p class="text-[13px] leading-relaxed text-[#5C5A54]">
+                        东南大学设计学硕士（产品与交互方向），四川美术学院建筑学学士。建筑学训练出的<strong class="text-[#2D2D2A] font-semibold">空间与系统思维</strong>，叠加交互设计与原型能力；能独立用 <strong class="text-[#2D2D2A] font-semibold">AI Vibe Coding 把产品从 PRD 跑通到上线</strong>。关注 AIGC 与智能产品方向，熟悉 AI 辅助设计流程，擅长从用户视角拆解复杂场景，并重视 AI 的可解释性与伦理。
+                    </p>
+                </div>
+
+                <!-- Education -->
+                <div class="border-t border-black/5 pt-5">
+                    <h3 class="text-[10px] uppercase tracking-[0.2em] text-[#8C8A84] font-bold mb-3">教育经历 · Education</h3>
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-baseline gap-3">
+                            <div>
+                                <p class="text-[13px] font-semibold text-[#2D2D2A]">东南大学 · 设计学硕士</p>
+                                <p class="text-[11px] text-[#8C8A84] mt-0.5">艺术学院 · 产品与交互方向 · 校二等优秀学生奖学金</p>
+                            </div>
+                            <span class="text-[10px] text-[#aaa] whitespace-nowrap">2025.09 – 2028.06</span>
+                        </div>
+                        <div class="flex justify-between items-baseline gap-3">
+                            <div>
+                                <p class="text-[13px] font-semibold text-[#2D2D2A]">四川美术学院 · 建筑学学士</p>
+                                <p class="text-[11px] text-[#8C8A84] mt-0.5">建筑与环境艺术学院 · 多次优秀学生奖学金 / 优秀学生干部</p>
+                            </div>
+                            <span class="text-[10px] text-[#aaa] whitespace-nowrap">2020.09 – 2025.06</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Experience -->
+                <div class="border-t border-black/5 pt-5">
+                    <h3 class="text-[10px] uppercase tracking-[0.2em] text-[#8C8A84] font-bold mb-3">实习经历 · Experience</h3>
+                    <div class="flex justify-between items-baseline gap-3">
+                        <div>
+                            <p class="text-[13px] font-semibold text-[#2D2D2A]">设计助理 / 编辑</p>
+                            <p class="text-[11px] text-[#8C8A84] mt-0.5">上海探界文化传播 · 成都计成文化传媒</p>
+                        </div>
+                        <span class="text-[10px] text-[#aaa] whitespace-nowrap">2021.03 – 2025.09</span>
+                    </div>
+                    <p class="text-[12px] leading-relaxed text-[#5C5A54] mt-2">搭建品牌视觉规范系统、保持品牌调性一致；发布 30+ 海报、制作 15+ 份演示文稿，并负责视频拍摄与后期。</p>
+                </div>
+
+                <!-- Skills -->
+                <div class="border-t border-black/5 pt-5">
+                    <h3 class="text-[10px] uppercase tracking-[0.2em] text-[#8C8A84] font-bold mb-3">技能工具 · Skills</h3>
+                    <div class="space-y-3.5">
+                        <div>
+                            <span class="text-[#8C8A84] text-[10px] block mb-1.5">语言</span>
+                            <div class="flex flex-wrap gap-1.5">
+                                <span class="skill-chip">普通话二甲</span>
+                                <span class="skill-chip">英语 CET-6</span>
+                            </div>
+                        </div>
+                        <div>
+                            <span class="text-[#8C8A84] text-[10px] block mb-1.5">AI · Vibe Coding</span>
+                            <div class="flex flex-wrap gap-1.5">
+                                <span class="skill-chip">Cursor</span>
+                                <span class="skill-chip">Claude API</span>
+                                <span class="skill-chip">Gemini</span>
+                                <span class="skill-chip">Google AI Studio</span>
+                                <span class="skill-chip">Stitch</span>
+                            </div>
+                        </div>
+                        <div>
+                            <span class="text-[#8C8A84] text-[10px] block mb-1.5">设计 · 原型</span>
+                            <div class="flex flex-wrap gap-1.5">
+                                <span class="skill-chip">Figma</span>
+                                <span class="skill-chip">Axure</span>
+                                <span class="skill-chip">Sketch Up</span>
+                                <span class="skill-chip">Rhino</span>
+                                <span class="skill-chip">Enscape</span>
+                                <span class="skill-chip">Lumion</span>
+                                <span class="skill-chip">AutoCAD</span>
+                                <span class="skill-chip">Photoshop</span>
+                            </div>
+                        </div>
+                        <div>
+                            <span class="text-[#8C8A84] text-[10px] block mb-1.5">办公</span>
+                            <div class="flex flex-wrap gap-1.5">
+                                <span class="skill-chip">Excel</span>
+                                <span class="skill-chip">PowerPoint</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Bottom: Project Detail Panel & System Terminal -->
+    <section class="w-full max-w-[1680px] mx-auto px-6 py-4 grid grid-cols-1 md:grid-cols-2 gap-8 mb-8 z-20">
+        
+        <!-- Project Detail Panel (driven by clicking voxels in the sandbox) -->
+        <div id="project-panel" class="bg-white p-6 border border-black/5 shadow-sm rounded-sm flex flex-col justify-between min-h-[340px]">
+            <div>
+                <div class="flex justify-between items-center pb-3 border-b border-black/5">
+                    <span id="proj-tag" class="text-[10px] uppercase tracking-widest text-[#C9463D] font-bold">点击左侧方块查看项目 · Click a voxel</span>
+                    <span id="proj-year" class="text-[10px] text-[#aaa]">--</span>
+                </div>
+                <div class="mt-4">
+                    <h3 id="proj-title" class="text-2xl font-normal text-[#2D2D2A] mb-2">我的项目案例</h3>
+                    <p id="proj-desc" class="text-xs text-[#6B6964] leading-relaxed">
+                        移动鼠标牵引方块，或体验左下角手势控制器。点击方块可逐个查看我的真实项目：AI 心理疗愈 App（全栈 Vibe Coding 独立落地）、COMPAS 算法公平性研究、B端智能中控大屏，以及 K12 儿童建筑启蒙 App。
+                    </p>
+                </div>
+
+                <div id="proj-metrics" class="hidden mt-4 bg-[#F7F6F3] p-3 border border-black/5 rounded-sm">
+                    <h4 class="text-[9px] uppercase tracking-wider text-[#8C8A84] mb-2">项目亮点 · Highlights</h4>
+                    <div class="grid grid-cols-2 gap-4 text-xs">
+                        <div>
+                            <span class="text-[#8C8A84] text-[10px]">核心产出</span>
+                            <p id="metric-1" class="font-semibold text-[#2D2D2A] mt-0.5">--</p>
+                        </div>
+                        <div>
+                            <span class="text-[#8C8A84] text-[10px]">工具 / 方法</span>
+                            <p id="metric-2" class="font-semibold text-[#2D2D2A] mt-0.5">--</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-6 flex justify-between items-center border-t border-black/5 pt-4">
+                <span class="text-[10px] text-[#8C8A84] flex items-center gap-1.5">
+                    <i data-lucide="compass" class="w-3.5 h-3.5"></i>
+                    UX &amp; Architecture Fusion
+                </span>
+                <a id="proj-link" href="#" class="hidden text-xs font-bold uppercase tracking-widest text-[#2D2D2A] border-b-2 border-black hover:opacity-70 transition-opacity pb-0.5">
+                    查看详情 &rarr;
+                </a>
+            </div>
+        </div>
+
+        <!-- Terminal Logger Sandbox -->
+        <div class="bg-[#1A1A19] p-6 rounded-sm text-gray-300 font-mono text-xs relative overflow-hidden shadow-lg border border-white/10">
+            <div class="flex items-center justify-between pb-3 border-b border-white/10 mb-4 text-[10px] uppercase tracking-widest text-[#8C8A84]">
+                <span class="flex items-center gap-2">
+                    <span class="w-2.5 h-2.5 rounded-full bg-green-500 animate-ping"></span>
+                    probablyzz76@Vibe-Sandbox:~/portfolio
+                </span>
+                <span>SYSTEM CORE STATUS</span>
+            </div>
+            <div id="terminal-screen" class="space-y-1.5 h-[120px] overflow-y-auto text-[11px] leading-relaxed text-gray-400">
+                <p class="text-green-400">$ system_init --role "AI Product Intern" --candidate "张琳媛"</p>
+                <p>&gt; Re-allocating particle structure... Sparsity coefficient upgraded to 0.45</p>
+                <p>&gt; Registering Vortex [☝️] and Wave [🌊] physics motion curves...</p>
+                <p class="text-yellow-500">&gt; MediaPipe Gesture controller updated. Advanced classification rules live.</p>
+                <p>&gt; System stabilized. Move mouse to trigger elastic structural feedback.</p>
+            </div>
+            <div class="mt-4 pt-3 border-t border-white/10 flex justify-between items-center">
+                <span class="text-[9px] text-[#8C8A84] uppercase tracking-widest">Perform hand gesture to trigger voxel reactions</span>
+                <span class="text-[10px] text-green-400 font-bold font-mono">PORT 3000 // RUNNING</span>
+            </div>
+        </div>
+
+    </section>
+
+    <!-- ===== DESIGN & DATA : Projects switcher (01 MOOTAIN / 02 COMPAS / 03 中控大屏) ===== -->
+    <section id="design-data" class="w-full max-w-[1680px] mx-auto px-6 py-10 z-20 scroll-mt-24">
+
+        <div class="flex items-end justify-between mb-6 border-b border-black/5 pb-4">
+            <div>
+                <span class="text-[10px] uppercase tracking-[0.3em] text-[#4594e8] font-bold">Design &amp; Data Integration</span>
+                <h2 class="text-3xl font-bold tracking-tight mt-1">设计 × 数据 · 项目集</h2>
+            </div>
+            <span class="text-[10px] text-[#8C8A84] tracking-widest uppercase hidden md:block">点击缩略图或右上角按钮切换</span>
+        </div>
+
+        <!-- Thumbnail switcher -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <div id="dd-tab-1" onclick="switchProject(1)" class="dd-tab dd-tab-active">
+                <div class="h-24 sm:h-28 overflow-hidden bg-[#eaedff]">
+                    <img src="assets/mootain-cutout.png" alt="MOOTAIN 缩略图" class="w-full h-full object-cover" />
+                </div>
+                <div class="px-3 py-2 flex items-center justify-between">
+                    <span class="text-xs font-bold text-[#2D2D2A]">01 · MOOTAIN</span>
+                    <span class="text-[9px] text-[#4594e8] font-bold uppercase">Live</span>
+                </div>
+            </div>
+            <div id="dd-tab-2" onclick="switchProject(2)" class="dd-tab">
+                <div class="h-24 sm:h-28 flex items-center justify-center" style="background: radial-gradient(circle at 50% 35%, #26262e 0%, #000 90%);">
+                    <i data-lucide="scale" class="w-7 h-7 text-[#ff3b30]"></i>
+                </div>
+                <div class="px-3 py-2 flex items-center justify-between">
+                    <span class="text-xs font-bold text-[#2D2D2A]">02 · COMPAS</span>
+                    <span class="text-[9px] text-[#C9463D] font-bold uppercase">Live</span>
+                </div>
+            </div>
+            <div id="dd-tab-3" onclick="switchProject(3)" class="dd-tab">
+                <div class="h-24 sm:h-28 flex items-center justify-center bg-gradient-to-br from-[#e6efe9] to-[#cfe0d6]">
+                    <i data-lucide="monitor" class="w-7 h-7 text-[#5E7A68]"></i>
+                </div>
+                <div class="px-3 py-2 flex items-center justify-between">
+                    <span class="text-xs font-bold text-[#2D2D2A]">03 · 中控大屏</span>
+                    <span class="text-[9px] text-[#8C8A84] font-bold uppercase">Soon</span>
+                </div>
+            </div>
+            <div id="dd-tab-4" onclick="switchProject(4)" class="dd-tab">
+                <div class="h-24 sm:h-28 overflow-hidden bg-[#e6f4f1]">
+                    <img src="assets/kidarch-1-cover.jpg" alt="小小建筑师 缩略图" class="w-full h-full object-cover" />
+                </div>
+                <div class="px-3 py-2 flex items-center justify-between">
+                    <span class="text-xs font-bold text-[#2D2D2A]">04 · 小小建筑师</span>
+                    <span class="text-[9px] text-[#157f74] font-bold uppercase">Live</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== PANEL 1 : MOOTAIN (项目1简介，保留) ===== -->
+        <div id="dd-panel-1">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-0 bg-white border border-black/5 shadow-sm rounded-sm overflow-hidden">
+                <div class="lg:col-span-6 relative bg-gradient-to-br from-[#eaedff] to-[#d3e4ff] min-h-[340px] flex items-center justify-center p-5">
+                    <img src="assets/mootain-hero.png" alt="MOOTAIN 情绪地形主视觉" class="w-full h-full max-h-[420px] object-cover rounded-sm shadow-md" />
+                    <span class="absolute top-4 left-4 bg-[#4594e8] text-white text-[9px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-sm shadow">Live · WebGL</span>
+                </div>
+                <div class="lg:col-span-6 p-8 flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-baseline gap-3">
+                            <h3 class="text-4xl font-extrabold tracking-tight text-[#0160a8]">MOOTAIN</h3>
+                            <span class="text-[11px] text-[#8C8A84] tracking-widest">2026</span>
+                        </div>
+                        <p class="text-[11px] uppercase tracking-[0.18em] text-[#4594e8] font-bold mt-1.5">情绪计算 · 心情地形社交 App</p>
+                        <p class="text-sm leading-relaxed text-[#5C5A54] mt-4">
+                            MOOTAIN 把抽象的情绪变成一座能“走进去”的 3D 黏土山体：用户记录当下心情，系统结合 Gemini 情感解析，把情绪的效价与唤醒度映射成地形的颜色、起伏与天气，并配套减压互动、疗愈语录与「情绪地形」社交网络。作为产品负责人，我从用户调研出发，独立完成 PRD → 原型 → 全栈实现的完整闭环。
+                        </p>
+                        <div class="flex flex-wrap gap-1.5 mt-5">
+                            <span class="mootain-tech">React 19</span>
+                            <span class="mootain-tech">Three.js · WebGL</span>
+                            <span class="mootain-tech">Gemini API</span>
+                            <span class="mootain-tech">Tailwind</span>
+                            <span class="mootain-tech">Vite</span>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4 mt-5 border-t border-black/5 pt-4 text-[12px]">
+                            <div>
+                                <span class="text-[#8C8A84] text-[10px] uppercase tracking-wider">角色</span>
+                                <p class="font-semibold text-[#2D2D2A] mt-0.5">产品负责人 · 独立全栈</p>
+                            </div>
+                            <div>
+                                <span class="text-[#8C8A84] text-[10px] uppercase tracking-wider">核心闭环</span>
+                                <p class="font-semibold text-[#2D2D2A] mt-0.5">PRD → 原型 → 上线</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-4 mt-7">
+                        <a href="mootain-app/index.html" target="_blank" rel="noopener"
+                           class="inline-flex items-center gap-2 bg-[#4594e8] hover:bg-[#0160a8] text-white font-bold px-5 py-2.5 rounded-sm text-xs uppercase tracking-widest transition-colors">
+                            <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+                            打开 MOOTAIN App
+                        </a>
+                        <span class="text-[10px] text-[#8C8A84]">完整可交互页面 · 无需 AI Studio</span>
+                    </div>
+                </div>
+            </div>
+            <div class="grid grid-cols-2 gap-4 mt-4">
+                <div class="bg-white border border-black/5 rounded-sm overflow-hidden">
+                    <img src="assets/mootain-snow.png" alt="MOOTAIN 冷色情绪地形" class="w-full h-full object-cover" />
+                </div>
+                <div class="bg-white border border-black/5 rounded-sm overflow-hidden">
+                    <img src="assets/mootain-terrain.png" alt="MOOTAIN 等距地形视图" class="w-full h-full object-cover" />
+                </div>
+            </div>
+
+            <!-- Full case-study spreads: research / competitive analysis / persona / UI -->
+            <div class="mt-8 flex items-center gap-3">
+                <span class="text-[10px] uppercase tracking-[0.25em] text-[#4594e8] font-bold whitespace-nowrap">Full Case Study</span>
+                <span class="text-xs text-[#8C8A84] whitespace-nowrap">完整方案 · 调研 / 竞品 / 用户画像 / UI 系统</span>
+                <div class="flex-grow h-px bg-black/5"></div>
+            </div>
+            <div class="space-y-4 mt-4">
+                <figure class="bg-white border border-black/5 rounded-sm overflow-hidden shadow-sm">
+                    <img src="assets/mootain-analysis-1-background.jpg" alt="MOOTAIN 背景与痛点" class="w-full object-cover" loading="lazy" />
+                    <figcaption class="px-4 py-2 text-[11px] text-[#6B6964] border-t border-black/5">01 · 背景与痛点 / Background &amp; Pain Points</figcaption>
+                </figure>
+                <figure class="bg-white border border-black/5 rounded-sm overflow-hidden shadow-sm">
+                    <img src="assets/mootain-analysis-2-research.jpg" alt="MOOTAIN 竞品分析与用户研究" class="w-full object-cover" loading="lazy" />
+                    <figcaption class="px-4 py-2 text-[11px] text-[#6B6964] border-t border-black/5">02 · 竞品分析与用户研究 / Competitive &amp; User Research</figcaption>
+                </figure>
+                <figure class="bg-white border border-black/5 rounded-sm overflow-hidden shadow-sm">
+                    <img src="assets/mootain-analysis-3-persona.jpg" alt="MOOTAIN 用户画像·旅程图·信息架构" class="w-full object-cover" loading="lazy" />
+                    <figcaption class="px-4 py-2 text-[11px] text-[#6B6964] border-t border-black/5">03 · 用户画像 · 旅程图 · 信息架构 / Persona, Journey &amp; IA</figcaption>
+                </figure>
+                <figure class="bg-white border border-black/5 rounded-sm overflow-hidden shadow-sm">
+                    <img src="assets/mootain-analysis-4-ui.jpg" alt="MOOTAIN UI 高保真与设计系统" class="w-full object-cover" loading="lazy" />
+                    <figcaption class="px-4 py-2 text-[11px] text-[#6B6964] border-t border-black/5">04 · UI 高保真与设计系统 / Hi-Fi UI &amp; Design System</figcaption>
+                </figure>
+            </div>
+        </div>
+
+        <!-- ===== PANEL 2 : COMPAS (项目2) ===== -->
+        <div id="dd-panel-2" class="hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-0 bg-white border border-black/5 shadow-sm rounded-sm overflow-hidden">
+                <div class="lg:col-span-6 relative min-h-[340px] flex flex-col items-center justify-center p-8 text-center" style="background: radial-gradient(circle at 50% 28%, #1c1c22 0%, #000 82%);">
+                    <span class="absolute top-4 left-4 bg-[#C9463D] text-white text-[9px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-sm shadow">Live · 司法评估系统</span>
+                    <i data-lucide="scale" class="w-12 h-12 text-[#ff3b30] mb-4"></i>
+                    <h4 class="text-2xl font-extrabold tracking-[0.18em] text-white">SYMPHONY</h4>
+                    <p class="text-[10px] tracking-[0.3em] uppercase text-[#00f0ff] mt-2">Narrative Judicial Assessment · v3.0</p>
+                    <p class="text-[11px] text-gray-400 mt-3">冷标签 ⟶ 情境叙事 · 非比较性正义</p>
+                </div>
+                <div class="lg:col-span-6 p-8 flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-baseline gap-3">
+                            <h3 class="text-4xl font-extrabold tracking-tight text-[#C9463D]">COMPAS</h3>
+                            <span class="text-[11px] text-[#8C8A84] tracking-widest">2026</span>
+                        </div>
+                        <p class="text-[11px] uppercase tracking-[0.18em] text-[#C9463D] font-bold mt-1.5">AI 伦理 · 算法公平性与可解释司法</p>
+                        <p class="text-sm leading-relaxed text-[#5C5A54] mt-4">
+                            针对 COMPAS 再犯预测算法已被广泛证实的种族偏见与“黑箱评分”问题，我把一次算法公平性研究做成了可交互的产品方案：用「叙事化司法评估」对抗冷冰冰、去情境的风险标签——把个体的生命事件、情境诱因、社会支持网络与原始卷宗重新呈现，引入“非比较性正义”与“算法纠偏道德审查”环节，让司法辅助决策可解释、可质疑、可纠偏。
+                        </p>
+                        <div class="flex flex-wrap gap-1.5 mt-5">
+                            <span class="compas-tech">算法公平性</span>
+                            <span class="compas-tech">可解释 AI</span>
+                            <span class="compas-tech">叙事化交互</span>
+                            <span class="compas-tech">Gemini 研判</span>
+                            <span class="compas-tech">PRD · 原型</span>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4 mt-5 border-t border-black/5 pt-4 text-[12px]">
+                            <div>
+                                <span class="text-[#8C8A84] text-[10px] uppercase tracking-wider">角色</span>
+                                <p class="font-semibold text-[#2D2D2A] mt-0.5">产品分析师 · 独立研究</p>
+                            </div>
+                            <div>
+                                <span class="text-[#8C8A84] text-[10px] uppercase tracking-wider">核心命题</span>
+                                <p class="font-semibold text-[#2D2D2A] mt-0.5">偏见 → 可解释 / 纠偏</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-4 mt-7">
+                        <a href="compas-app/index.html" target="_blank" rel="noopener"
+                           class="inline-flex items-center gap-2 bg-[#C9463D] hover:bg-[#a5392f] text-white font-bold px-5 py-2.5 rounded-sm text-xs uppercase tracking-widest transition-colors">
+                            <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+                            打开 Symphony 系统
+                        </a>
+                        <span class="text-[10px] text-[#8C8A84]">完整可交互页面 · 无需 AI Studio</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== PANEL 3 : 中控大屏 (placeholder) ===== -->
+        <div id="dd-panel-3" class="hidden">
+            <div class="bg-white border border-black/5 shadow-sm rounded-sm p-10 flex flex-col items-center text-center">
+                <div class="w-16 h-16 rounded-full bg-[#5E7A68]/10 flex items-center justify-center mb-4">
+                    <i data-lucide="monitor" class="w-7 h-7 text-[#5E7A68]"></i>
+                </div>
+                <h3 class="text-2xl font-bold text-[#2D2D2A]">智能数字中控大屏</h3>
+                <p class="text-[11px] uppercase tracking-[0.18em] text-[#5E7A68] font-bold mt-1.5">B端产品设计 · 交通调度场景</p>
+                <p class="text-sm text-[#5C5A54] mt-4 max-w-xl leading-relaxed">面向交通调度场景，梳理不同角色的操作路径与信息优先级，输出完整 PRD、高保真交互原型与产品设计说明书。</p>
+                <span class="mt-6 text-[11px] tracking-widest uppercase text-[#8C8A84] border border-black/10 rounded-full px-4 py-1.5">案例整理中 · Coming soon</span>
+            </div>
+        </div>
+
+        <!-- ===== PANEL 4 : 小小建筑师 (项目4) ===== -->
+        <div id="dd-panel-4" class="hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-0 bg-white border border-black/5 shadow-sm rounded-sm overflow-hidden">
+                <div class="lg:col-span-6 relative min-h-[340px] flex flex-col items-center justify-center p-8 text-center" style="background: radial-gradient(circle at 50% 30%, #2ba89c 0%, #0f6b61 85%);">
+                    <span class="absolute top-4 left-4 bg-white/90 text-[#0f6b61] text-[9px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-sm shadow">K12 · 游戏化学习</span>
+                    <i data-lucide="building-2" class="w-12 h-12 text-white mb-4"></i>
+                    <h4 class="text-2xl font-extrabold tracking-tight text-white">AI 城市拯救计划</h4>
+                    <p class="text-[11px] tracking-[0.25em] uppercase text-[#cdeee9] mt-2">小小设计师大作战</p>
+                    <p class="text-[11px] text-white/80 mt-3">叙事驱动 · AI 协作 · 空间设计启蒙</p>
+                </div>
+                <div class="lg:col-span-6 p-8 flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-baseline gap-3">
+                            <h3 class="text-4xl font-extrabold tracking-tight text-[#0f6b61]">小小建筑师</h3>
+                            <span class="text-[11px] text-[#8C8A84] tracking-widest">2025</span>
+                        </div>
+                        <p class="text-[11px] uppercase tracking-[0.18em] text-[#157f74] font-bold mt-1.5">C端产品设计 · 儿童建筑启蒙游戏</p>
+                        <p class="text-sm leading-relaxed text-[#5C5A54] mt-4">
+                            面向 5–12 岁儿童的叙事驱动设计教育 App：以“AI 城市拯救计划”为故事主线，通过收集城市心跳、智斗直线怪、资源守护者联盟等游戏环节，培养孩子的空间设计思维与 AI 协作能力。我开展 10+ 家长 / 教师深度访谈建立用户画像，完成完整信息架构与高保真原型（老师端数据看板 + 儿童端游戏界面），并针对 5–8 岁具象思维特点设计可用性验证。
+                        </p>
+                        <div class="flex flex-wrap gap-1.5 mt-5">
+                            <span class="kid-tech">用户研究</span>
+                            <span class="kid-tech">信息架构</span>
+                            <span class="kid-tech">游戏化设计</span>
+                            <span class="kid-tech">高保真原型</span>
+                            <span class="kid-tech">SketchUp · Figma</span>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4 mt-5 border-t border-black/5 pt-4 text-[12px]">
+                            <div>
+                                <span class="text-[#8C8A84] text-[10px] uppercase tracking-wider">角色</span>
+                                <p class="font-semibold text-[#2D2D2A] mt-0.5">独立产品设计师</p>
+                            </div>
+                            <div>
+                                <span class="text-[#8C8A84] text-[10px] uppercase tracking-wider">调研</span>
+                                <p class="font-semibold text-[#2D2D2A] mt-0.5">10+ 家长 / 教师访谈</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-4 mt-7">
+                        <span class="text-[10px] text-[#8C8A84]">完整方案见下方 ↓ 背景 / 竞品 / UI / 游戏素材</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-8 flex items-center gap-3">
+                <span class="text-[10px] uppercase tracking-[0.25em] text-[#157f74] font-bold whitespace-nowrap">Full Case Study</span>
+                <span class="text-xs text-[#8C8A84] whitespace-nowrap">完整方案 · 背景 / 竞品 / UI / 游戏素材</span>
+                <div class="flex-grow h-px bg-black/5"></div>
+            </div>
+            <div class="space-y-4 mt-4">
+                <figure class="bg-white border border-black/5 rounded-sm overflow-hidden shadow-sm">
+                    <img src="assets/kidarch-1-cover.jpg" alt="小小建筑师 项目背景" class="w-full object-cover" loading="lazy" />
+                    <figcaption class="px-4 py-2 text-[11px] text-[#6B6964] border-t border-black/5">01 · 项目背景与问题 / Cover &amp; Background</figcaption>
+                </figure>
+                <figure class="bg-white border border-black/5 rounded-sm overflow-hidden shadow-sm">
+                    <img src="assets/kidarch-2-research.jpg" alt="小小建筑师 竞品与信息架构" class="w-full object-cover" loading="lazy" />
+                    <figcaption class="px-4 py-2 text-[11px] text-[#6B6964] border-t border-black/5">02 · 竞品分析 · 设计心路 · 信息架构 / Competitive, Concept &amp; IA</figcaption>
+                </figure>
+                <figure class="bg-white border border-black/5 rounded-sm overflow-hidden shadow-sm">
+                    <img src="assets/kidarch-3-ui.jpg" alt="小小建筑师 UI 高保真" class="w-full object-cover" loading="lazy" />
+                    <figcaption class="px-4 py-2 text-[11px] text-[#6B6964] border-t border-black/5">03 · UI 高保真（老师端 + 儿童端）/ Hi-Fi UI</figcaption>
+                </figure>
+                <figure class="bg-white border border-black/5 rounded-sm overflow-hidden shadow-sm">
+                    <img src="assets/kidarch-4-materials.jpg" alt="小小建筑师 游戏素材与设计反思" class="w-full object-cover" loading="lazy" />
+                    <figcaption class="px-4 py-2 text-[11px] text-[#6B6964] border-t border-black/5">04 · 游戏素材库 · 功能体块 · 设计反思 / Assets, Massing &amp; Reflection</figcaption>
+                </figure>
+            </div>
+
+            <!-- 建模能力 · 3D 白模 -->
+            <div class="mt-8 flex items-center gap-3">
+                <span class="text-[10px] uppercase tracking-[0.25em] text-[#157f74] font-bold whitespace-nowrap">3D Modeling</span>
+                <span class="text-xs text-[#8C8A84] whitespace-nowrap">建模能力 · 白模 · 拖动旋转 / 滚轮拉近放远</span>
+                <div class="flex-grow h-px bg-black/5"></div>
+            </div>
+            <div class="bg-white border border-black/5 rounded-sm overflow-hidden mt-4">
+                <model-viewer src="models/arch-model.glb" alt="建筑模型 3D 白模预览"
+                    camera-controls auto-rotate auto-rotate-delay="0" rotation-per-second="14deg"
+                    loading="eager" interaction-prompt="none"
+                    exposure="0.98" shadow-intensity="1.6" shadow-softness="1"
+                    environment-image="neutral" tone-mapping="neutral"
+                    camera-orbit="25deg 72deg auto" min-field-of-view="18deg"
+                    style="width:100%; height:540px; background:linear-gradient(160deg,#ffffff 0%, #e3e6e1 100%); --poster-color:#eef0ed;">
+                </model-viewer>
+                <div class="px-5 py-3 border-t border-black/5 flex items-center justify-between flex-wrap gap-2">
+                    <span class="text-[11px] text-[#6B6964]">白模预览 · 拖动旋转 · 滚轮拉近放远 · 双指平移 ｜ Rhino 模型（已为网页减面）</span>
+                    <span class="text-[10px] text-[#8C8A84] uppercase tracking-widest">Rhino · SketchUp · Enscape</span>
+                </div>
+            </div>
+        </div>
+
+    </section>
+
+    <script>
+        function switchProject(n) {
+            for (let i = 1; i <= 4; i++) {
+                const panel = document.getElementById('dd-panel-' + i);
+                const tab = document.getElementById('dd-tab-' + i);
+                const nav = document.getElementById('nav-proj-' + i);
+                if (panel) panel.classList.toggle('hidden', i !== n);
+                if (tab) tab.classList.toggle('dd-tab-active', i === n);
+                if (nav) nav.classList.toggle('active', i === n);
+            }
+            const sec = document.getElementById('design-data');
+            if (sec) sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            if (window.lucide) lucide.createIcons();
+        }
+    </script>
+
+    <!-- Footer -->
+    <footer class="w-full px-8 py-6 border-t border-black/5 flex flex-col sm:flex-row justify-between items-center text-[10px] tracking-widest text-[#8C8A84] uppercase z-40 bg-white/50">
+        <div>&copy; 2026 张琳媛 (probablyzz76). Handcrafted using WebGL, Three.js and MediaPipe Hands tracking APIs.</div>
+        <div class="flex gap-6 mt-4 sm:mt-0">
+            <a href="#" class="hover:text-black transition-colors font-semibold">LinkedIn</a>
+            <a href="#" class="hover:text-black transition-colors font-semibold">GitHub</a>
+            <a href="#" class="hover:text-black transition-colors font-semibold">Academic Bio</a>
+        </div>
+    </footer>
+
+    <!-- Three.js + MediaPipe WebGL Voxel Program script -->
+    <script>
+        lucide.createIcons();
+
+        // 1. --- THREE.JS VOXEL ENGINE SETUP ---
+        const container = document.getElementById('voxel-viewport');
+        let scene, camera, renderer, voxelGroup;
+        const voxels = [];
+        
+        // Sparsity remains elegant
+        const voxelCount = 95; 
+        
+        let mouse3D = new THREE.Vector3(0, 0, 0);
+        let raycaster = new THREE.Raycaster();
+        let mouse2D = new THREE.Vector2(-9999, -9999);
+        let isMouseOver = false;
+
+        // Interaction state parameters
+        let currentGesture = 'none'; // 'none' | 'open' | 'fist' | 'vortex' | 'wave'
+        let systemClock = 0;
+        let activeLayoutMode = 'dual-wings'; // Selected procedural archetype on load
+
+        function generateProceduralPositions(mode) {
+            const positions = [];
+            
+            // Setup aesthetic architectural coordinates
+            for (let i = 0; i < voxelCount; i++) {
+                const pos = new THREE.Vector3();
+                
+                if (mode === 'dual-wings') {
+                    // Double Helix / Spiral dynamic wings
+                    const isLeftWing = i < voxelCount / 2;
+                    const spiralAngle = (i / (voxelCount / 2)) * Math.PI * 2.2;
+                    const radius = 130 + (i / (voxelCount / 2)) * 140;
+                    
+                    pos.x = Math.cos(spiralAngle + (isLeftWing ? 0 : Math.PI)) * radius;
+                    pos.y = Math.sin(spiralAngle + (isLeftWing ? 0 : Math.PI)) * (radius * 0.65);
+                    pos.z = (i / voxelCount - 0.5) * 160 + (isLeftWing ? 30 : -30);
+
+                } else if (mode === 'courtyard') {
+                    // Modernist axonometric courtyard pavilion layout (Grid-aligned varying blocks)
+                    const cols = 5;
+                    const rows = 5;
+                    const spacing = 80;
+                    
+                    const colIndex = i % cols;
+                    const rowIndex = Math.floor((i % (cols * rows)) / cols);
+                    const levelIndex = Math.floor(i / (cols * rows));
+                    
+                    // Enclosed courtyard design (hollow center)
+                    const isCenter = colIndex === 2 && rowIndex === 2;
+                    const finalCol = isCenter ? (Math.random() > 0.5 ? 0 : 4) : colIndex;
+                    
+                    pos.x = (finalCol - 2) * spacing + (Math.random() - 0.5) * 20;
+                    pos.y = (rowIndex - 2) * spacing + (Math.random() - 0.5) * 20;
+                    pos.z = levelIndex * 90 - 60 + (Math.sin(finalCol * 1.5) * 40);
+
+                } else if (mode === 'crystal-core') {
+                    // Concentric crystalline core (Dense nucleus branching outwards)
+                    const isCore = i < voxelCount * 0.4;
+                    const u = Math.random();
+                    const vVal = Math.random();
+                    const theta = u * 2.0 * Math.PI;
+                    const phi = Math.acos(2.0 * vVal - 1.0);
+                    
+                    // Dense core radius vs loose outer stars
+                    const radius = isCore ? (45 + Math.random() * 55) : (180 + Math.random() * 150);
+                    
+                    pos.x = radius * Math.sin(phi) * Math.cos(theta);
+                    pos.y = radius * Math.sin(phi) * Math.sin(theta);
+                    pos.z = (Math.random() - 0.5) * (isCore ? 60 : 180);
+
+                } else if (mode === 'horizon-strata') {
+                    // Deconstructed Horizon planes (stratified layers)
+                    const layers = 3;
+                    const layerIndex = i % layers;
+                    const angle = (i / voxelCount) * Math.PI * 2.0;
+                    const radius = 100 + (Math.random() * 200);
+                    
+                    pos.x = Math.cos(angle) * radius;
+                    pos.y = Math.sin(angle) * radius;
+                    pos.z = (layerIndex - 1) * 120 + (Math.random() - 0.5) * 25; // Sharp stratification
+                }
+                
+                positions.push(pos);
+            }
+            return positions;
+        }
+
+        function initThreeJS() {
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color('#F7F6F3');
+
+            camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 1, 2000);
+            camera.position.set(0, 0, 600);
+
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(container.clientWidth, container.clientHeight);
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            container.appendChild(renderer.domElement);
+
+            // Lighting setup for matte look and sharp shadows
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.65);
+            scene.add(ambientLight);
+
+            const dirLight = new THREE.DirectionalLight(0xffffff, 0.75);
+            dirLight.position.set(-150, 450, 250);
+            dirLight.castShadow = true;
+            dirLight.shadow.mapSize.width = 1024;
+            dirLight.shadow.mapSize.height = 1024;
+            dirLight.shadow.camera.near = 0.5;
+            dirLight.shadow.camera.far = 1000;
+            const d = 350;
+            dirLight.shadow.camera.left = -d;
+            dirLight.shadow.camera.right = d;
+            dirLight.shadow.camera.top = d;
+            dirLight.shadow.camera.bottom = -d;
+            scene.add(dirLight);
+
+            // Second soft back fill-light
+            const fillLight = new THREE.DirectionalLight(0xfff8ee, 0.35);
+            fillLight.position.set(250, -150, -100);
+            scene.add(fillLight);
+
+            voxelGroup = new THREE.Group();
+            scene.add(voxelGroup);
+
+            // Voxel geometries of varying scale
+            const geoSizes = [12, 18, 24, 30];
+            const matWhite = new THREE.MeshStandardMaterial({ color: 0xeeeeee, roughness: 0.85, metalness: 0.05 });
+            const matGray = new THREE.MeshStandardMaterial({ color: 0xd9d9d9, roughness: 0.85, metalness: 0.05 });
+            const matRed = new THREE.MeshStandardMaterial({ color: 0xC9463D, roughness: 0.65, metalness: 0.05 });
+
+            // RANDOMLY SELECT THE GEOMETRIC ARCHETYPE FOR UNEXPECTED INITIAL EXPERIENCES
+            const archetypes = ['dual-wings', 'courtyard', 'crystal-core', 'horizon-strata'];
+            activeLayoutMode = archetypes[Math.floor(Math.random() * archetypes.length)];
+            const chosenPositions = generateProceduralPositions(activeLayoutMode);
+
+            // Build voxel array according to the chosen design pattern
+            for (let i = 0; i < voxelCount; i++) {
+                const size = geoSizes[Math.floor(Math.random() * geoSizes.length)];
+                const geometry = new THREE.BoxGeometry(size, size, size);
+                
+                // Color mapping: mostly white/gray with occasional red highlights
+                let material = Math.random() > 0.08 ? (Math.random() > 0.5 ? matWhite : matGray) : matRed;
+                const mesh = new THREE.Mesh(geometry, material);
+                mesh.castShadow = true;
+                mesh.receiveShadow = true;
+
+                // Load procedural aesthetic position
+                const pos = chosenPositions[i];
+                mesh.position.copy(pos);
+                voxelGroup.add(mesh);
+
+                voxels.push({
+                    mesh: mesh,
+                    basePos: pos.clone(),
+                    noiseOffset: Math.random() * 200,
+                    velocity: new THREE.Vector3(0, 0, 0),
+                    origScale: new THREE.Vector3(1, 1, 1),
+                    currentScale: 1.0
+                });
+            }
+
+            // Ground floor shadow receiver plane
+            const floorGeo = new THREE.PlaneGeometry(2000, 2000);
+            const floorMat = new THREE.ShadowMaterial({ opacity: 0.06 });
+            const floorMesh = new THREE.Mesh(floorGeo, floorMat);
+            floorMesh.position.z = -220;
+            floorMesh.receiveShadow = true;
+            scene.add(floorMesh);
+
+            // Print initial easter-egg layout state to Terminal Logger
+            setTimeout(() => {
+                const readableNames = {
+                    'dual-wings': '双翼螺旋 (Dual-Wings Spiral) 🧬',
+                    'courtyard': '围合院落 (Axonometric Courtyard) 🏛️',
+                    'crystal-core': '晶体核心 (Crystalline Nucleus) 💎',
+                    'horizon-strata': '解构地平线 (Horizon Strata) 🌅'
+                };
+                logToTerminal(`Procedural Engine: Rendered surprise layout archetype: [${readableNames[activeLayoutMode]}]`, "success");
+            }, 800);
+
+            window.addEventListener('resize', onWindowResize);
+            container.addEventListener('mousemove', onMouseMove);
+            container.addEventListener('mouseenter', () => isMouseOver = true);
+            container.addEventListener('mouseleave', () => {
+                isMouseOver = false;
+                mouse2D.set(-9999, -9999);
+            });
+        }
+
+        function onMouseMove(event) {
+            const rect = container.getBoundingClientRect();
+            mouse2D.x = ((event.clientX - rect.left) / container.clientWidth) * 2 - 1;
+            mouse2D.y = -((event.clientY - rect.top) / container.clientHeight) * 2 + 1;
+        }
+
+        function onWindowResize() {
+            camera.aspect = container.clientWidth / container.clientHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(container.clientWidth, container.clientHeight);
+        }
+
+        // Project Mouse Coordinate to 3D Space Plane z=0
+        function updateMouseProjection() {
+            if (!isMouseOver) return;
+            raycaster.setFromCamera(mouse2D, camera);
+            const planeZ = new THREE.Plane(new THREE.Vector3(0, 0, 1), 0);
+            raycaster.ray.intersectPlane(planeZ, mouse3D);
+        }
+
+        // Main WebGL Game / Animation Loop
+        function animate() {
+            requestAnimationFrame(animate);
+            systemClock += 0.015; // Smooth clock progression
+
+            updateMouseProjection();
+
+            // Rotate entire scene gently over time
+            voxelGroup.rotation.y = Math.sin(systemClock * 0.05) * 0.15;
+            voxelGroup.rotation.x = Math.cos(systemClock * 0.05) * 0.08;
+
+            const tempVec = new THREE.Vector3();
+
+            for (let i = 0; i < voxels.length; i++) {
+                const v = voxels[i];
+                const mesh = v.mesh;
+
+                // 1. Structural resting coordinates
+                let target = v.basePos.clone();
+                let targetScale = 1.0;
+
+                // Apply slight harmonic noise to simulate space floating
+                const floatOffset = Math.sin(systemClock * 0.8 + v.noiseOffset) * 15;
+                target.z += floatOffset;
+                target.y += Math.cos(systemClock * 0.4 + v.noiseOffset) * 8;
+
+                // 2. Resolve Multi-Gesture states with dynamic scaling and velocity effects
+                if (currentGesture === 'open') {
+                    // Exploded state: Blow outwards from base coordinates with spiral twisting
+                    const direction = v.basePos.clone().normalize();
+                    target.add(direction.multiplyScalar(350));
+                    
+                    // Add slight helical spiral spin
+                    const spin = 0.04;
+                    const rx = target.x;
+                    const ry = target.y;
+                    target.x = rx * Math.cos(spin) - ry * Math.sin(spin);
+                    target.y = rx * Math.sin(spin) + ry * Math.cos(spin);
+                    
+                    targetScale = 1.35; // Expands on blast
+                } else if (currentGesture === 'fist') {
+                    // Cluster state: Clump tightly into the blackhole center with rotating spin
+                    const orbitSpeed = 0.08;
+                    const rx = mesh.position.x;
+                    const ry = mesh.position.y;
+                    target.x = (rx * Math.cos(orbitSpeed) - ry * Math.sin(orbitSpeed)) * 0.25;
+                    target.y = (rx * Math.sin(orbitSpeed) + ry * Math.cos(orbitSpeed)) * 0.25;
+                    target.z *= 0.25;
+                    
+                    targetScale = 0.38; // Condenses heavily
+                } else if (currentGesture === 'vortex') {
+                    // Vortex state: Cylinder cyclone double helix
+                    const radius = 90 + Math.sin(systemClock * 2 + v.noiseOffset) * 25;
+                    // Speed gradient based on z-axis position
+                    const zFactor = (v.basePos.z + 100) / 200;
+                    const speed = systemClock * 5 + zFactor * 4 + v.noiseOffset * 0.5;
+                    
+                    target.x = radius * Math.cos(speed);
+                    target.y = radius * Math.sin(speed);
+                    target.z = v.basePos.z * 1.8 + Math.sin(systemClock * 3 + v.noiseOffset) * 30;
+                    
+                    targetScale = 0.85;
+                } else if (currentGesture === 'wave') {
+                    // Wave state: Generate sinusoidal ripple propagation outward from system core
+                    const distFromCore = Math.sqrt(v.basePos.x * v.basePos.x + v.basePos.y * v.basePos.y);
+                    const wavePhase = systemClock * 6 - distFromCore * 0.025;
+                    
+                    // Displace along Z-axis dynamically
+                    target.z += Math.sin(wavePhase) * 60;
+                    
+                    // Sinusoidal pulsate scaling
+                    targetScale = (Math.sin(wavePhase) * 0.45 + 0.95);
+                }
+
+                // 3. Resolve mouse attraction forces with ripple
+                if (isMouseOver) {
+                    tempVec.copy(mesh.position);
+                    const distToMouse = tempVec.distanceTo(mouse3D);
+                    if (distToMouse < 240) {
+                        // 优化吸附动效：将原本极限 120 吸引力大幅减小至 35，并引入二次方衰减，避免涌入过多方块
+                        const pullFactor = Math.pow(1.0 - (distToMouse / 240), 2) * 35;
+                        const pullDir = new THREE.Vector3().subVectors(mouse3D, mesh.position).normalize();
+                        target.add(pullDir.multiplyScalar(pullFactor));
+                        
+                        // 微调局部大小放大率 (从最大 1.3 降低至更温和的 1.15)
+                        if (currentGesture === 'none') {
+                            targetScale = 1.15 - (distToMouse / 240) * 0.15;
+                        }
+                    }
+                }
+
+                // Smooth position interpolation (Inertial lerping)
+                // 将插值步长从原本的 0.065 调低至 0.035 以达到极其缓慢温和的过渡
+                // 将阻尼系数从 0.84 调整至 0.90，方块运动在接近目标时将具有液体般丝滑的减速，消除了生硬的急冲感
+                v.velocity.add(new THREE.Vector3().subVectors(target, mesh.position).multiplyScalar(0.035));
+                v.velocity.multiplyScalar(0.90); // 阻尼系数：让动画表现温和粘滞，极富系统弹性
+                mesh.position.add(v.velocity);
+
+                // Smooth scale interpolation
+                v.currentScale = THREE.MathUtils.lerp(v.currentScale, targetScale, 0.1);
+                
+                // Adaptive velocity-based scale deformation (motion stretch)
+                const speedSquared = v.velocity.lengthSq();
+                if (speedSquared > 0.1 && currentGesture !== 'fist') {
+                    const stretchFactor = Math.min(1.0 + speedSquared * 0.0001, 1.4);
+                    mesh.scale.set(v.currentScale, v.currentScale, v.currentScale * stretchFactor);
+                    // Align stretching with velocity direction
+                    mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), v.velocity.clone().normalize());
+                } else {
+                    mesh.scale.set(v.currentScale, v.currentScale, v.currentScale);
+                    mesh.rotation.y += 0.012;
+                    mesh.rotation.x += 0.006;
+                }
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        // --- 2. WEBCAM & MEDIAPAPI HANDS ENGINE ---
+        let webcamStream = null;
+        let isWebcamRunning = false;
+        let cameraObj = null;
+
+        const videoElement = document.getElementById('webcam');
+        const videoWrapper = document.getElementById('video-wrapper');
+        const toggleBtn = document.getElementById('camera-toggle');
+        const badge = document.getElementById('gesture-badge');
+        const termScreen = document.getElementById('terminal-screen');
+        const gestureIndicator = document.getElementById('current-gesture-indicator');
+
+        const hands = new Hands({
+            locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
+        });
+
+        hands.setOptions({
+            maxNumHands: 1,
+            modelComplexity: 1,
+            minDetectionConfidence: 0.65,
+            minTrackingConfidence: 0.55
+        });
+
+        hands.onResults(onHandResults);
+
+        function logToTerminal(message, type = 'info') {
+            const p = document.createElement('p');
+            if (type === 'success') p.className = 'text-green-400';
+            else if (type === 'warn') p.className = 'text-yellow-400';
+            p.innerHTML = `&gt; ${message}`;
+            termScreen.appendChild(p);
+            termScreen.scrollTop = termScreen.scrollHeight;
+        }
+
+        function updateUIIndicator(text, colorClass) {
+            gestureIndicator.innerText = text;
+            gestureIndicator.className = colorClass;
+        }
+
+        // Expanded Hand landmarks classifier logic (Fist, Open Hand, Vortex/Point, Wave/Two-Fingers)
+        function onHandResults(results) {
+            if (!isWebcamRunning) return;
+
+            if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+                const landmarks = results.multiHandLandmarks[0];
+                
+                const wrist = landmarks[0];
+                const thumbTip = landmarks[4];
+                const indexTip = landmarks[8];
+                const middleTip = landmarks[12];
+                const ringTip = landmarks[16];
+                const pinkyTip = landmarks[20];
+
+                // Knuckle bases
+                const indexMCP = landmarks[5];
+                const middleMCP = landmarks[9];
+                const ringMCP = landmarks[13];
+                const pinkyMCP = landmarks[17];
+
+                // Calculate distances of tips to wrist point
+                const dIndex = Math.hypot(indexTip.x - wrist.x, indexTip.y - wrist.y);
+                const dMiddle = Math.hypot(middleTip.x - wrist.x, middleTip.y - wrist.y);
+                const dRing = Math.hypot(ringTip.x - wrist.x, ringTip.y - wrist.y);
+                const dPinky = Math.hypot(pinkyTip.x - wrist.x, pinkyTip.y - wrist.y);
+                const dThumb = Math.hypot(thumbTip.x - wrist.x, thumbTip.y - wrist.y);
+                
+                const avgFingerDist = (dIndex + dMiddle + dRing + dPinky) / 4;
+
+                // Determine if specific fingers are extended
+                const indexExtended = indexTip.y < indexMCP.y;
+                const middleExtended = middleTip.y < middleMCP.y;
+                const ringExtended = ringTip.y < ringMCP.y;
+                const pinkyExtended = pinkyTip.y < pinkyMCP.y;
+
+                // 1. Vortex Classifier (Only Index extended)
+                if (indexExtended && !middleExtended && !ringExtended && !pinkyExtended) {
+                    if (currentGesture !== 'vortex') {
+                        currentGesture = 'vortex';
+                        badge.innerText = "Vortex (Point)";
+                        badge.style.backgroundColor = "rgb(168, 85, 247)"; // Purple
+                        updateUIIndicator("☝️ VORTEX AIR CYCLONE", "text-purple-500 font-bold");
+                        logToTerminal("Webcam: INDEX POINT detected. Entering [Vortex Cyclone] spiral matrix.", "success");
+                    }
+                }
+                // 2. Wave Classifier (Index & Middle extended, like Victory sign)
+                else if (indexExtended && middleExtended && !ringExtended && !pinkyExtended) {
+                    if (currentGesture !== 'wave') {
+                        currentGesture = 'wave';
+                        badge.innerText = "Wave (Pulsate)";
+                        badge.style.backgroundColor = "rgb(59, 130, 246)"; // Blue
+                        updateUIIndicator("🌊 WAVE EQUALIZER", "text-blue-500 font-bold");
+                        logToTerminal("Webcam: PEACE/VICTORY detected. Triggering [Ripple Wave] height pulse.", "success");
+                    }
+                }
+                // 3. Fist Classifier (All fingers closed close to wrist)
+                else if (avgFingerDist < 0.23) {
+                    if (currentGesture !== 'fist') {
+                        currentGesture = 'fist';
+                        badge.innerText = "Fist (Cluster)";
+                        badge.style.backgroundColor = "rgb(239, 68, 68)";
+                        updateUIIndicator("✊ FIST FORCE CORE", "text-red-500 font-bold");
+                        logToTerminal("Webcam: CLOSED FIST detected. Gravitational singularity [Fist Clump] engaged.", "warn");
+                    }
+                } 
+                // 4. Open Hand Classifier (All fingers highly extended)
+                else if (avgFingerDist > 0.45) {
+                    if (currentGesture !== 'open') {
+                        currentGesture = 'open';
+                        badge.innerText = "Open Hand (Disperse)";
+                        badge.style.backgroundColor = "rgb(34, 197, 94)";
+                        updateUIIndicator("🖐️ OPEN MATRIX EXPEL", "text-green-500 font-bold");
+                        logToTerminal("Webcam: OPEN HAND detected. Triggering structural force [Dispersal].", "success");
+                    }
+                }
+            } else {
+                if (currentGesture !== 'none') {
+                    currentGesture = 'none';
+                    badge.innerText = "No Gesture";
+                    badge.style.backgroundColor = "rgb(156, 163, 175)";
+                    updateUIIndicator("SPARSE MATRIX NORMAL", "text-[#C9463D]");
+                }
+            }
+        }
+
+        function toggleWebcam() {
+            if (isWebcamRunning) {
+                isWebcamRunning = false;
+                if (cameraObj) {
+                    cameraObj.stop();
+                }
+                if (webcamStream) {
+                    webcamStream.getTracks().forEach(track => track.stop());
+                }
+                videoWrapper.style.width = '0px';
+                videoWrapper.style.height = '0px';
+                videoWrapper.style.opacity = '0';
+                toggleBtn.querySelector('span').innerText = "Start Gesture Camera";
+                toggleBtn.classList.remove('bg-red-600');
+                toggleBtn.classList.add('bg-[#2D2D2A]');
+                badge.innerText = "No Signal";
+                currentGesture = 'none';
+                updateUIIndicator("SPARSE MATRIX NORMAL", "text-[#C9463D]");
+                logToTerminal("Camera feed terminated. Restoring mouse matrix controls.");
+            } else {
+                navigator.mediaDevices.getUserMedia({ video: { width: 320, height: 240 } })
+                .then(stream => {
+                    webcamStream = stream;
+                    videoElement.srcObject = stream;
+                    isWebcamRunning = true;
+                    
+                    videoWrapper.style.width = '140px';
+                    videoWrapper.style.height = '105px';
+                    videoWrapper.style.opacity = '1';
+                    
+                    toggleBtn.querySelector('span').innerText = "Stop Gesture Camera";
+                    toggleBtn.classList.add('bg-red-600');
+                    toggleBtn.classList.remove('bg-[#2D2D2A]');
+                    logToTerminal("Webcam initialized. MediaPipe Hands multi-classification active.", "success");
+
+                    cameraObj = new Camera(videoElement, {
+                        onFrame: async () => {
+                            if (isWebcamRunning) {
+                                await hands.send({ image: videoElement });
+                            }
+                        },
+                        width: 320,
+                        height: 240
+                    });
+                    cameraObj.start();
+                })
+                .catch(err => {
+                    logToTerminal("Camera feed blocked. Please use the simulator console in bottom-left.", "warn");
+                    alert("Camera blocked. Please use the Manual Simulators in the bottom-left corner!");
+                });
+            }
+        }
+
+        // Simulator Fallbacks for immediate testing without cameras
+        function simulateGesture(type) {
+            currentGesture = type;
+            if (type === 'open') {
+                updateUIIndicator("🖐️ OPEN MATRIX EXPEL", "text-green-500 font-bold");
+                logToTerminal("Simulated: OPEN HAND event. Helical blast wave triggered.", "success");
+            } else if (type === 'fist') {
+                updateUIIndicator("✊ FIST FORCE CORE", "text-red-500 font-bold");
+                logToTerminal("Simulated: CLOSED FIST event. Singularity orbit compaction activated.", "warn");
+            } else if (type === 'vortex') {
+                updateUIIndicator("☝️ VORTEX AIR CYCLONE", "text-purple-500 font-bold");
+                logToTerminal("Simulated: POINT GESTURE. Constructing double-helix vertical vortex.", "success");
+            } else if (type === 'wave') {
+                updateUIIndicator("🌊 WAVE EQUALIZER", "text-blue-500 font-bold");
+                logToTerminal("Simulated: PEACE/WAVE. Running sinusoidal grid ripple oscillations.", "success");
+            } else {
+                updateUIIndicator("SPARSE MATRIX NORMAL", "text-[#C9463D]");
+                logToTerminal("Simulated: NORMAL state. Restoring base structures and micro-float.");
+            }
+        }
+
+        // Reconstruct space to standard levels & Re-roll surprising new layout!
+        function triggerAssembleEffect() {
+            currentGesture = 'none';
+            updateUIIndicator("SPARSE MATRIX NORMAL", "text-[#C9463D]");
+
+            // Pick a new, completely different layout archetype on manual trigger
+            const archetypes = ['dual-wings', 'courtyard', 'crystal-core', 'horizon-strata'];
+            const availableModes = archetypes.filter(mode => mode !== activeLayoutMode);
+            activeLayoutMode = availableModes[Math.floor(Math.random() * availableModes.length)];
+            
+            const newPositions = generateProceduralPositions(activeLayoutMode);
+
+            voxels.forEach((v, idx) => {
+                // Update baseline coordinate references so they transition gracefully to the new archetype
+                v.basePos.copy(newPositions[idx]);
+                
+                // Explode from the center outwards to make the transformation satisfyingly visible
+                v.mesh.position.set(0, 0, 0); 
+                v.velocity.set(0, 0, 0);
+            });
+
+            const readableNames = {
+                'dual-wings': '双翼螺旋 (Dual-Wings Spiral) 🧬',
+                'courtyard': '围合院落 (Axonometric Courtyard) 🏛️',
+                'crystal-core': '晶体核心 (Crystalline Nucleus) 💎',
+                'horizon-strata': '解构地平线 (Horizon Strata) 🌅'
+            };
+            
+            logToTerminal(`Procedural Engine: Randomizing matrix... Loaded archetype [${readableNames[activeLayoutMode]}]`, "success");
+        }
+
+
+        // --- 3. PM DETAILED PORTFOLIO METRICS ---
+        const projects = {
+            mirror: {
+                title: "MOOTAIN · AI 情绪疗愈 App",
+                tag: "C端 AIGC · 全栈 Vibe Coding 独立落地",
+                year: "2026",
+                desc: "作为产品负责人，从用户调研出发识别核心情绪场景与痛点，独立完成从 PRD → 原型 → 上线的完整产品闭环。把情绪映射成可交互的 3D 黏土山体地形，结合 Gemini 情感解析与 Three.js/WebGL 渲染，独立做出可运行的 AI 疗愈产品。",
+                metric1: "PRD → 原型 → 上线 完整闭环独立交付",
+                metric2: "React · Three.js · Gemini 全栈",
+                link: "#design-data"
+            },
+            compas: {
+                title: "COMPAS 再犯预测公平性研究",
+                tag: "AI 伦理 · 算法偏见与可解释性",
+                year: "2026",
+                desc: "针对司法 AI 课题，系统拆解 COMPAS 再犯预测算法在不同族群上的偏见来源。从产品视角思考：司法辅助决策系统应如何向使用者透明呈现风险、不确定性与判断依据，并据此输出面向可解释性与信任的界面优化方案。",
+                metric1: "算法偏见系统性分析 + 产品化建议",
+                metric2: "可解释性 / 信任护栏 交互设计",
+                link: "#"
+            },
+            bboard: {
+                title: "智能数字中控大屏",
+                tag: "B端产品设计 · 交通调度场景",
+                year: "2026",
+                desc: "面向交通调度场景，梳理不同角色的操作路径与信息优先级，输出完整 PRD；独立完成高保真交互原型与产品设计说明书，跑通从需求拆解到交付文档的完整 B端设计流程。",
+                metric1: "完整 PRD + 高保真原型 + 设计说明书",
+                metric2: "Figma · Axure · Stitch",
+                link: "#"
+            },
+            kitchen: {
+                title: "K12 儿童建筑启蒙 App",
+                tag: "C端产品设计 · 游戏化学习",
+                year: "2025",
+                desc: "面向 6–12 岁儿童，开展 10+ 场家长 / 教师深度访谈建立用户画像；完成完整信息架构与高保真 Figma 原型，设计游戏化学习、知识闯关与 AI 学建筑模块，并针对儿童认知特点设计可用性测试验证方案。",
+                metric1: "10+ 场家长 / 教师深度访谈",
+                metric2: "完整信息架构 + 高保真 Figma 原型",
+                link: "#"
+            }
+        };
+
+        // Click interaction on voxel objects to unlock portfolios (simulate voxel picking)
+        container.addEventListener('click', () => {
+            const projKeys = ['mirror', 'bboard', 'compas', 'kitchen'];
+            const randomProj = projKeys[Math.floor(Math.random() * projKeys.length)];
+            selectProject(randomProj);
+        });
+
+        function selectProject(id) {
+            const data = projects[id];
+            if (data) {
+                document.getElementById('proj-tag').innerText = data.tag;
+                document.getElementById('proj-year').innerText = data.year;
+                document.getElementById('proj-title').innerText = data.title;
+                document.getElementById('proj-desc').innerText = data.desc;
+                
+                document.getElementById('metric-1').innerText = data.metric1;
+                document.getElementById('metric-2').innerText = data.metric2;
+                document.getElementById('proj-metrics').classList.remove('hidden');
+
+                const link = document.getElementById('proj-link');
+                link.href = data.link;
+                link.classList.remove('hidden');
+
+                logToTerminal(`System loaded project payload: [${data.title}]`, "success");
+            }
+        }
+
+
+        // Window setup execution sequence
+        window.onload = () => {
+            initThreeJS();
+            animate();
+        };
+    </script>
+    <script type="module" src="vendor/model-viewer.min.js"></script>
+</body>
+</html>
