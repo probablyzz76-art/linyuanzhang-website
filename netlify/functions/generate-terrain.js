@@ -32,6 +32,20 @@ const EN2CN = {
   disgust: "嫉妒", contempt: "嫉妒", jealousy: "嫉妒", confusion: "迷茫"
 };
 
+// 每个心情 → 3D 地貌原型（决定挤出的地形结构，不再千篇一律）
+const ARCHETYPE = {
+  "喜悦": "rising_breakers", "兴奋": "mountain_range", "狂喜": "concentric_rings", "热情": "stepped_terraces",
+  "雀跃": "multi_mound_forest", "好奇": "rolling_meadows", "灵感": "multi_mound_forest", "自豪": "stepped_terraces",
+  "平静": "river_valley", "满足": "rolling_meadows", "安宁": "river_valley", "放松": "desert_dunes",
+  "温柔": "rolling_meadows", "感恩": "river_valley", "怀旧": "river_valley", "治愈": "river_valley",
+  "悲伤": "river_valley", "孤独": "lonely_spire", "忧郁": "lonely_spire", "疲惫": "grassland",
+  "失落": "desert_dunes", "空虚": "grassland", "思念": "twin_peaks", "平淡": "grassland",
+  "焦虑": "spiral_labyrinth", "愤怒": "canyon_rift", "恐惧": "canyon_rift", "烦躁": "multi_mound_forest",
+  "压力": "mountain_range", "嫉妒": "multi_mound_forest", "慌乱": "spiral_labyrinth", "不安": "desert_dunes",
+  "平衡": "rolling_meadows", "释然": "rolling_meadows", "期待": "rising_breakers", "坚定": "stepped_terraces",
+  "敬畏": "mountain_range", "迷茫": "spiral_labyrinth", "羞涩": "rolling_meadows", "勇气": "lonely_spire"
+};
+
 const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
 const lerp = (a, b, t) => a + (b - a) * t;
 
@@ -157,6 +171,7 @@ exports.handler = async (event) => {
   const v = clamp(m.valence, 0, 1), a = clamp(m.arousal, 0, 1);
   const base200 = m.prompt_200;
   const extrusion = buildExtrusion(v, a, intensity);
+  extrusion.archetype = ARCHETYPE[moodKey] || "rising_breakers";
   const fallbackKey = v < 0.35 && a < 0.45 ? "snow" : (v < 0.35 && a > 0.7 ? "lava" : "default");
 
   let prompt400 = base200;
