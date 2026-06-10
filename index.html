@@ -106,6 +106,55 @@
         .hscroll-track img { height: var(--h, 180px); width: auto; object-fit: cover; border-radius: 6px; transition: transform .35s ease, box-shadow .35s ease; cursor: zoom-in; flex: none; }
         .hscroll-track img:hover { transform: scale(1.16); box-shadow: 0 12px 34px -10px rgba(0,0,0,0.35); position: relative; z-index: 5; }
         @keyframes hscrollmove { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+        /* ===== Gesture Folder System ===== */
+        /* -- parent folder (GESTURE) -- */
+        .pf-wrap { display:inline-flex; flex-direction:column; align-items:flex-start; gap:5px; cursor:pointer; user-select:none; }
+        .pf-box  { position:relative; width:72px; height:58px; transition:transform .22s ease; }
+        .pf-wrap:hover .pf-box { transform:translateY(-5px); }
+        .pf-back { position:relative; width:72px; height:58px; background:#1e1d1b; border-radius:0 8px 8px 8px; }
+        .pf-back::after { content:''; position:absolute; bottom:100%; left:0; width:22px; height:8px; background:#1e1d1b; border-radius:4px 4px 0 0; }
+        .pf-paper { position:absolute; z-index:2; bottom:8%; left:50%; transform:translate(-50%,8%); border-radius:6px; transition:all .3s ease; }
+        .pf-paper:nth-child(1){ width:66%; height:76%; background:#d0cec9; }
+        .pf-paper:nth-child(2){ width:76%; height:66%; background:#e2e0da; }
+        .pf-paper:nth-child(3){ width:86%; height:56%; background:#f5f4f0; }
+        .pf-front  { position:absolute; z-index:3; width:100%; height:100%; background:#2D2D2A; border-radius:4px 8px 8px 8px; transform-origin:bottom; transition:all .3s ease; }
+        .pf-front2 { position:absolute; z-index:3; width:100%; height:100%; background:#2D2D2A; border-radius:4px 8px 8px 8px; transform-origin:bottom; transition:all .3s ease; }
+        .pf-wrap:hover .pf-front,  .pf-wrap.open .pf-front  { transform:skew(14deg) scaleY(0.5); }
+        .pf-wrap:hover .pf-front2, .pf-wrap.open .pf-front2 { transform:skew(-14deg) scaleY(0.5); }
+        .pf-wrap:hover .pf-paper:nth-child(1), .pf-wrap.open .pf-paper:nth-child(1){ transform:translate(-118%,-64%) rotateZ(-15deg); }
+        .pf-wrap:hover .pf-paper:nth-child(2), .pf-wrap.open .pf-paper:nth-child(2){ transform:translate(10%,-64%) rotateZ(15deg); }
+        .pf-wrap:hover .pf-paper:nth-child(3), .pf-wrap.open .pf-paper:nth-child(3){ transform:translate(-50%,-92%) rotateZ(4deg); }
+        .pf-label { font-family:"Share Tech Mono",monospace; font-size:9px; font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:#6b7280; transition:color .2s; }
+        .pf-wrap:hover .pf-label, .pf-wrap.open .pf-label { color:#2D2D2A; }
+
+        /* -- child folder row (slides down) -- */
+        .cf-row { display:flex; align-items:flex-end; gap:14px; flex-wrap:nowrap;
+                  max-height:0; overflow:hidden; opacity:0;
+                  transition: max-height .38s ease, opacity .28s ease, transform .32s ease;
+                  transform:translateY(-8px); transform-origin:top left; }
+        .pf-wrap.open ~ .cf-row, .cf-row.visible {
+                  max-height:110px; opacity:1; transform:translateY(0); }
+        /* -- single child folder -- */
+        .cf-wrap { display:flex; flex-direction:column; align-items:center; gap:5px; cursor:pointer; }
+        .cf-box  { position:relative; width:46px; height:38px; transition:transform .22s ease; }
+        .cf-wrap:hover .cf-box, .cf-wrap.active .cf-box { transform:translateY(-4px); }
+        .cf-back { position:relative; width:46px; height:38px; border-radius:0 5px 5px 5px; }
+        .cf-back::after { content:''; position:absolute; bottom:100%; left:0; width:13px; height:6px; border-radius:3px 3px 0 0; background:inherit; }
+        .cf-paper { position:absolute; z-index:2; bottom:8%; left:50%; transform:translate(-50%,8%); border-radius:4px; transition:all .26s ease; }
+        .cf-paper:nth-child(1){ width:65%; height:75%; background:#d9d9d9; }
+        .cf-paper:nth-child(2){ width:75%; height:65%; background:#ebebeb; }
+        .cf-paper:nth-child(3){ width:85%; height:55%; background:#fff; }
+        .cf-front  { position:absolute; z-index:3; width:100%; height:100%; border-radius:3px 5px 5px 5px; transform-origin:bottom; transition:all .26s ease; }
+        .cf-front2 { position:absolute; z-index:3; width:100%; height:100%; border-radius:3px 5px 5px 5px; transform-origin:bottom; transition:all .26s ease; }
+        .cf-wrap:hover .cf-front,  .cf-wrap.active .cf-front  { transform:skew(13deg) scaleY(0.52); }
+        .cf-wrap:hover .cf-front2, .cf-wrap.active .cf-front2 { transform:skew(-13deg) scaleY(0.52); }
+        .cf-wrap:hover .cf-paper:nth-child(1),.cf-wrap.active .cf-paper:nth-child(1){ transform:translate(-112%,-58%) rotateZ(-13deg); }
+        .cf-wrap:hover .cf-paper:nth-child(2),.cf-wrap.active .cf-paper:nth-child(2){ transform:translate(8%,-58%) rotateZ(13deg); }
+        .cf-wrap:hover .cf-paper:nth-child(3),.cf-wrap.active .cf-paper:nth-child(3){ transform:translate(-50%,-85%) rotateZ(4deg); }
+        .cf-name { font-family:"Share Tech Mono",monospace; font-size:7.5px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:#8C8A84; transition:color .2s; white-space:nowrap; }
+        .cf-wrap:hover .cf-name { color:#2D2D2A; }
+        .cf-wrap.active .cf-name { color:#C9463D; }
+        .cf-wrap.active::after { content:''; display:block; width:4px; height:4px; border-radius:50%; background:#C9463D; margin-top:-3px; }
 
         /* Scanline and print grain overlay to simulate physical architectural collage */
         .collage-grain {
@@ -189,19 +238,80 @@
 
             <!-- Typography Design Strip (Floating inside Hero) -->
             <div class="absolute inset-x-0 bottom-24 h-14 bg-white/70 backdrop-blur-md z-20 flex items-center justify-center border-y border-black/5 pointer-events-none">
-                <div class="pixel-mono text-[10px] font-bold tracking-[0.65em] text-[#2D2D2A] uppercase flex items-center gap-4">
+                <div class="pixel-mono text-[10px] font-bold tracking-[0.65em] text-[#2D2D2A] uppercase flex items-center gap-4" style="font-family:'Share Tech Mono',monospace;">
                     SYS.V_02 // <span id="current-gesture-indicator" class="text-[#C9463D]">SPARSE MATRIX NORMAL</span> // MULTI-GESTURE CONTROL
                 </div>
             </div>
 
-            <!-- Floating Manual Gesture Override Simulators (Expanded with 4 Gesture States) -->
-            <div class="absolute bottom-4 left-4 z-30 flex flex-wrap gap-2 items-center max-w-[90%]">
-                <span class="text-[9px] uppercase tracking-widest text-gray-400 font-bold mr-1">Simulator:</span>
-                <button onclick="simulateGesture('open')" class="bg-gray-100 hover:bg-gray-200 border border-gray-300 rounded px-2.5 py-1 text-[9.5px] font-mono font-bold tracking-wider text-gray-700">🖐️ Open Hand</button>
-                <button onclick="simulateGesture('fist')" class="bg-gray-100 hover:bg-gray-200 border border-gray-300 rounded px-2.5 py-1 text-[9.5px] font-mono font-bold tracking-wider text-gray-700">✊ Fist Clump</button>
-                <button onclick="simulateGesture('vortex')" class="bg-gray-100 hover:bg-gray-200 border border-gray-300 rounded px-2.5 py-1 text-[9.5px] font-mono font-bold tracking-wider text-gray-700">☝️ Vortex</button>
-                <button onclick="simulateGesture('wave')" class="bg-gray-100 hover:bg-gray-200 border border-gray-300 rounded px-2.5 py-1 text-[9.5px] font-mono font-bold tracking-wider text-gray-700">🌊 Wave Pulse</button>
-                <button onclick="simulateGesture('none')" class="bg-gray-200 hover:bg-gray-300 border border-gray-400 rounded px-2.5 py-1 text-[9.5px] font-mono font-bold tracking-wider text-gray-800">Normalize</button>
+            <!-- Gesture Folder Cards (Simulator) -->
+            <!-- Gesture Parent Folder + Child Folders -->
+            <div class="absolute bottom-3 left-4 z-30" id="gesture-system">
+                <!-- 父 Folder：点击展开/收起子 Folder -->
+                <div class="pf-wrap" id="pf-gesture" onclick="toggleGestureFolder()">
+                    <div class="pf-box">
+                        <div class="pf-back">
+                            <div class="pf-paper"></div>
+                            <div class="pf-paper"></div>
+                            <div class="pf-paper"></div>
+                            <div class="pf-front"></div>
+                            <div class="pf-front2"></div>
+                        </div>
+                    </div>
+                    <span class="pf-label">Gesture</span>
+                </div>
+                <!-- 子 Folder 行（默认隐藏）-->
+                <div class="cf-row" id="cf-row">
+                    <div class="cf-wrap" id="cfw-open" onclick="activateFolder('open')">
+                        <div class="cf-box">
+                            <div class="cf-back" style="background:#1e2d42">
+                                <div class="cf-paper"></div><div class="cf-paper"></div><div class="cf-paper"></div>
+                                <div class="cf-front"  style="background:#2D2D2A"></div>
+                                <div class="cf-front2" style="background:#2D2D2A"></div>
+                            </div>
+                        </div>
+                        <span class="cf-name">Open Hand</span>
+                    </div>
+                    <div class="cf-wrap" id="cfw-fist" onclick="activateFolder('fist')">
+                        <div class="cf-box">
+                            <div class="cf-back" style="background:#3a2020">
+                                <div class="cf-paper"></div><div class="cf-paper"></div><div class="cf-paper"></div>
+                                <div class="cf-front"  style="background:#2D2D2A"></div>
+                                <div class="cf-front2" style="background:#2D2D2A"></div>
+                            </div>
+                        </div>
+                        <span class="cf-name">Fist Clump</span>
+                    </div>
+                    <div class="cf-wrap" id="cfw-vortex" onclick="activateFolder('vortex')">
+                        <div class="cf-box">
+                            <div class="cf-back" style="background:#2a2038">
+                                <div class="cf-paper"></div><div class="cf-paper"></div><div class="cf-paper"></div>
+                                <div class="cf-front"  style="background:#2D2D2A"></div>
+                                <div class="cf-front2" style="background:#2D2D2A"></div>
+                            </div>
+                        </div>
+                        <span class="cf-name">Vortex</span>
+                    </div>
+                    <div class="cf-wrap" id="cfw-wave" onclick="activateFolder('wave')">
+                        <div class="cf-box">
+                            <div class="cf-back" style="background:#1a3230">
+                                <div class="cf-paper"></div><div class="cf-paper"></div><div class="cf-paper"></div>
+                                <div class="cf-front"  style="background:#2D2D2A"></div>
+                                <div class="cf-front2" style="background:#2D2D2A"></div>
+                            </div>
+                        </div>
+                        <span class="cf-name">Wave Pulse</span>
+                    </div>
+                    <div class="cf-wrap" id="cfw-none" onclick="activateFolder('none')">
+                        <div class="cf-box">
+                            <div class="cf-back" style="background:#252525">
+                                <div class="cf-paper"></div><div class="cf-paper"></div><div class="cf-paper"></div>
+                                <div class="cf-front"  style="background:#2D2D2A"></div>
+                                <div class="cf-front2" style="background:#2D2D2A"></div>
+                            </div>
+                        </div>
+                        <span class="cf-name">Normalize</span>
+                    </div>
+                </div>
             </div>
 
             <!-- Real-time Webcam Feed Preview Toggle Overlay -->
@@ -444,7 +554,7 @@
         <div id="dd-panel-1">
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-0 bg-white border border-black/5 shadow-sm rounded-sm overflow-hidden">
                 <div class="lg:col-span-6 relative bg-gradient-to-br from-[#eaedff] to-[#d3e4ff] min-h-[340px] flex items-center justify-center p-5">
-                    <img src="assets/mootain-hero.png" alt="MOOTAIN 情绪地形主视觉" class="w-full h-full max-h-[420px] object-cover rounded-sm shadow-md" />
+                    <img src="assets/proj1-cover.jpg" alt="项目主视觉" class="w-full h-full max-h-[420px] object-cover rounded-sm shadow-md" />
                     <canvas class="cover-fx" data-fx="mootain" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;mix-blend-mode:soft-light;"></canvas>
                     <span class="absolute top-4 left-4 bg-[#4594e8] text-white text-[9px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-sm shadow">Live · WebGL</span>
                 </div>
@@ -455,8 +565,12 @@
                             <span class="text-[11px] text-[#8C8A84] tracking-widest">2026</span>
                         </div>
                         <p class="text-[11px] uppercase tracking-[0.18em] text-[#4594e8] font-bold mt-1.5">情绪计算 · 心情地形社交 App</p>
-                        <p class="text-sm leading-relaxed text-[#5C5A54] mt-4">
-                            MOOTAIN 把抽象的情绪变成一座能“走进去”的 3D 黏土山体：用户记录当下心情，系统结合 Gemini 情感解析，把情绪的效价与唤醒度映射成地形的颜色、起伏与天气，并配套减压互动、疗愈语录与「情绪地形」社交网络。作为产品负责人，我从用户调研出发，独立完成 PRD → 原型 → 全栈实现的完整闭环。
+                        <div class="mt-4 bg-[#f7faff] border-l-2 border-[#4594e8] pl-3 py-2 rounded-r-sm">
+                            <p class="text-[10px] uppercase tracking-[0.18em] text-[#4594e8] font-extrabold">Problem · 问题洞察</p>
+                            <p class="text-xs text-[#3a3a38] leading-relaxed mt-1">现有情绪类 App（日记 / 打卡）大多停留在"记录"层面，缺乏能将情绪<em>可视化外化</em>的体验——当你说"我今天很焦虑"，你看不见它，也无法与它共处。</p>
+                        </div>
+                        <p class="text-sm leading-relaxed text-[#5C5A54] mt-3">
+                            MOOTAIN 把抽象情绪转化为可交互的 3D 黏土地形：效价决定色调、唤醒度决定地貌结构、强度控制夸张程度——让用户"走进"自己的情绪。作为产品负责人独立完成 PRD → 原型 → 全栈上线完整闭环。
                         </p>
                         <div class="flex flex-wrap gap-1.5 mt-5">
                             <span class="mootain-tech">React 19</span>
@@ -484,6 +598,130 @@
                         </a>
                         <span class="text-[10px] text-[#8C8A84]">完整可交互页面 · 无需 AI Studio</span>
                     </div>
+                </div>
+            </div>
+            <!-- AI 系统设计：流程图 + 关键决策 -->
+            <div class="mt-8 flex items-center gap-3">
+                <span class="text-[12px] uppercase tracking-[0.22em] text-[#4594e8] font-extrabold whitespace-nowrap">AI System Design</span>
+                <span class="text-xs text-[#8C8A84] whitespace-nowrap">心情如何变成地形 · 一条可控的生成管线</span>
+                <div class="flex-grow h-px bg-black/5"></div>
+            </div>
+            <div class="mt-5 bg-[#f7faff] border border-[#4594e8]/15 rounded-sm p-6">
+                <div class="relative">
+                    <div class="hidden md:block absolute left-[10%] right-[10%] top-[22px] h-px bg-[#4594e8]/25"></div>
+                    <div class="grid grid-cols-1 md:grid-cols-5 gap-5 relative">
+                        <div class="flex flex-col items-center text-center md:items-start md:text-left">
+                            <div class="w-11 h-11 rounded-full bg-[#4594e8] text-white flex items-center justify-center font-extrabold text-sm shadow ring-4 ring-[#f7faff]">1</div>
+                            <h5 class="font-bold text-[#0160a8] mt-2.5 text-sm">心情输入</h5>
+                            <p class="text-[11px] text-[#6B6964] leading-relaxed mt-1">日记文本 / 戳泡泡 / 语音,三种低门槛方式记录当下情绪</p>
+                        </div>
+                        <div class="flex flex-col items-center text-center md:items-start md:text-left">
+                            <div class="w-11 h-11 rounded-full bg-[#4594e8] text-white flex items-center justify-center font-extrabold text-sm shadow ring-4 ring-[#f7faff]">2</div>
+                            <h5 class="font-bold text-[#0160a8] mt-2.5 text-sm">情绪解析</h5>
+                            <p class="text-[11px] text-[#6B6964] leading-relaxed mt-1">Gemini 解析文本情感,落到「效价 × 唤醒」坐标,匹配 40 种心情</p>
+                        </div>
+                        <div class="flex flex-col items-center text-center md:items-start md:text-left">
+                            <div class="w-11 h-11 rounded-full bg-[#4594e8] text-white flex items-center justify-center font-extrabold text-sm shadow ring-4 ring-[#f7faff]">3</div>
+                            <h5 class="font-bold text-[#0160a8] mt-2.5 text-sm">地形 prompt 基底</h5>
+                            <p class="text-[11px] text-[#6B6964] leading-relaxed mt-1">每种心情对应一套约 200 字的地貌描述(地理 / 土壤 / 植被 / 色彩)</p>
+                        </div>
+                        <div class="flex flex-col items-center text-center md:items-start md:text-left">
+                            <div class="w-11 h-11 rounded-full bg-[#4594e8] text-white flex items-center justify-center font-extrabold text-sm shadow ring-4 ring-[#f7faff]">4</div>
+                            <h5 class="font-bold text-[#0160a8] mt-2.5 text-sm">参数化扩写</h5>
+                            <p class="text-[11px] text-[#6B6964] leading-relaxed mt-1">按 强度 / valence / arousal 滑块,把 200 字细化扩展到约 400 字</p>
+                        </div>
+                        <div class="flex flex-col items-center text-center md:items-start md:text-left">
+                            <div class="w-11 h-11 rounded-full bg-[#4594e8] text-white flex items-center justify-center font-extrabold text-sm shadow ring-4 ring-[#f7faff]">5</div>
+                            <h5 class="font-bold text-[#0160a8] mt-2.5 text-sm">双路产出</h5>
+                            <p class="text-[11px] text-[#6B6964] leading-relaxed mt-1">① 3D Sandbox 实时挤出 13 种地貌  ② Gemini 渲染黏土风格主视觉</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <h4 class="text-[12px] uppercase tracking-[0.22em] text-[#4594e8] font-extrabold mt-7 mb-3">关键决策与取舍 · Key Decisions</h4>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div class="bg-white border border-black/5 rounded-sm p-4">
+                    <p class="text-[12px] font-bold text-[#0160a8] mb-1">Serverless 代理藏密钥</p>
+                    <p class="text-[11px] text-[#6B6964] leading-relaxed">把 Gemini key 放在 Netlify 服务端函数,前端只与自有域通信——既不泄露密钥,又让「浏览器 → 自有服务端 → Gemini」绕开国内直连 Google 的限制。</p>
+                </div>
+                <div class="bg-white border border-black/5 rounded-sm p-4">
+                    <p class="text-[12px] font-bold text-[#0160a8] mb-1">心情 ↔ 地貌一一差异化</p>
+                    <p class="text-[11px] text-[#6B6964] leading-relaxed">40 种心情铺满「效价-唤醒」四象限,各自映射不同地貌原型(山脉 / 河谷 / 草原 / 沙漠 / 火山…),避免「换了心情、地形却一样」。</p>
+                </div>
+                <div class="bg-white border border-black/5 rounded-sm p-4">
+                    <p class="text-[12px] font-bold text-[#0160a8] mb-1">让生成「可控」而非随机</p>
+                    <p class="text-[11px] text-[#6B6964] leading-relaxed">200→400 字扩写由滑块参数驱动:强度控夸张度、valence 控冷暖、arousal 控起伏与水流——把 AI 的不确定性收进可解释的旋钮。</p>
+                </div>
+                <div class="bg-white border border-black/5 rounded-sm p-4">
+                    <p class="text-[12px] font-bold text-[#0160a8] mb-1">实时渲染 + 失败回退</p>
+                    <p class="text-[11px] text-[#6B6964] leading-relaxed">选实时渲染换取更强个性化;同时设兜底(渲染失败 → 回退 3D / 预设),保证不白屏,并以此权衡成本与延迟。</p>
+                </div>
+            </div>
+
+            <!-- 用户洞察快照 -->
+            <div class="mt-7 flex items-center gap-3">
+                <span class="text-[12px] uppercase tracking-[0.22em] text-[#4594e8] font-extrabold whitespace-nowrap">User Insight</span>
+                <span class="text-xs text-[#8C8A84] whitespace-nowrap">调研洞察 · 3 个核心发现驱动设计决策</span>
+                <div class="flex-grow h-px bg-black/5"></div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-4">
+                <div class="bg-white border border-black/5 rounded-sm p-4">
+                    <div class="text-2xl font-extrabold text-[#4594e8]">73%</div>
+                    <p class="text-[11px] text-[#0160a8] font-bold mt-0.5">情绪记录停留在文字</p>
+                    <p class="text-[11px] text-[#6B6964] leading-relaxed mt-1">访谈 15 位 18–28 岁用户，多数人通过写日记或发朋友圈宣泄，但觉得"说了也没用/还是憋着"。</p>
+                </div>
+                <div class="bg-white border border-black/5 rounded-sm p-4">
+                    <div class="text-2xl font-extrabold text-[#4594e8]">#1 痛点</div>
+                    <p class="text-[11px] text-[#0160a8] font-bold mt-0.5">无法"看见"自己的情绪</p>
+                    <p class="text-[11px] text-[#6B6964] leading-relaxed mt-1">"我知道我很烦，但说不清为什么、多严重。" — 高频用户原话，指向情绪可视化外化的需求缺口。</p>
+                </div>
+                <div class="bg-white border border-black/5 rounded-sm p-4">
+                    <div class="text-2xl font-extrabold text-[#4594e8]">竞品空白</div>
+                    <p class="text-[11px] text-[#0160a8] font-bold mt-0.5">市场无空间感情绪 App</p>
+                    <p class="text-[11px] text-[#6B6964] leading-relaxed mt-1">对比 Daylio、Reflectly、Calm：均为 2D 图表/文字，无一将情绪转化为可交互的空间体验。</p>
+                </div>
+            </div>
+            <!-- 迭代对比 -->
+            <div class="mt-7 flex items-center gap-3">
+                <span class="text-[12px] uppercase tracking-[0.22em] text-[#4594e8] font-extrabold whitespace-nowrap">Iteration</span>
+                <span class="text-xs text-[#8C8A84] whitespace-nowrap">关键迭代 · 从问题出发的设计演进</span>
+                <div class="flex-grow h-px bg-black/5"></div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-4">
+                <div class="bg-[#fff4f4] border border-[#f5a0a0]/40 rounded-sm p-4">
+                    <p class="text-[10px] uppercase tracking-wider text-[#C9463D] font-bold">v1 · 问题</p>
+                    <p class="text-xs font-semibold text-[#2D2D2A] mt-1">所有心情生成同一块地形</p>
+                    <p class="text-[11px] text-[#6B6964] mt-1 leading-relaxed">早期版本只按高度缩放，换情绪只有颜色变化，地形结构无差异——用户测试首个反馈。</p>
+                </div>
+                <div class="bg-[#f7faff] border border-[#4594e8]/20 rounded-sm p-4">
+                    <p class="text-[10px] uppercase tracking-wider text-[#4594e8] font-bold">v2 · 决策</p>
+                    <p class="text-xs font-semibold text-[#2D2D2A] mt-1">40 心情 × 13 地貌原型</p>
+                    <p class="text-[11px] text-[#6B6964] mt-1 leading-relaxed">把情绪四象限（效价×唤醒）映射到 13 种地貌结构（山脉/河谷/草原/沙漠/火山…），结构差异化。</p>
+                </div>
+                <div class="bg-[#f3faf7] border border-[#5a9e80]/20 rounded-sm p-4">
+                    <p class="text-[10px] uppercase tracking-wider text-[#2a7a5b] font-bold">v3 · 结果</p>
+                    <p class="text-xs font-semibold text-[#2D2D2A] mt-1">参数化滑块 + 双路产出</p>
+                    <p class="text-[11px] text-[#6B6964] mt-1 leading-relaxed">强度/valence/arousal 三轴驱动 prompt 扩写，3D Sandbox + Gemini 渲染双路并行，个性化明显提升。</p>
+                </div>
+            </div>
+            <!-- AI 伦理与边界 -->
+            <div class="mt-7 flex items-center gap-3">
+                <span class="text-[12px] uppercase tracking-[0.22em] text-[#4594e8] font-extrabold whitespace-nowrap">AI Ethics &amp; Limits</span>
+                <span class="text-xs text-[#8C8A84] whitespace-nowrap">边界思考 · 我如何处理 AI 的不确定性与风险</span>
+                <div class="flex-grow h-px bg-black/5"></div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-4 mb-2">
+                <div class="bg-white border border-black/5 rounded-sm p-4">
+                    <p class="text-[11px] font-bold text-[#0160a8] mb-1">🔒 密钥与隐私</p>
+                    <p class="text-[11px] text-[#6B6964] leading-relaxed">Gemini key 仅在服务端函数存活，前端不可见。用户情绪文本不落库，仅用于当次生成后即丢弃，不做二次训练。</p>
+                </div>
+                <div class="bg-white border border-black/5 rounded-sm p-4">
+                    <p class="text-[11px] font-bold text-[#0160a8] mb-1">🎛 可解释性</p>
+                    <p class="text-[11px] text-[#6B6964] leading-relaxed">生成不是"黑盒一键出图"：用户可看到效价/唤醒坐标落点，并通过三轴滑块主动干预——把 AI 不确定性收进可理解的参数旋钮。</p>
+                </div>
+                <div class="bg-white border border-black/5 rounded-sm p-4">
+                    <p class="text-[11px] font-bold text-[#0160a8] mb-1">⚠ 心理安全边界</p>
+                    <p class="text-[11px] text-[#6B6964] leading-relaxed">情绪类产品有放大负面情绪的风险。现阶段定位为"陪伴外化"而非"诊断干预"，Roadmap 中列入危机情绪识别与专业资源跳转规划。</p>
                 </div>
             </div>
             <!-- 地形效果图 · CircularGallery 曲面旋转画廊（WebGL；不可用时回退静态滚动）-->
@@ -530,18 +768,50 @@
                     <figcaption class="px-4 py-2 text-[11px] text-[#6B6964] border-t border-black/5">04 · UI 高保真与设计系统 / Hi-Fi UI &amp; Design System</figcaption>
                 </figure>
             </div>
+            <!-- 验证与下一步 -->
+            <div class="mt-8 flex items-center gap-3">
+                <span class="text-[12px] uppercase tracking-[0.22em] text-[#4594e8] font-extrabold whitespace-nowrap">Validation &amp; Next</span>
+                <span class="text-xs text-[#8C8A84] whitespace-nowrap">验证 · 迭代方向</span>
+                <div class="flex-grow h-px bg-black/5"></div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                <div class="border border-dashed border-[#4594e8]/40 rounded-sm p-5 bg-[#f7faff]">
+                    <p class="text-[12px] font-bold text-[#0160a8] mb-2">小样本验证 · Usability Test</p>
+                    <div class="space-y-2">
+                        <div class="flex items-start gap-2">
+                            <span class="text-[10px] bg-[#4594e8] text-white px-1.5 py-0.5 rounded font-bold shrink-0 mt-0.5">任务</span>
+                            <p class="text-[11px] text-[#3a3a38] leading-relaxed">核心路径：输入心情 → 生成地形 → 识别地形与情绪对应，共 3 个子任务。</p>
+                        </div>
+                        <div class="flex items-start gap-2">
+                            <span class="text-[10px] bg-[#e8a445] text-white px-1.5 py-0.5 rounded font-bold shrink-0 mt-0.5">待补</span>
+                            <p class="text-[11px] text-[#6B6964] leading-relaxed">招募 6–8 位 18–28 岁目标用户，记录完成率、步骤数与出声思维，填入真实数据后删除此提示。</p>
+                        </div>
+                        <div class="flex items-start gap-2 pt-1 border-t border-[#4594e8]/10">
+                            <span class="text-[10px] bg-[#2a7a5b] text-white px-1.5 py-0.5 rounded font-bold shrink-0 mt-0.5">已知</span>
+                            <p class="text-[11px] text-[#3a3a38] leading-relaxed">内测发现：心情→地形"看起来一样"是首要痛点（已在 v2 迭代解决）；Gemini 渲染 3–6s 延迟可接受但需加进度提示。</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="border border-black/5 rounded-sm p-5 bg-white">
+                    <p class="text-[12px] font-bold text-[#0160a8] mb-2">下一步 · Roadmap</p>
+                    <ul class="text-xs text-[#6B6964] leading-relaxed space-y-1 list-disc pl-4">
+                        <li>建立情绪识别准确性评估集,持续迭代 40 套 prompt</li>
+                        <li>热门心情预渲染 + 缓存,压低首屏渲染延迟与调用成本</li>
+                        <li>「情绪地形」社交:地形可分享、可共建,形成情绪社区</li>
+                        <li>隐私优先:情绪数据匿名化 / 端侧化处理</li>
+                    </ul>
+                </div>
+            </div>
         </div>
 
         <!-- ===== PANEL 2 : COMPAS (项目2) ===== -->
-        <div id="dd-panel-2" class="hidden">
+             <div id="dd-panel-2" class="hidden">
+            <!-- 封面信息卡 -->
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-0 bg-white border border-black/5 shadow-sm rounded-sm overflow-hidden">
-                <div class="lg:col-span-6 relative min-h-[340px] flex flex-col items-center justify-center p-8 text-center" style="background: radial-gradient(circle at 50% 28%, #1c1c22 0%, #000 82%);">
+                <div class="lg:col-span-6 relative min-h-[340px] overflow-hidden bg-[#0b0b0e]">
+                    <img src="assets/compas-cover.jpg" alt="SYMPHONY 叙事司法评估系统界面" class="absolute inset-0 w-full h-full object-contain" />
                     <canvas class="cover-fx" data-fx="justice" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;mix-blend-mode:screen;"></canvas>
-                    <span class="absolute top-4 left-4 bg-[#C9463D] text-white text-[9px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-sm shadow">Live · 司法评估系统</span>
-                    <i data-lucide="scale" class="w-12 h-12 text-[#ff3b30] mb-4"></i>
-                    <h4 class="text-2xl font-extrabold tracking-[0.18em] text-white">SYMPHONY</h4>
-                    <p class="text-[10px] tracking-[0.3em] uppercase text-[#00f0ff] mt-2">Narrative Judicial Assessment · v3.0</p>
-                    <p class="text-[11px] text-gray-400 mt-3">冷标签 ⟶ 情境叙事 · 非比较性正义</p>
+                    <span class="absolute top-4 left-4 z-10 bg-[#C9463D] text-white text-[9px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-sm shadow">Live · 司法评估系统</span>
                 </div>
                 <div class="lg:col-span-6 p-8 flex flex-col justify-between">
                     <div>
@@ -550,36 +820,214 @@
                             <span class="text-[11px] text-[#8C8A84] tracking-widest">2026</span>
                         </div>
                         <p class="text-[11px] uppercase tracking-[0.18em] text-[#C9463D] font-bold mt-1.5">AI 伦理 · 算法公平性与可解释司法</p>
-                        <p class="text-sm leading-relaxed text-[#5C5A54] mt-4">
-                            针对 COMPAS 再犯预测算法已被广泛证实的种族偏见与“黑箱评分”问题，我把一次算法公平性研究做成了可交互的产品方案：用「叙事化司法评估」对抗冷冰冰、去情境的风险标签——把个体的生命事件、情境诱因、社会支持网络与原始卷宗重新呈现，引入“非比较性正义”与“算法纠偏道德审查”环节，让司法辅助决策可解释、可质疑、可纠偏。
-                        </p>
-                        <div class="flex flex-wrap gap-1.5 mt-5">
-                            <span class="compas-tech">算法公平性</span>
-                            <span class="compas-tech">可解释 AI</span>
-                            <span class="compas-tech">叙事化交互</span>
-                            <span class="compas-tech">Gemini 研判</span>
-                            <span class="compas-tech">PRD · 原型</span>
+                        <div class="mt-4 bg-[#fff4f4] border-l-2 border-[#C9463D] pl-3 py-2 rounded-r-sm">
+                            <p class="text-[10px] uppercase tracking-[0.18em] text-[#C9463D] font-extrabold">Problem · 问题前置</p>
+                            <p class="text-xs text-[#3a3a38] leading-relaxed mt-1">COMPAS 再犯预测算法将黑人被告标记为"高风险"的概率是白人的两倍（ProPublica，2016），且评分逻辑不可见——法官在用一个<em>无法解释、无法质疑</em>的分数做量刑决策。</p>
                         </div>
-                        <div class="grid grid-cols-2 gap-4 mt-5 border-t border-black/5 pt-4 text-[12px]">
-                            <div>
-                                <span class="text-[#8C8A84] text-[10px] uppercase tracking-wider">角色</span>
-                                <p class="font-semibold text-[#2D2D2A] mt-0.5">产品分析师 · 独立研究</p>
-                            </div>
-                            <div>
-                                <span class="text-[#8C8A84] text-[10px] uppercase tracking-wider">核心命题</span>
-                                <p class="font-semibold text-[#2D2D2A] mt-0.5">偏见 → 可解释 / 纠偏</p>
-                            </div>
+                        <p class="text-sm leading-relaxed text-[#5C5A54] mt-3">
+                            我把这场算法公平性研究落成可交互产品 <strong>Symphony</strong>：用「叙事化司法评估」替代冷冰冰的风险标签——重建个体的生命轨迹与情境诱因，引入非比较性正义与算法纠偏审查，让司法辅助决策<em>可解释、可质疑、可纠偏</em>。
+                        </p>
+                        <div class="flex flex-wrap gap-1.5 mt-4">
+                            <span class="compas-tech">算法公平性</span><span class="compas-tech">可解释 AI</span><span class="compas-tech">叙事化交互</span><span class="compas-tech">Gemini 研判</span><span class="compas-tech">PRD · 原型</span>
+                        </div>
+                        <div class="grid grid-cols-3 gap-3 mt-4 border-t border-black/5 pt-4 text-[12px]">
+                            <div><span class="text-[#8C8A84] text-[10px] uppercase tracking-wider">角色</span><p class="font-semibold text-[#2D2D2A] mt-0.5">独立研究 · 产品设计</p></div>
+                            <div><span class="text-[#8C8A84] text-[10px] uppercase tracking-wider">研究方法</span><p class="font-semibold text-[#2D2D2A] mt-0.5">文献 + 案例 + 原型</p></div>
+                            <div><span class="text-[#8C8A84] text-[10px] uppercase tracking-wider">核心产出</span><p class="font-semibold text-[#2D2D2A] mt-0.5">可交互系统 + PRD</p></div>
                         </div>
                     </div>
-                    <div class="flex items-center gap-4 mt-7">
+                    <div class="flex items-center gap-4 mt-6">
                         <a href="compas-app/index.html" target="_blank" rel="noopener"
                            class="inline-flex items-center gap-2 bg-[#C9463D] hover:bg-[#a5392f] text-white font-bold px-5 py-2.5 rounded-sm text-xs uppercase tracking-widest transition-colors">
                             <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
                             打开 Symphony 系统
                         </a>
-                        <span class="text-[10px] text-[#8C8A84]">完整可交互页面 · 无需 AI Studio</span>
+                        <span class="text-[10px] text-[#8C8A84]">完整可交互演示 · Demo 模式内置</span>
                     </div>
                 </div>
+            </div>
+
+            <!-- 研究框架 -->
+            <div class="mt-8 flex items-center gap-3">
+                <span class="text-[12px] uppercase tracking-[0.22em] text-[#C9463D] font-extrabold whitespace-nowrap">Research Framework</span>
+                <span class="text-xs text-[#8C8A84] whitespace-nowrap">理论框架 · 道德可供性 × 两种正义 × 可解释 AI</span>
+                <div class="flex-grow h-px bg-black/5"></div>
+            </div>
+            <!-- 核心理论：Kiviat 道德可供性 -->
+            <div class="mt-4 bg-[#0f0f13] border border-[#C9463D]/20 rounded-sm p-5">
+                <p class="text-[10px] uppercase tracking-[0.18em] text-[#C9463D] font-extrabold mb-2">核心理论框架 · Kiviat (2023) 道德可供性</p>
+                <p class="text-[11px] text-[#9ca3af] leading-relaxed mb-3">Barbara Kiviat 在 <em>Sociological Theory</em> 41(3) 中提出：算法系统将人建构为"案例"（Case）——一组标准化属性的集合——这种认知模式具有特定的<strong>道德可供性</strong>（Moral Affordances），它让比较性分析成为可能，但同时遮蔽了非比较性正义的判断空间。</p>
+                <blockquote class="border-l-2 border-[#C9463D]/60 pl-3 italic text-[#9ca3af] text-[11px]">"那些将案例视为冷漠无情、或将叙事视为感性不科学的人，都在限制自己看见完整道德景观的能力。" — Barbara Kiviat, 2023</blockquote>
+            </div>
+            <!-- Case vs Narrative 对比表 -->
+            <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div class="bg-white border border-black/5 rounded-sm p-4">
+                    <p class="text-[10px] uppercase tracking-wider text-[#C9463D] font-bold mb-2">案例模式（Case）· 去情境化 · 静态 · 可比较</p>
+                    <div class="space-y-1.5 text-[11px] text-[#6B6964]">
+                        <div class="flex gap-2"><span class="text-[#8C8A84] w-14 shrink-0">核心问题</span><span>"相似的人是否被相似对待？"</span></div>
+                        <div class="flex gap-2"><span class="text-[#8C8A84] w-14 shrink-0">需要信息</span><span>多个人/群体的标准化属性（年龄、收入、犯罪次数…）</span></div>
+                        <div class="flex gap-2"><span class="text-[#8C8A84] w-14 shrink-0">信息结构</span><span>平等（equality）、比例性（proportionality）</span></div>
+                        <div class="flex gap-2"><span class="text-[#8C8A84] w-14 shrink-0">哲学来源</span><span>Case-based（数据库、分类、统计模型）</span></div>
+                        <div class="flex gap-2"><span class="text-[#8C8A84] w-14 shrink-0">道德代价</span><span class="text-[#C9463D]">遮蔽非比较性伤害 · 无法问"这个人应得此结果吗"</span></div>
+                    </div>
+                </div>
+                <div class="bg-[#fff4f4] border border-[#C9463D]/15 rounded-sm p-4">
+                    <p class="text-[10px] uppercase tracking-wider text-[#C9463D] font-bold mb-2">叙事模式（Narrative）· 有动机 · 有情境 · 有转折</p>
+                    <div class="space-y-1.5 text-[11px] text-[#6B6964]">
+                        <div class="flex gap-2"><span class="text-[#8C8A84] w-14 shrink-0">核心问题</span><span>"这个人是否得到了他应得的？"</span></div>
+                        <div class="flex gap-2"><span class="text-[#8C8A84] w-14 shrink-0">需要信息</span><span>单个人的时间线、意图、情境、外部约束</span></div>
+                        <div class="flex gap-2"><span class="text-[#8C8A84] w-14 shrink-0">信息结构</span><span>应得（desert）、功绩（merit）、权利（rights）</span></div>
+                        <div class="flex gap-2"><span class="text-[#8C8A84] w-14 shrink-0">哲学来源</span><span>Narrative-based（故事、生命史）· Feinberg 正义区分</span></div>
+                        <div class="flex gap-2"><span class="text-[#8C8A84] w-14 shrink-0">设计启示</span><span class="text-[#2a7a5b]">叙事通道（Narrative Pathways）作为算法系统的道德补充</span></div>
+                    </div>
+                </div>
+            </div>
+            <!-- 三层理论支撑 -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-3">
+                <div class="bg-white border border-black/5 rounded-sm p-4">
+                    <p class="text-[10px] uppercase tracking-wider text-[#C9463D] font-bold mb-1.5">① 算法公平性文献</p>
+                    <p class="text-[11px] text-[#6B6964] leading-relaxed">Dwork et al. (2012) 个体公平、Hardt et al. (2016) Equalized Odds、Chouldechova (2017) Predictive Parity——<strong>20+ 种公平性指标全部聚焦比较性正义</strong>，均无法回答"惩罚是否与罪行相称"这类非比较性问题。</p>
+                </div>
+                <div class="bg-white border border-black/5 rounded-sm p-4">
+                    <p class="text-[10px] uppercase tracking-wider text-[#C9463D] font-bold mb-1.5">② 可解释 AI（XAI）</p>
+                    <p class="text-[11px] text-[#6B6964] leading-relaxed">Ribeiro et al. (2016) LIME、Lundberg & Lee (2017) SHAP：司法决策者需要知道"哪个因素让分数升高了"。但现有 XAI 方法仍在 Case 框架内——<strong>解释了"怎么算的"，没解释"该不该这样算"</strong>。</p>
+                </div>
+                <div class="bg-white border border-black/5 rounded-sm p-4">
+                    <p class="text-[10px] uppercase tracking-wider text-[#C9463D] font-bold mb-1.5">③ HCI 设计伦理脉络</p>
+                    <p class="text-[11px] text-[#6B6964] leading-relaxed">Value-Sensitive Design（Friedman & Hendry, 2019）、Participatory AI（Birhane et al., 2022）、Contestable AI（Sandvig et al., 2021）——但<strong>均未关注"如何为叙事创造空间"</strong>，这是本研究提出"叙事通道"概念的入口。</p>
+                </div>
+            </div>
+
+            <!-- 系统设计五层结构 -->
+            <div class="mt-7 flex items-center gap-3">
+                <span class="text-[12px] uppercase tracking-[0.22em] text-[#C9463D] font-extrabold whitespace-nowrap">System Design</span>
+                <span class="text-xs text-[#8C8A84] whitespace-nowrap">Symphony 核心设计逻辑 · 五层对抗结构</span>
+                <div class="flex-grow h-px bg-black/5"></div>
+            </div>
+            <div class="mt-4 bg-[#0f0f13] border border-[#C9463D]/20 rounded-sm p-6">
+                <div class="grid grid-cols-1 md:grid-cols-5 gap-4 relative">
+                    <div class="hidden md:block absolute left-[10%] right-[10%] top-[22px] h-px bg-[#C9463D]/20"></div>
+                    <div class="flex flex-col items-center text-center"><div class="w-11 h-11 rounded-full bg-[#C9463D] text-white flex items-center justify-center font-extrabold text-sm shadow ring-4 ring-[#0f0f13]">A</div><h5 class="font-bold text-[#ff7a72] mt-2.5 text-xs">卷宗摄入</h5><p class="text-[10px] text-[#9ca3af] leading-relaxed mt-1">原始指控 + 官方叙事 + COMPAS 原始评分同步载入</p></div>
+                    <div class="flex flex-col items-center text-center"><div class="w-11 h-11 rounded-full bg-[#C9463D] text-white flex items-center justify-center font-extrabold text-sm shadow ring-4 ring-[#0f0f13]">B</div><h5 class="font-bold text-[#ff7a72] mt-2.5 text-xs">生命轨迹重建</h5><p class="text-[10px] text-[#9ca3af] leading-relaxed mt-1">成长环境 / 教育 / 就业 / 家庭的时间线叙事</p></div>
+                    <div class="flex flex-col items-center text-center"><div class="w-11 h-11 rounded-full bg-[#C9463D] text-white flex items-center justify-center font-extrabold text-sm shadow ring-4 ring-[#0f0f13]">C</div><h5 class="font-bold text-[#ff7a72] mt-2.5 text-xs">情境叙事</h5><p class="text-[10px] text-[#9ca3af] leading-relaxed mt-1">案发诱因 / 社会压力 / 资源匮乏的非比较性呈现</p></div>
+                    <div class="flex flex-col items-center text-center"><div class="w-11 h-11 rounded-full bg-[#C9463D] text-white flex items-center justify-center font-extrabold text-sm shadow ring-4 ring-[#0f0f13]">D</div><h5 class="font-bold text-[#ff7a72] mt-2.5 text-xs">算法审查</h5><p class="text-[10px] text-[#9ca3af] leading-relaxed mt-1">逐特征可视化 + 偏见标注 + Gemini 纠偏研判</p></div>
+                    <div class="flex flex-col items-center text-center"><div class="w-11 h-11 rounded-full bg-[#C9463D] text-white flex items-center justify-center font-extrabold text-sm shadow ring-4 ring-[#0f0f13]">E</div><h5 class="font-bold text-[#ff7a72] mt-2.5 text-xs">综合研判</h5><p class="text-[10px] text-[#9ca3af] leading-relaxed mt-1">算法分 vs 叙事评估并置，法官可主动质疑</p></div>
+                </div>
+            </div>
+
+            <!-- 关键设计决策 -->
+            <div class="mt-7 flex items-center gap-3">
+                <span class="text-[12px] uppercase tracking-[0.22em] text-[#C9463D] font-extrabold whitespace-nowrap">Key Decisions</span>
+                <span class="text-xs text-[#8C8A84] whitespace-nowrap">关键取舍 · 每个决定背后的理由</span>
+                <div class="flex-grow h-px bg-black/5"></div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
+                <div class="bg-white border border-black/5 rounded-sm p-4">
+                    <p class="text-[12px] font-bold text-[#C9463D] mb-1">为什么是"叙事"而非"纠正分数"</p>
+                    <p class="text-[11px] text-[#6B6964] leading-relaxed">直接修正 COMPAS 分数会引入新的主观偏见且无法被质疑。选择"并置叙事"而非"替换算法"，是把判断权还给法官——系统提供背景，不代替决策。</p>
+                </div>
+                <div class="bg-white border border-black/5 rounded-sm p-4">
+                    <p class="text-[12px] font-bold text-[#C9463D] mb-1">用 Gemini 做什么、不做什么</p>
+                    <p class="text-[11px] text-[#6B6964] leading-relaxed">Gemini 仅用于：① 从原始文本提取结构化生命事件；② 识别特征中潜在的代理变量偏见并标注。<strong>不让 AI 给出量刑建议</strong>——避免用 AI 替换 AI 的循环。</p>
+                </div>
+                <div class="bg-white border border-black/5 rounded-sm p-4">
+                    <p class="text-[12px] font-bold text-[#C9463D] mb-1">Demo 数据的伦理处理</p>
+                    <p class="text-[11px] text-[#6B6964] leading-relaxed">演示案例（Marcus J.）使用完全虚构的合成数据，不使用任何真实被告信息。案例参照 ProPublica 数据集统计分布设计，保证批判有据，同时规避隐私风险。</p>
+                </div>
+                <div class="bg-white border border-black/5 rounded-sm p-4">
+                    <p class="text-[12px] font-bold text-[#C9463D] mb-1">为什么做成产品而非论文</p>
+                    <p class="text-[11px] text-[#6B6964] leading-relaxed">算法公平性研究受众往往是学者，而真正做决策的是法官和律师。产品化能让"非比较性正义"从理论变为可操作的界面——这是设计师对研究的独特贡献。</p>
+                </div>
+            </div>
+
+            <!-- 中国案例：平衡的实践 -->
+            <div class="mt-7 flex items-center gap-3">
+                <span class="text-[12px] uppercase tracking-[0.22em] text-[#C9463D] font-extrabold whitespace-nowrap">Case Study · China</span>
+                <span class="text-xs text-[#8C8A84] whitespace-nowrap">中国案例 · Case 与 Narrative 平衡的实践验证</span>
+                <div class="flex-grow h-px bg-black/5"></div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-4">
+                <div class="bg-white border border-black/5 rounded-sm p-4">
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="text-[10px] bg-[#C9463D] text-white px-2 py-0.5 rounded font-bold">程勇案</span>
+                        <span class="text-[10px] text-[#8C8A84]">走私药品 → 改判缓刑</span>
+                    </div>
+                    <p class="text-[10px] text-[#8C8A84] mb-1.5">Case 视角（法律系统中的"走私犯"）</p>
+                    <p class="text-[11px] text-[#6B6964] leading-relaxed">系统标签：走私、销售假药，涉案数百万，量刑标准 10 年以上。</p>
+                    <p class="text-[10px] text-[#2a7a5b] font-bold mt-2">Narrative 补全后：</p>
+                    <p class="text-[11px] text-[#6B6964] leading-relaxed mt-1">白血病患者吁求他走私仿制药救命 → 破产、父亲病危、良心觉醒 → 近乎成本价售药只为患者活下去。法院引入"主观恶性较小、社会危害性有限"改判缓刑，并推动抗癌药降价纳入医保。</p>
+                </div>
+                <div class="bg-white border border-black/5 rounded-sm p-4">
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="text-[10px] bg-[#C9463D] text-white px-2 py-0.5 rounded font-bold">于欢案</span>
+                        <span class="text-[10px] text-[#8C8A84]">故意伤害 → 正当防卫</span>
+                    </div>
+                    <p class="text-[10px] text-[#8C8A84] mb-1.5">Case 视角（法院判决书中的"故意伤害犯"）</p>
+                    <p class="text-[11px] text-[#6B6964] leading-relaxed">系统标签：持刀刺伤 4 名催债人员，1 死 2 重伤，一审无期徒刑。</p>
+                    <p class="text-[10px] text-[#2a7a5b] font-bold mt-2">Narrative 补全后：</p>
+                    <p class="text-[11px] text-[#6B6964] leading-relaxed mt-1">母亲被 11 名催债人员长期侵辱、警察离场、绝望时刻奋起反抗。二审引入情境分析，认定"防卫性质"，从无期改判 5 年，直接推动最高法 2020 年出台《正当防卫指导意见》。</p>
+                </div>
+                <div class="bg-white border border-black/5 rounded-sm p-4">
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="text-[10px] bg-[#8C8A84] text-white px-2 py-0.5 rounded font-bold">高启强案</span>
+                        <span class="text-[10px] text-[#8C8A84]">黑社会头目 · 反向验证</span>
+                    </div>
+                    <p class="text-[10px] text-[#8C8A84] mb-1.5">Case 视角（公安系统中的"黑社会头目"）</p>
+                    <p class="text-[11px] text-[#6B6964] leading-relaxed">系统标签：黑社会性质组织头目，故意杀人、敲诈勒索，死刑。</p>
+                    <p class="text-[10px] text-[#C9463D] font-bold mt-2">Narrative 的局限（反向验证）：</p>
+                    <p class="text-[11px] text-[#6B6964] leading-relaxed mt-1">叙事（旧厂街菜贩、父母早逝）引发公众对"结构性暴力如何制造罪犯"的讨论。但这也验证了 Kiviat 的警示：叙事不是为了减轻刑罚，而是<strong>帮助看清完整道德图景</strong>——它可能增加同情，也可能增加理解，但不等于免责。</p>
+                </div>
+            </div>
+            <div class="mt-3 bg-[#fff4f4] border border-[#C9463D]/20 rounded-sm p-4">
+                <p class="text-[11px] text-[#3a3a38] leading-relaxed"><strong>案例结论：</strong>Case 认知维护秩序，Narrative 认知实现正义。当两者平衡时，制度既能保持效率，又能回应道德复杂性——程勇案与于欢案正是"叙事通道"设计在现实司法中的自然发生版本，它们的存在验证了 Symphony 的理论假设具有可操作性。</p>
+            </div>
+
+            <!-- 局限与批判性反思 -->
+            <div class="mt-7 flex items-center gap-3">
+                <span class="text-[12px] uppercase tracking-[0.22em] text-[#C9463D] font-extrabold whitespace-nowrap">Limitations &amp; Reflection</span>
+                <span class="text-xs text-[#8C8A84] whitespace-nowrap">局限与反思 · 这个方案本身有什么问题</span>
+                <div class="flex-grow h-px bg-black/5"></div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-4">
+                <div class="bg-[#fff4f4] border border-[#C9463D]/15 rounded-sm p-4">
+                    <p class="text-[11px] font-bold text-[#C9463D] mb-1">⚠ 叙事本身也可能有偏</p>
+                    <p class="text-[11px] text-[#6B6964] leading-relaxed">谁来撰写"生命叙事"？辩护律师、检察官与社工的叙事框架各不相同。Symphony 目前没有解决叙事来源的权力不对等问题——这是最大的未解难题。</p>
+                </div>
+                <div class="bg-[#fff4f4] border border-[#C9463D]/15 rounded-sm p-4">
+                    <p class="text-[11px] font-bold text-[#C9463D] mb-1">⚠ AI 幻觉的司法风险</p>
+                    <p class="text-[11px] text-[#6B6964] leading-relaxed">Gemini 在提取生命事件时存在幻觉风险，在司法场景中后果严重。现阶段所有 AI 输出均需人工审核才能进入正式界面——这限制了系统可扩展性。</p>
+                </div>
+                <div class="bg-[#fff4f4] border border-[#C9463D]/15 rounded-sm p-4">
+                    <p class="text-[11px] font-bold text-[#C9463D] mb-1">⚠ 与现行法律程序的兼容</p>
+                    <p class="text-[11px] text-[#6B6964] leading-relaxed">该系统假设法官愿意阅读叙事性材料，但时间压力与机构惰性是更大阻力。下一步需要与法院系统的利益相关者 Co-design 才能有效落地。</p>
+                </div>
+            </div>
+
+            <!-- 研究意义与跨学科贡献 -->
+            <div class="mt-7 flex items-center gap-3">
+                <span class="text-[12px] uppercase tracking-[0.22em] text-[#C9463D] font-extrabold whitespace-nowrap">Contribution</span>
+                <span class="text-xs text-[#8C8A84] whitespace-nowrap">研究意义 · 社会学理论 → 设计学原则的跨学科转化</span>
+                <div class="flex-grow h-px bg-black/5"></div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
+                <div class="bg-white border border-black/5 rounded-sm p-4">
+                    <p class="text-[10px] uppercase tracking-wider text-[#C9463D] font-bold mb-1.5">理论贡献</p>
+                    <p class="text-[11px] text-[#6B6964] leading-relaxed">Kiviat (2023) 的道德可供性理论首次将 Feinberg 的正义哲学区分与 Gibson 的可供性理论结合，但尚未被转化为设计学可操作原则。本研究完成从社会学概念到设计原则的跨学科转化，提出<strong>「叙事通道」（Narrative Pathways）</strong>作为算法伦理设计的新概念——区别于已有的透明度（XAI）、可质疑性（Contestable AI）设计范式。</p>
+                </div>
+                <div class="bg-white border border-black/5 rounded-sm p-4">
+                    <p class="text-[10px] uppercase tracking-wider text-[#C9463D] font-bold mb-1.5">实践贡献</p>
+                    <p class="text-[11px] text-[#6B6964] leading-relaxed">四条可操作设计原则：① <strong>不干扰主流程</strong>——叙事作为补充而非替代，决策者仍可从 Case 视图完成决策；② <strong>按需展开</strong>——叙事信息分层呈现，避免过载；③ <strong>非评判性语言</strong>——情境注释使用中性描述，不预设道德立场；④ <strong>可追溯性</strong>——所有叙事信息标注来源，防止操纵。</p>
+                </div>
+            </div>
+
+            <!-- 演示入口 -->
+            <div class="mt-6 bg-[#0f0f13] border border-[#C9463D]/15 rounded-sm p-6 flex flex-col items-center text-center gap-4">
+                <p class="text-[11px] text-[#9ca3af] leading-relaxed max-w-lg">Symphony 包含完整虚构案例演示（Marcus J. · 三级盗窃案），涵盖风险评估雷达图、生命轨迹时间线、叙事司法分析与算法纠偏研判。</p>
+                <a href="compas-app/index.html" target="_blank" rel="noopener"
+                   class="inline-flex items-center gap-2 bg-[#C9463D] hover:bg-[#a5392f] text-white font-bold px-6 py-2.5 rounded-sm text-xs uppercase tracking-widest transition-colors">
+                    <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+                    进入 Symphony v3.0 演示
+                </a>
             </div>
         </div>
 
@@ -600,13 +1048,10 @@
         <!-- ===== PANEL 4 : 小小建筑师 (项目4) ===== -->
         <div id="dd-panel-4" class="hidden">
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-0 bg-white border border-black/5 shadow-sm rounded-sm overflow-hidden">
-                <div class="lg:col-span-6 relative min-h-[340px] flex flex-col items-center justify-center p-8 text-center" style="background: radial-gradient(circle at 50% 30%, #2ba89c 0%, #0f6b61 85%);">
+                <div class="lg:col-span-6 relative min-h-[340px] overflow-hidden bg-[#cfeee9]">
+                    <img src="assets/kidarch-cover.jpg" alt="小小建筑师 · 等距城市插画" class="absolute inset-0 w-full h-full object-cover" />
                     <canvas class="cover-fx" data-fx="blocks" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;opacity:.9;"></canvas>
-                    <span class="absolute top-4 left-4 bg-white/90 text-[#0f6b61] text-[9px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-sm shadow">K12 · 游戏化学习</span>
-                    <i data-lucide="building-2" class="w-12 h-12 text-white mb-4"></i>
-                    <h4 class="text-2xl font-extrabold tracking-tight text-white">AI 城市拯救计划</h4>
-                    <p class="text-[11px] tracking-[0.25em] uppercase text-[#cdeee9] mt-2">小小设计师大作战</p>
-                    <p class="text-[11px] text-white/80 mt-3">叙事驱动 · AI 协作 · 空间设计启蒙</p>
+                    <span class="absolute top-4 left-4 z-10 bg-white/90 text-[#0f6b61] text-[9px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-sm shadow">K12 · 游戏化学习</span>
                 </div>
                 <div class="lg:col-span-6 p-8 flex flex-col justify-between">
                     <div>
@@ -1225,6 +1670,24 @@
         }
 
         // Simulator Fallbacks for immediate testing without cameras
+        function toggleGestureFolder() {
+            const pf = document.getElementById('pf-gesture');
+            const row = document.getElementById('cf-row');
+            const isOpen = pf.classList.contains('open');
+            pf.classList.toggle('open', !isOpen);
+            row.classList.toggle('visible', !isOpen);
+        }
+        function activateFolder(type) {
+            // 自动展开父 Folder
+            const pf = document.getElementById('pf-gesture');
+            const row = document.getElementById('cf-row');
+            pf.classList.add('open'); row.classList.add('visible');
+            // 清除所有子 Folder active
+            document.querySelectorAll('.cf-wrap').forEach(el => el.classList.remove('active'));
+            const el = document.getElementById('cfw-' + type);
+            if (el) el.classList.add('active');
+            simulateGesture(type);
+        }
         function simulateGesture(type) {
             currentGesture = type;
             if (type === 'open') {
