@@ -1,0 +1,1378 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Symphony - 叙事型司法评估系统</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap');
+
+        :root {
+            --glass-bg: rgba(12, 12, 15, 0.88);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --accent-red: #ff3b30;
+            --accent-cyan: #00f0ff;
+        }
+
+        /* 统一字体标准：中文微软雅黑，英文Arial。整体字号根据用户要求等比例放大 */
+        html {
+            font-size: 18px; /* 整体字体加大一号 */
+        }
+
+        body, button, input, textarea, select {
+            font-family: 'Microsoft YaHei', 'Arial', sans-serif;
+            background-color: #000;
+            color: #e5e7eb;
+            overflow: hidden; /* 保持大屏沉浸感，内部滚动 */
+        }
+
+        /* 文本展示强化 */
+        .narrative-text {
+            font-family: 'Microsoft YaHei', 'Arial', sans-serif;
+            line-height: 1.8;
+        }
+
+        /* 数据标签专用 */
+        .data-font {
+            font-family: 'JetBrains Mono', 'Arial', sans-serif;
+        }
+
+        /* 深度毛玻璃面板 */
+        .glass-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.7);
+        }
+
+        /* 滚动条统一美化 */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.4);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(0, 240, 255, 0.4);
+        }
+        
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* 时间线连线 */
+        .timeline-line {
+            position: absolute;
+            left: 23px;
+            top: 40px;
+            bottom: 0;
+            width: 2px;
+            background: linear-gradient(to bottom, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.02) 100%);
+            z-index: 0;
+        }
+
+        /* 联动高亮动画 */
+        @keyframes pulse-glow {
+            0% { box-shadow: 0 0 0 0 rgba(255, 59, 48, 0.4); border-color: rgba(255, 59, 48, 0.8); }
+            70% { box-shadow: 0 0 0 15px rgba(255, 59, 48, 0); border-color: rgba(255, 255, 255, 0.1); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 59, 48, 0); border-color: rgba(255, 255, 255, 0.1); }
+        }
+        .highlight-node {
+            animation: pulse-glow 2s infinite;
+            background: rgba(255, 59, 48, 0.1) !important;
+        }
+
+        /* 工具提示 (情境注释) */
+        .tooltip .tooltip-text {
+            visibility: hidden;
+            background-color: rgba(5, 5, 8, 0.98);
+            color: #fff;
+            text-align: left;
+            border-radius: 6px;
+            padding: 12px;
+            position: absolute;
+            z-index: 50;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.3s;
+            width: max-content;
+            max-width: 320px;
+            font-size: 0.85rem;
+            border: 1px solid rgba(0, 240, 255, 0.3);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.9);
+        }
+        .tooltip:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+        
+        .scanline {
+            width: 100%;
+            height: 100px;
+            background: linear-gradient(0deg, rgba(0,0,0,0) 0%, rgba(255,255,255,0.02) 50%, rgba(0,0,0,0) 100%);
+            opacity: 0.1;
+            position: absolute;
+            bottom: 100%;
+            animation: scanline 8s linear infinite;
+            pointer-events: none;
+            z-index: 10;
+        }
+        @keyframes scanline {
+            0% { bottom: 100%; }
+            100% { bottom: -100px; }
+        }
+    </style>
+</head>
+<body class="relative w-screen h-screen">
+
+    <!-- 背景层：带有强暗角和高对比度嫌疑人照片 -->
+    <div class="fixed inset-0 z-0">
+        <img id="bg-suspect-img" src="https://images.unsplash.com/photo-1506506200949-df8734e6b665?q=80&w=2070&auto=format&fit=crop" 
+             class="w-full h-full object-cover filter grayscale blur-[3px] opacity-25 scale-105 transition-all duration-700" alt="Background">
+        <div class="absolute inset-0 bg-gradient-to-t from-black via-black/85 to-transparent"></div>
+        <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-transparent via-black/70 to-black"></div>
+        <div class="scanline"></div>
+    </div>
+
+    <!-- 顶部导航 -->
+    <header class="relative z-20 flex justify-between items-center px-8 py-3 border-b border-white/10 glass-panel">
+        <div class="flex items-center gap-4">
+            <div class="w-8 h-8 rounded-full bg-cyan-600/20 flex items-center justify-center border border-cyan-500/50 shadow-[0_0_10px_rgba(0,240,255,0.2)]">
+                <i class="fa-solid fa-building-shield text-cyan-400 text-sm"></i>
+            </div>
+            <div>
+                <h1 class="text-md font-bold tracking-widest text-gray-100 flex items-center gap-2">
+                    SYMPHONY <span class="text-xs text-cyan-500/80 font-normal bg-cyan-950/40 px-2 py-0.5 rounded border border-cyan-900/50">叙事司法评估系统 v3.0</span>
+                </h1>
+            </div>
+        </div>
+        
+        <!-- 核心交互：案例快速切换下拉框 -->
+        <div class="relative">
+            <button id="case-switch-btn" class="flex items-center gap-2 px-4 py-1.5 bg-gray-900/80 border border-cyan-500/30 rounded-lg text-sm text-gray-200 hover:bg-cyan-900/20 hover:border-cyan-400/60 transition-all font-semibold shadow-[0_0_15px_rgba(0,240,255,0.1)]">
+                <i class="fa-solid fa-folder-open text-cyan-400"></i>
+                <span id="current-case-name">Marcus J. - 三级盗窃案</span>
+                <i class="fa-solid fa-chevron-down text-[10px] opacity-70"></i>
+            </button>
+            <div id="case-dropdown" class="absolute top-full right-0 mt-2 w-72 glass-panel rounded-xl p-2 hidden z-50 shadow-2xl border border-gray-700">
+                <div class="px-3 py-1.5 text-[10px] text-gray-500 uppercase tracking-wider border-b border-gray-800/80 mb-1.5 font-bold">请选择候选评估档案</div>
+                <button onclick="switchCase('marcus')" class="w-full text-left px-3 py-2.5 hover:bg-cyan-950/30 hover:text-cyan-300 rounded-lg flex flex-col gap-0.5 transition-colors group">
+                    <span class="text-sm font-bold text-gray-200 group-hover:text-cyan-400">Marcus J.</span>
+                    <span class="text-[10px] text-gray-400">三级盗窃案 | 突发生活危机诱发型</span>
+                </button>
+                <button onclick="switchCase('chengyong')" class="w-full text-left px-3 py-2.5 hover:bg-cyan-950/30 hover:text-cyan-300 rounded-lg flex flex-col gap-0.5 transition-colors group">
+                    <span class="text-sm font-bold text-gray-200 group-hover:text-cyan-400">程勇</span>
+                    <span class="text-[10px] text-gray-400">非法经营药品案 | 强利他性道德困境型</span>
+                </button>
+                <button onclick="switchCase('gaoqiqiang')" class="w-full text-left px-3 py-2.5 hover:bg-cyan-950/30 hover:text-cyan-300 rounded-lg flex flex-col gap-0.5 transition-colors group">
+                    <span class="text-sm font-bold text-gray-200 group-hover:text-cyan-400">高启强</span>
+                    <span class="text-[10px] text-gray-400">强盛集团涉黑案 | 阶梯恶化反社会网络型</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-6 text-sm text-gray-400">
+            <div class="flex items-center gap-2">
+                <i class="fa-solid fa-user-tie"></i> 审查法官: Arthur K.
+            </div>
+            <div class="flex items-center gap-2 data-font text-cyan-400/80">
+                <i class="fa-solid fa-fingerprint"></i> ID: 884-X92-A
+            </div>
+        </div>
+    </header>
+
+    <!-- 主体内容区：双视图同屏 -->
+    <main class="relative z-10 w-full h-[calc(100vh-63px)] flex p-5 gap-5">
+
+        <!-- ================= 左侧：视图 A - Case 模式 (比较性正义/量化数据) ================= -->
+        <section class="w-[35%] h-full flex flex-col gap-4">
+            
+            <!-- 嫌疑人基本信息档案卡 (包含身材、面部、特殊体征描述) -->
+            <div class="glass-panel rounded-xl p-4 relative overflow-hidden group flex-shrink-0">
+                <div class="absolute top-0 right-0 p-4 opacity-10 text-6xl group-hover:opacity-20 transition-opacity">
+                    <i class="fa-solid fa-id-card-clip"></i>
+                </div>
+                <div class="flex gap-4 items-center">
+                    <div class="w-20 h-24 bg-gray-800 rounded-lg border border-gray-600 overflow-hidden relative shadow-[0_0_15px_rgba(0,0,0,0.9)]">
+                        <img id="suspect-avatar" src="https://images.unsplash.com/photo-1542909168-82c3e7fdca5c?w=500&auto=format&fit=crop&q=60" alt="Mugshot" class="w-full h-full object-cover grayscale opacity-85">
+                    </div>
+                    <div class="flex flex-col justify-center flex-1">
+                        <div class="flex items-baseline gap-2 mb-1">
+                            <h2 id="suspect-name" class="text-xl font-bold text-white tracking-wide">Marcus, J.</h2>
+                            <span id="suspect-id" class="text-[10px] data-font text-cyan-400 bg-cyan-900/30 px-1.5 py-0.5 rounded border border-cyan-800/50">ID: 49201</span>
+                        </div>
+                        <!-- 高精细面貌体征 -->
+                        <div class="text-[11px] text-gray-400 space-y-0.5">
+                            <div class="flex justify-between border-b border-gray-800/50 pb-0.5"><span class="text-gray-500 font-semibold">基本信息:</span><span id="suspect-basic" class="text-gray-300">28岁 / 男 / 非裔</span></div>
+                            <div class="flex justify-between border-b border-gray-800/50 pb-0.5"><span class="text-gray-500 font-semibold">身材特征:</span><span id="suspect-build" class="text-gray-300">178cm / 72kg</span></div>
+                            <div class="flex justify-between border-b border-gray-800/50 pb-0.5"><span class="text-gray-500 font-semibold">面部特征:</span><span id="suspect-face" class="text-gray-300">方形轮廓, 眉骨处轻微瘢痕</span></div>
+                            <div class="flex justify-between"><span class="text-gray-500 font-semibold">特殊体征:</span><span id="suspect-special" class="text-cyan-400 font-bold">左前臂刺青 "Stay Wild"</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 核心数据看板：带雷达图与多合一属性表格 -->
+            <div class="glass-panel rounded-xl p-5 flex-1 flex flex-col relative overflow-y-auto hide-scrollbar">
+                
+                <div class="flex justify-between items-center mb-3 z-10">
+                    <h3 class="text-xs uppercase tracking-widest text-gray-300 font-bold flex items-center gap-2">
+                        <i class="fa-solid fa-chart-column text-cyan-500/80"></i> RISK ASSESSMENT
+                    </h3>
+                    <i class="fa-solid fa-circle-info text-gray-500 hover:text-gray-300 cursor-pointer transition-colors tooltip relative text-xs">
+                        <span class="tooltip-text" style="left:-150px;">量化评估：提取静态个人、历史犯罪、金融信用和家庭婚姻数据，并与数据库群体大盘进行对比。</span>
+                    </i>
+                </div>
+
+                <!-- 雷达图与得分展示区 -->
+                <div class="flex flex-row items-center gap-4 mb-3">
+                    <!-- SVG 雷达图 (55%) -->
+                    <div class="relative w-[55%] aspect-square flex items-center justify-center filter drop-shadow-[0_0_12px_rgba(0,240,255,0.15)]">
+                        <svg id="radar-svg" viewBox="0 0 240 240" class="w-full h-full overflow-visible"></svg>
+                    </div>
+
+                    <!-- 得分与属性展示表 (45%) -->
+                    <div class="w-[45%] flex flex-col gap-2.5">
+                        
+                        <!-- 红色危险等级得分板 -->
+                        <div id="risk-score-card" class="border border-red-900 bg-red-950/30 rounded-lg p-3 relative overflow-hidden shadow-inner">
+                            <div class="absolute top-0 right-0 p-1 opacity-20 text-xs"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                            <div class="text-[9px] text-gray-400 uppercase tracking-widest mb-0.5 font-bold">量化再犯风险综合分数</div>
+                            <div class="flex items-baseline gap-1 text-red-500">
+                                <span id="overall-score-num" class="text-4xl font-bold data-font tracking-tighter">7.2</span>
+                                <span class="text-xs text-red-700 font-bold data-font">/10</span>
+                            </div>
+                            <div id="overall-score-level" class="text-[11px] font-bold text-red-500 mt-0.5 uppercase tracking-[0.2em] animate-pulse">高风险级别</div>
+                        </div>
+
+                        <!-- 婚姻状况与金融征信联合属性表 -->
+                        <div class="border border-gray-700/50 rounded-lg bg-black/60 overflow-hidden text-[11px] shadow-lg">
+                            <div class="flex justify-between border-b border-gray-800 p-2 items-center">
+                                <span class="text-gray-400">评估年龄</span>
+                                <span id="table-age" class="text-cyan-400 font-bold data-font">28岁</span>
+                            </div>
+                            <div class="flex justify-between border-b border-gray-800 p-2 items-center">
+                                <span class="text-gray-400">历史定罪次数</span>
+                                <span id="table-priors" class="text-cyan-400 font-bold data-font">3次</span>
+                            </div>
+                            <div class="flex justify-between border-b border-gray-800 p-2 items-center">
+                                <span class="text-gray-400">违反监管条例</span>
+                                <span id="table-violations" class="text-red-400 font-bold data-font">1次</span>
+                            </div>
+                            <div class="flex justify-between border-b border-gray-800 p-2 items-center">
+                                <span class="text-gray-400">当前就业状态</span>
+                                <span id="table-employment" class="text-red-400 font-bold data-font">不稳定</span>
+                            </div>
+                            <!-- 核心：金融征信 -->
+                            <div class="flex justify-between border-b border-gray-800 p-2 items-center tooltip relative cursor-help hover:bg-gray-800/50 transition-colors">
+                                <span class="text-gray-400 uppercase flex items-center gap-1">社会金融征信</span>
+                                <span id="table-credit" class="text-red-500 font-bold data-font">极差 (2.5)</span>
+                                <span class="tooltip-text" style="bottom: 100%; left: 0; transform: translateX(-50%); width: 220px;">
+                                    财务与信用评分。严重的经济困难往往是诱发越轨生存的客观因子。
+                                </span>
+                            </div>
+                            <!-- 核心：婚姻状况 -->
+                            <div class="flex justify-between p-2 items-center tooltip relative cursor-help hover:bg-gray-800/50 transition-colors">
+                                <span class="text-gray-400 uppercase flex items-center gap-1">家庭婚姻状况</span>
+                                <span id="table-marital" class="text-gray-300 font-bold">离异 (单亲抚养)</span>
+                                <span class="tooltip-text" style="bottom: 100%; left: 0; transform: translateX(-50%); width: 220px;">
+                                    社会学婚姻牵绊情况。稳定的婚姻与抚养关系能提供有力的合规支持约束。
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 比较分析直方图 -->
+                <div class="mt-1 pt-2 border-t border-gray-700/50">
+                    <div class="flex justify-between items-end mb-1">
+                        <h4 class="text-[10px] text-cyan-500 font-bold flex items-center gap-1.5 uppercase tracking-widest">
+                            <i class="fa-solid fa-users-viewfinder"></i> COMPARATIVE ANALYSIS
+                        </h4>
+                    </div>
+                    <div class="mb-2">
+                        <span class="text-xs text-gray-300">同背景人群对比：处于风险前 <span id="histogram-top-percent" class="text-red-500 font-bold">15%</span> 危险区间</span>
+                    </div>
+                    
+                    <!-- 模拟直方图 -->
+                    <div class="w-full h-8 flex items-end justify-between gap-[2px] relative" id="histogram-container"></div>
+                </div>
+
+                <!-- 叙事锁定联动标签 -->
+                <div class="mt-auto pt-3">
+                    <h4 class="text-[10px] text-gray-500 uppercase tracking-widest mb-2 flex items-center gap-2">
+                        <i class="fa-solid fa-link text-gray-600"></i> 数据叙事探针 (点击下钻至生命冲突点)
+                    </h4>
+                    <div id="anchor-btn-group" class="flex flex-wrap gap-2">
+                        <!-- 动态生成 -->
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ================= 右侧：视图 B - Narrative 模式 (非比较性正义/生命故事) ================= -->
+        <section class="w-[65%] h-full glass-panel rounded-xl flex flex-col relative overflow-hidden shadow-[0_0_35px_rgba(0,0,0,0.85)] border border-cyan-900/30">
+            <!-- 叙事区头部 -->
+            <div class="px-8 py-4 border-b border-white/10 bg-black/40 flex justify-between items-center backdrop-blur-md z-10">
+                <div>
+                    <h3 class="text-md text-gray-100 font-bold flex items-center gap-2">
+                        <i class="fa-solid fa-timeline text-cyan-400"></i> 经历阶段与叙事解析 (Experience Stages &amp; Narrative)
+                    </h3>
+                    <p class="text-xs text-gray-400 mt-1">融合生命事件、环境制约与审讯笔录，对个体主观动机展开“非比较性”正义审查。</p>
+                </div>
+                <div class="flex gap-2">
+                    <span class="px-2 py-1 bg-cyan-950/20 rounded text-[10px] text-cyan-400 border border-cyan-900/50 shadow-inner font-bold"><i class="fa-solid fa-circle-check"></i> 叙事感知链已对齐</span>
+                </div>
+            </div>
+
+            <!-- 垂直时间线滚动区 -->
+            <div class="flex-1 overflow-y-auto p-8 relative" id="narrative-container">
+                
+                <!-- 【第一部分：生平图谱（横向横轴）】 -->
+                <div class="mb-8 bg-gray-900/50 border border-gray-800 rounded-xl p-5 shadow-inner relative z-10 overflow-hidden">
+                    <div class="absolute right-0 top-0 opacity-10 text-8xl -mt-6 -mr-4 pointer-events-none"><i class="fa-solid fa-graduation-cap"></i></div>
+                    <h4 class="text-xs text-gray-300 font-bold mb-3 flex items-center gap-2 uppercase tracking-wider">
+                        <i class="fa-solid fa-folder-open text-cyan-500"></i> 一、 个人生平轨迹 (线性事件重组)
+                    </h4>
+                    
+                    <!-- 横向生平阶段链 -->
+                    <div id="linear-timeline-row" class="flex items-start gap-6 overflow-x-auto pb-3 pt-1 snap-x hide-scrollbar" style="scrollbar-width: thin;">
+                        <!-- 动态生成 -->
+                    </div>
+                </div>
+
+                <div class="timeline-line"></div>
+
+                <!-- 【第二部分：核心叙事节点（纵向深度时间线）】 -->
+                <div class="space-y-8 relative z-10" id="vertical-timeline-box">
+                    <!-- 动态生成 -->
+                </div>
+
+                <!-- 【第三部分：犯罪意图与社会关系网络】 -->
+                <div id="intent-network-panel" class="mt-10 bg-cyan-950/10 border border-cyan-800/30 rounded-xl p-6 relative overflow-hidden z-10 shadow-lg">
+                    <div class="absolute right-0 top-0 opacity-5 text-9xl -mt-8 -mr-6 pointer-events-none"><i class="fa-solid fa-diagram-project"></i></div>
+                    
+                    <h3 class="text-md font-bold text-cyan-400 mb-4 flex items-center gap-2 border-b border-cyan-950 pb-3 uppercase tracking-wider">
+                        <i class="fa-solid fa-diagram-project"></i> 二、 核心叙事补充: 犯罪意图与社会控制网络
+                    </h3>
+                    
+                    <div class="grid grid-cols-2 gap-5">
+                        <!-- 犯罪意图分析 -->
+                        <div class="bg-black/50 p-4 rounded-lg border border-gray-800">
+                            <h4 class="text-gray-200 font-bold text-xs uppercase tracking-wider mb-2 flex items-center gap-1.5 text-cyan-400/80">
+                                <i class="fa-solid fa-brain"></i> 主观意志与动机指向 (Intent Analysis)
+                            </h4>
+                            <p id="intent-analysis-text" class="narrative-text text-xs text-gray-400 leading-relaxed">
+                                <!-- 动态内容 -->
+                            </p>
+                        </div>
+                        
+                        <!-- 社会关系网络 -->
+                        <div class="bg-black/50 p-4 rounded-lg border border-gray-800">
+                            <h4 class="text-gray-200 font-bold text-xs uppercase tracking-wider mb-2 flex items-center gap-1.5 text-cyan-400/80">
+                                <i class="fa-solid fa-circle-nodes"></i> 社会纽带抗震指数 (Social Network)
+                            </h4>
+                            <p id="social-network-text" class="narrative-text text-xs text-gray-400 leading-relaxed">
+                                <!-- 动态内容 -->
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 【第四部分：首次犯罪证据与审讯笔录（原始卷宗）】 -->
+                <div id="first-crime-evidence-panel" class="mt-10 bg-red-950/10 border border-red-900/20 rounded-xl p-6 relative overflow-hidden z-10 shadow-lg">
+                    <div class="absolute right-0 top-0 opacity-5 text-9xl -mt-8 -mr-6 pointer-events-none"><i class="fa-solid fa-folder-closed"></i></div>
+                    
+                    <h3 class="text-md font-bold text-red-400 mb-4 flex items-center gap-2 border-b border-red-950/50 pb-3 uppercase tracking-wider">
+                        <i class="fa-solid fa-folder-closed"></i> 三、 首次违法司法卷宗 (物证证据与原始笔录)
+                    </h3>
+
+                    <div class="grid grid-cols-3 gap-5 mb-5">
+                        <!-- 物证 1 -->
+                        <div class="bg-black/40 p-4 rounded-lg border border-gray-800 flex items-center gap-3">
+                            <div class="w-10 h-10 rounded bg-red-950/30 border border-red-900/50 flex items-center justify-center text-red-500 text-lg">
+                                <i id="evidence-icon-1" class="fa-solid fa-wrench"></i>
+                            </div>
+                            <div>
+                                <span class="text-[10px] text-gray-500 block">证据编号 #01</span>
+                                <span id="evidence-name-1" class="text-xs text-gray-200 font-bold">物证</span>
+                            </div>
+                        </div>
+                        <!-- 物证 2 -->
+                        <div class="bg-black/40 p-4 rounded-lg border border-gray-800 flex items-center gap-3">
+                            <div class="w-10 h-10 rounded bg-red-950/30 border border-red-900/50 flex items-center justify-center text-red-500 text-lg">
+                                <i id="evidence-icon-2" class="fa-solid fa-receipt"></i>
+                            </div>
+                            <div>
+                                <span class="text-[10px] text-gray-500 block">证据编号 #02</span>
+                                <span id="evidence-name-2" class="text-xs text-gray-200 font-bold">凭证</span>
+                            </div>
+                        </div>
+                        <!-- 物证 3 -->
+                        <div class="bg-black/40 p-4 rounded-lg border border-gray-800 flex items-center gap-3">
+                            <div class="w-10 h-10 rounded bg-red-950/30 border border-red-900/50 flex items-center justify-center text-red-500 text-lg">
+                                <i id="evidence-icon-3" class="fa-solid fa-dna"></i>
+                            </div>
+                            <div>
+                                <span class="text-[10px] text-gray-500 block">鉴定编号 #03</span>
+                                <span id="evidence-name-3" class="text-xs text-gray-200 font-bold">鉴定</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 还原对话 -->
+                    <div class="bg-black/70 rounded-lg p-5 border border-red-900/20 shadow-inner relative">
+                        <i class="fa-solid fa-quote-left absolute top-3 right-4 text-red-900/10 text-6xl pointer-events-none"></i>
+                        <span class="text-[10px] text-red-500 uppercase tracking-widest block mb-3 font-bold border-b border-red-900/20 pb-2">首次逮捕审讯对话实录 (原始底案转写)</span>
+                        
+                        <div id="first-crime-transcript" class="space-y-3 text-xs text-gray-300 leading-relaxed">
+                            <!-- 动态加载 -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 【第五部分：GEMINI AI 智能研判与相似案例分析舱 (全新接入)】 -->
+                <div id="gemini-ai-chamber" class="mt-10 bg-cyan-950/10 border-2 border-cyan-500/30 rounded-xl p-6 relative overflow-hidden z-10 shadow-lg">
+                    <div class="absolute right-0 top-0 opacity-10 text-9xl -mt-8 -mr-6 pointer-events-none text-cyan-400"><i class="fa-solid fa-microchip"></i></div>
+                    
+                    <div class="flex justify-between items-center mb-4 border-b border-cyan-950 pb-3">
+                        <h3 class="text-md font-bold text-cyan-300 flex items-center gap-2 uppercase tracking-wider">
+                            <i class="fa-solid fa-wand-magic-sparkles animate-pulse"></i> 四、 GEMINI AI 实时智能研判舱
+                        </h3>
+                        <span class="text-[10px] bg-cyan-900/40 text-cyan-400 border border-cyan-800/40 px-2 py-0.5 rounded font-bold">
+                            大模型接口: GEMINI-2.5-FLASH-PREVIEW-09-2025
+                        </span>
+                    </div>
+
+                    <!-- 执行按钮与终端输出 -->
+                    <div class="space-y-4">
+                        <p class="text-xs text-gray-400 narrative-text">
+                            通过接入 Google Gemini 人工智能引擎，系统可实时抓取该个体的客观指标、成长节点、犯罪意图及原始笔录进行跨领域推理。AI 将自动指出**高危危险特征（红字警示）**并匹配文学/司法历史中的**同类相似困境案例**。
+                        </p>
+                        
+                        <button id="run-gemini-btn" class="w-full py-3 bg-gradient-to-r from-cyan-950/80 to-blue-950/80 border border-cyan-400/50 hover:from-cyan-900 hover:to-blue-900 rounded-lg text-sm font-bold text-cyan-300 hover:text-white shadow-[0_0_15px_rgba(0,240,255,0.2)] hover:shadow-[0_0_25px_rgba(0,240,255,0.4)] transition-all flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-network-wired"></i> 一键启动 Gemini AI 深度研判与相似案例分析
+                        </button>
+
+                        <!-- AI 输出显示器 -->
+                        <div id="gemini-output-box" class="hidden bg-black/80 border border-cyan-900/50 rounded-lg p-5 font-mono text-xs text-cyan-300 leading-relaxed shadow-inner max-h-96 overflow-y-auto">
+                            <!-- 由 JS 填充渲染 -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 【第六部分：智能模拟陪审员研判控制台】 -->
+                <div id="juror-consensus-panel" class="mt-10 bg-gray-900/30 border border-gray-800 rounded-xl p-6 relative overflow-hidden z-10 shadow-lg">
+                    <div class="absolute right-0 top-0 opacity-5 text-9xl -mt-8 -mr-6 pointer-events-none"><i class="fa-solid fa-users-gavel"></i></div>
+                    
+                    <div class="flex justify-between items-center mb-4 border-b border-gray-800 pb-3">
+                        <h3 class="text-md font-bold text-cyan-400 flex items-center gap-2 uppercase tracking-wider">
+                            <i class="fa-solid fa-users-gavel"></i> 五、 智能模拟陪审团综合研判控制台
+                        </h3>
+                        <span class="text-[10px] bg-cyan-900/30 text-cyan-400 border border-cyan-800/50 px-2 py-0.5 rounded font-bold">
+                            陪审系统已连接 5 位跨界代表
+                        </span>
+                    </div>
+
+                    <!-- 5个陪审员卡片网格 -->
+                    <div id="jurors-grid" class="grid grid-cols-5 gap-3.5">
+                        <!-- 动态生成 -->
+                    </div>
+                </div>
+                
+                <div class="h-28"></div>
+            </div>
+            
+            <!-- 右下角浮动裁决按钮 -->
+            <div class="absolute bottom-6 right-8">
+                <button id="open-checklist-btn" class="px-6 py-3 bg-white text-black font-bold rounded-lg shadow-[0_0_20px_rgba(255,255,255,0.25)] hover:bg-gray-100 hover:shadow-[0_0_30px_rgba(0,240,255,0.5)] transition-all flex items-center gap-2 font-bold text-sm tracking-widest">
+                    <i class="fa-solid fa-gavel"></i> 发起“非比较性”道德审查裁决
+                </button>
+            </div>
+        </section>
+    </main>
+
+    <!-- 道德审查清单 (Modal 遮罩层) -->
+    <div id="ethical-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center opacity-0 transition-opacity duration-300">
+        <div class="bg-gray-900 border border-gray-700 w-[720px] rounded-xl shadow-2xl overflow-hidden transform scale-95 transition-transform duration-300" id="modal-content">
+            <div class="bg-gray-800 px-6 py-4 border-b border-gray-700 flex justify-between items-center">
+                <h2 class="text-white font-bold text-md flex items-center gap-2">
+                    <i class="fa-solid fa-shield-halved text-cyan-400"></i> 最终裁决前置检查：算法纠偏道德审查
+                </h2>
+                <button id="close-modal-btn" class="text-gray-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+            <div class="p-6">
+                <p class="text-gray-400 text-xs mb-5 narrative-text leading-relaxed">
+                    依据 Feinberg &amp; Kiviat 司法公平理论，评估人员在提交最终审判结果前，必须手动矫正单纯依据统计概率对个体打分的偏差。请仔细核实以下各项：
+                </p>
+
+                <div class="space-y-4 mb-6">
+                    <label class="flex items-start gap-3 cursor-pointer group">
+                        <div class="relative flex items-center justify-center w-5 h-5 mt-0.5">
+                            <input type="checkbox" class="ethical-cb peer appearance-none w-5 h-5 border border-gray-500 rounded bg-gray-800 checked:bg-cyan-500 checked:border-cyan-500 transition-colors">
+                            <i class="fa-solid fa-check text-white text-xs absolute pointer-events-none opacity-0 peer-checked:opacity-100"></i>
+                        </div>
+                        <span class="text-gray-300 text-xs group-hover:text-white narrative-text">
+                            <strong class="text-white bg-gray-800 px-1 rounded mr-1">反思比较性正义</strong>我确认我已摆脱系统给出的量化风险总分（如
+                            <span id="modal-risk-display" class="text-cyan-400 font-bold">7.2</span>分）的机械锚定，避免将其仅作为群体的一个统计标签。
+                        </span>
+                    </label>
+                    <label class="flex items-start gap-3 cursor-pointer group">
+                        <div class="relative flex items-center justify-center w-5 h-5 mt-0.5">
+                            <input type="checkbox" class="ethical-cb peer appearance-none w-5 h-5 border border-gray-500 rounded bg-gray-800 checked:bg-cyan-500 checked:border-cyan-500 transition-colors">
+                            <i class="fa-solid fa-check text-white text-xs absolute pointer-events-none opacity-0 peer-checked:opacity-100"></i>
+                        </div>
+                        <span class="text-gray-300 text-xs group-hover:text-white narrative-text">
+                            <strong class="text-white bg-gray-800 px-1 rounded mr-1">采信情境与意图</strong>我已充分审阅并理解该对象在首次定罪时的审讯笔录细节，以及该对象当前的“金融/征信状况”及“婚姻家庭稳定性”对其当下犯罪情境的影响。
+                        </span>
+                    </label>
+                </div>
+                <div class="mb-4">
+                    <div class="flex justify-between items-end mb-2">
+                        <label class="block text-gray-400 text-xs uppercase font-bold">背离/修正量化得分司法裁决书陈述 (最少 50 字)：</label>
+                    </div>
+                    <textarea id="justification-text" rows="4" class="w-full bg-gray-800 border border-gray-600 rounded p-3 text-xs text-gray-200 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 resize-none transition-colors" placeholder="请基于上述时间线叙事细节与主观意图分析，阐述您纠正或维持打分的依据..."></textarea>
+                    <div class="text-right text-xs text-gray-500 mt-1"><span id="word-count">0</span> / 50 字</div>
+                </div>
+            </div>
+            <div class="bg-gray-800/50 px-6 py-4 border-t border-gray-700 flex justify-end gap-3">
+                <button id="cancel-modal-btn" class="px-4 py-1.5 rounded text-xs text-gray-400 hover:text-white transition-colors">取消</button>
+                <button id="submit-decision-btn" disabled class="px-5 py-1.5 rounded text-xs font-bold bg-gray-600 text-gray-400 cursor-not-allowed transition-all">提交最终纠偏裁决</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 交互逻辑脚本 -->
+    <script>
+        // 核心案例库 (整合：基础档案体貌体征、婚姻与财务征信状态、雷达得分、生平图谱、笔录与详细时间线、主观意图与社会关系网络、陪审团打分与首次定罪卷宗)
+        const caseLibrary = {
+            'marcus': {
+                name: "Marcus J.",
+                id: "ID: 49201",
+                case: "三级盗窃案",
+                risk: 7.2,
+                level: "高危风险",
+                themeColor: "text-red-500",
+                bgImg: "https://images.unsplash.com/photo-1506506200949-df8734e6b665?q=80&w=2070&auto=format&fit=crop",
+                avatar: "https://images.unsplash.com/photo-1542909168-82c3e7fdca5c?w=500&auto=format&fit=crop&q=60",
+                basic: "28岁 / 男 / 非裔 (去标识化)",
+                build: "178cm / 72kg / 中等体型",
+                face: "方形轮廓, 眼神深邃，左眉骨处有刀瘢",
+                special: "左前臂刺有 Stay Wild 复古美式纹身",
+                ageNum: "28岁",
+                priors: "3次 (均为财产类盗窃)",
+                violations: "1次 (未归案警告)",
+                employment: "不稳定 (汽修厂夜班零工)",
+                credit: "极差 (2.5) / 医疗负债中",
+                marital: "离异 (目前独自抚养5岁女儿)",
+                radar: [8.1, 7.6, 6.5, 3.2, 5.2, 2.5],
+                histogramTop: "15%",
+                anchors: [
+                    { id: "environmental-desc", label: "社区极度贫困" },
+                    { id: "school-drop", label: "教育脱节(辍学)" },
+                    { id: "violation-conflict", label: "2024 违规错失会谈" }
+                ],
+                linearStages: [
+                    { years: "2001-2007", title: "林肯基础小学", text: "由外祖母抚养长大，表现平稳，无不良违纪记录。" },
+                    { years: "2008-2011", title: "南区公立初中", text: "开始出现旷课，报告表明其因不顺从帮派活动被高年级勒索。" },
+                    { years: "2012.09", title: "高中辍学", text: "因无力承担学业费选择辍学打工，过早暴露于街头环境中。", isWarning: true, warningText: "AI 警示: 脱离教育机制，街头同伴风险激增" },
+                    { years: "2013-2015", title: "无保障灵活就业", text: "在非正式快餐店打杂、洗车厂帮工，日结收入不稳定。" },
+                    { years: "2016.10", title: "外祖母病逝", text: "唯一抚养人逝世，面临极高丧葬债务，引发社会控制链条全面断裂。", isWarning: true, warningText: "AI 警示: 支持系统完全崩溃，生存危机高企" }
+                ],
+                verticalStages: [
+                    {
+                        icon: "fa-map-pin",
+                        iconColor: "text-gray-500",
+                        time: "1996 - 2010 : 成长环境生态",
+                        title: "出生成长于南区 8 街区",
+                        content: "该街区历史贫困率达 42%，犯罪率高于市均值 300%。根据 Kiviat 涌现理论，部分初始'高危属性'是外部地缘生态带来的连带偏见，并非其人格中存在反社会邪恶特质。"
+                    },
+                    {
+                        icon: "fa-gavel",
+                        iconColor: "text-yellow-500",
+                        time: "2016.11 : 首次定罪 (三级盗窃罪)",
+                        title: "因盗窃废旧电缆及发电机配件被当场截获",
+                        content: `
+                            <div class="grid grid-cols-2 gap-4 mb-4">
+                                <div class="bg-black/60 p-3 rounded border border-gray-800 text-xs">
+                                    <span class="text-[10px] text-gray-500 block mb-1 font-bold">官方警情通报 (冷冰冰的标签)</span>
+                                    "嫌犯于夜间23时越墙潜入西郊工厂，使用剪钳盗割正在变现的电力设备组件。被夜间巡逻警力人赃并获。财产损失总计评估约4,200美元。"
+                                </div>
+                                <div class="bg-blue-900/10 p-3 rounded border border-blue-900/30 text-xs">
+                                    <span class="text-[10px] text-blue-400 block mb-1 font-bold">情境事实还原 (非比较性正义)</span>
+                                    外祖母离世三天。作为家中当时唯一的劳动力，由于其【金融征信】及【工作状态】极度不堪，丧葬费停尸房极力催缴。在绝对生活死角下实施了非暴力窃取。
+                                </div>
+                            </div>
+                        `
+                    },
+                    {
+                        icon: "fa-circle-check",
+                        iconColor: "text-green-500",
+                        time: "2021 - 2023 : 社区介入与自救好转期",
+                        title: "考取重机修理证书，维持汽修厂半固定雇佣",
+                        content: "假释期间加入社区社会支持网络，在资深机械师傅带领下保持了长达两年的零犯罪率与毒品尿检全阴。但因历史累积征信及单亲抚养压力，整体财务仍处于崩溃边缘。"
+                    },
+                    {
+                        id: "violation-conflict",
+                        icon: "fa-triangle-exclamation",
+                        iconColor: "text-red-500",
+                        time: "2024.03 : 严重监控异常违规点 (引爆打分的导火索)",
+                        title: "错过假释面谈暨合规警报升级",
+                        content: `
+                            <div class="space-y-2 text-xs">
+                                <div class="bg-black/50 p-3 border-l-2 border-red-500 rounded text-gray-400">
+                                    <strong>系统记录:</strong> 被评估人缺席本月面谈，连续拨打手机无人接听，算法判定其进入“恶意规避监管脱逃”状态，高危预警被激活。
+                                </div>
+                                <div class="bg-black/50 p-3 border-l-2 border-blue-500 rounded text-gray-300">
+                                    <strong>叙事真相:</strong> 母亲肾功能衰竭突然进入 ICU，医疗系统由于【金融征信极差】不予垫付透析开销。Marcus 为凑钱连续不吃不喝在工厂顶班 16 小时，因体力不支直接在病床旁晕厥，手机在劳作中破损。他没有脱逃的犯罪意图。
+                                </div>
+                            </div>
+                        `
+                    }
+                ],
+                intent: "非恶意反社会或对抗法纪。越轨倾向直接源自极端财务挤压（生存所需丧葬、医疗费用）与缺乏家庭防线。由于不希望失去幼女的抚养权，主观具有极强的改过意图，但环境承载力过低导致失衡。",
+                network: "处于典型“单轴承重”支持架构。强连接人（外祖母病故，母亲病重）皆转化为危机源，无中产以上的有效社会帮扶，弱连接仅限于汽修车间底层边缘工友。社会关系中不存在黑社会、瘾君子或重刑犯罪同伙，交往圈干净，但极其脆弱。",
+                evidence: {
+                    icon1: "fa-wrench",
+                    name1: "生锈的重型断线钳 (锈斑含库房漆)",
+                    icon2: "fa-receipt",
+                    name2: "市立太平间3000元欠款通知单",
+                    icon3: "fa-dna",
+                    name3: "大梁指纹痕迹比对意见书 (99.4%)",
+                    transcript: `
+                        <p><strong class="text-red-500">警员 Davis:</strong> "Marcus，当时工厂铁丝网那么高，你带着这钳子进去剪电缆的时候，想过后果吗？不知道一旦被逮，你一辈子都在记录里洗不干净？"</p>
+                        <p><strong class="text-gray-100">Marcus:</strong> "(抠手指，眼睛通红) 我外婆已经在医院太平间停了三天了...殡仪馆说不交3000块押金，今天就必须把人拉走。我能找谁？我去汽修厂跪着求老板，我想先支取下个月工钱，他叫我滚。我真的是一点儿办法都没有了..."</p>
+                        <p><strong class="text-red-500">警员 Davis:</strong> "所以你就去偷电缆？"</p>
+                        <p><strong class="text-gray-100">Marcus:</strong> "我没有别的渠道弄钱。我没想伤害任何人。我只是想让我外婆入土为安...我走的时候，连库房主机的备用线都没碰，只剪了废弃的那一截..."</p>
+                    `
+                },
+                jurors: [
+                    { role: "公众人物", name: "Sarah J. (法治主持)", sentence: "缓刑 + 社区矫正", bg: "bg-purple-950/20 border-purple-800/30", icon: "fa-microphone", opinion: "他是生活悲剧的受害者而非反社会狂徒。在 Feinberg 非比较性道德视角下，他理应获得社会的宽恕和就业缓冲，而不是冰冷的铁窗监禁。" },
+                    { role: "平民百姓", name: "老张 (社区公交司机)", sentence: "免予起诉 / 社区劳动", bg: "bg-emerald-950/20 border-emerald-800/30", icon: "fa-bus", opinion: "外婆死了无钱安葬，自己还要养个5岁的娃，换谁被逼到这个死胡同都要犯糊涂！只要没伤人，大家搭把手帮他找份正经活儿就行了，关进去孩子谁养？" },
+                    { role: "专业刑辩律师", name: "Frank K. (法学教授)", sentence: "免于监禁处罚", bg: "bg-blue-950/20 border-blue-800/30", icon: "fa-user-shield", opinion: "根据刑法‘期待可能性’理论，Marcus 当时处于极端的生存选择死角，其主观恶意极低。应适用不予羁押的非比较性特别裁量。" },
+                    { role: "保守工商业代表", name: "Robert M. (工业园业主)", sentence: "徒刑6个月 (缓刑)", bg: "bg-amber-950/20 border-amber-800/30", icon: "fa-industry", opinion: "私有产权不可侵犯，贫困和不幸不能沦为肆意盗窃他人财产的法外挡箭牌。但我鉴于其家庭状况和悔罪事实，支持最轻判处的缓期执行。" },
+                    { role: "伦理学家", name: "安娜博士 (伦理学者)", sentence: "系统性缓刑指导", bg: "bg-cyan-950/20 border-cyan-800/30", icon: "fa-brain", opinion: "根据 Kiviat 涌现理论，不稳定的家庭、征信和贫困环境交互‘涌现’了他的犯罪概率。不解决底层生存环境而空谈司法合规，是一场对底层阶级的制度性围剿。" }
+                ]
+            },
+            'chengyong': {
+                name: "程勇",
+                id: "ID: 99210",
+                case: "非法经营药品案",
+                risk: 3.2,
+                level: "中低风险",
+                themeColor: "text-yellow-500",
+                bgImg: "https://images.unsplash.com/photo-1576091160550-2173dba999ef?q=80&w=2070&auto=format&fit=crop",
+                avatar: "https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=500&auto=format&fit=crop&q=60",
+                basic: "42岁 / 男 / 汉族 (原保健品店主)",
+                build: "175cm / 80kg / 略微臃肿",
+                face: "面容疲倦而沧桑，神色复杂，具有典型市井烟火气",
+                special: "右手因长期吸烟及触碰机床有重度老茧",
+                ageNum: "42岁",
+                priors: "1次 (非法定渠道代购)",
+                violations: "0次",
+                employment: "稳定 (纺织厂厂长)",
+                credit: "中等 (5.8) / 财务回归健康",
+                marital: "离异 (无抚养权, 独立生活)",
+                radar: [2.1, 4.0, 8.5, 9.2, 9.5, 6.0],
+                histogramTop: "65%",
+                anchors: [
+                    { id: "smuggling-genesis", label: "药油店倒闭破产" },
+                    { id: "hero-turning", label: "重返药代/平价销售" },
+                    { id: "arrest-court", label: "被捕与大范围请愿" }
+                ],
+                linearStages: [
+                    { years: "1995-2002", title: "青年期婚后生活", text: "开设印度神油商铺维生，夫妻感情逐渐恶劣导致最终离婚。" },
+                    { years: "2003-2005", title: "店铺危机与倒闭", text: "老父亲脑溢血住院，急需巨额手术费，神油店入不敷出宣告关闭。", isWarning: true, warningText: "AI 警示: 医疗危机与流动性破产双重交织" },
+                    { years: "2006.02", title: "接触慢粒白血病患者", text: "患者吕受益登门相求，引渡印度低价“格列宁”仿制药概念。" },
+                    { years: "2006-2008", title: "低价仿制药代理链条", text: "打通非正式渠道。在合规层面上触犯药品进口管理法，但在道义上救助成百上千患者。" },
+                    { years: "2009.04", title: "自费贴钱补贴售药", text: "在官方严打后，面临巨大被控诉风险仍选择原价甚至亏本配送求命药。", isWarning: true, warningText: "AI 警示: 主动承受重罪风险，利他意图战胜自保本能" }
+                ],
+                verticalStages: [
+                    {
+                        icon: "fa-shop",
+                        iconColor: "text-gray-500",
+                        time: "2002 - 2005 : 保健品经营阶段",
+                        title: "市井底层的艰难维生",
+                        content: "经营神油店铺无力回天。在父亲患病需要血管支架及老屋变卖的压力下，其【金融征信】几近归零。然而，即使在最穷苦的阶段，除了琐碎口角，该对象也从未参与过任何暴力抢劫或伤害越轨行为。"
+                    },
+                    {
+                        icon: "fa-gavel",
+                        iconColor: "text-yellow-500",
+                        time: "2010.05 : 首次被控 非法经营罪与走私罪",
+                        title: "因自费进口境外仿制抗癌药被捕入狱",
+                        content: `
+                            <div class="grid grid-cols-2 gap-4 mb-4">
+                                <div class="bg-black/60 p-3 rounded border border-gray-800 text-xs">
+                                    <span class="text-[10px] text-gray-500 block mb-1 font-bold">检察机关公诉书 (去情境)</span>
+                                    "被告人程勇在明知该药物未经我国食品药品监督管理总局准入的情况下，大批量走私并兜售伪劣药品，涉案金额高，扰乱医药市场秩序。"
+                                </div>
+                                <div class="bg-blue-950/20 p-3 rounded border border-blue-900/30 text-xs">
+                                    <span class="text-[10px] text-blue-400 block mb-1 font-bold">患者联盟声援请愿 (非比较正义)</span>
+                                    "他没有卖假药，药我们吃了好几年都好好的。他是为了救我们的命！一瓶正版药要四万块钱，程老板只卖五百，他不赚钱甚至自己往里贴钱！"
+                                </div>
+                            </div>
+                        `
+                    },
+                    {
+                        icon: "fa-circle-check",
+                        iconColor: "text-green-500",
+                        time: "出狱回归期",
+                        title: "创办合规纺织厂，积极反哺白血病基金",
+                        content: "出狱后在政策宽大处理下创办实体工厂，解决大量康复期及病患家属的就业。此时的【工作稳定性】及【社会融入度】皆处于极高评级。量化算法给予其较低的再犯分值（3.2分）。"
+                    }
+                ],
+                intent: "完全利他动机。其犯罪越轨并非企图颠覆法律，而是在资本垄断高价药与患者基本生存权严重对立的极端社会边缘，采取的超常人道主义越轨。主观并无牟利目的，且在经营步入正轨后全面实现了合规经营。",
+                network: "建立了强大的“自组织式救助网络”。其联络人包括白血病病友、基督教神父、印度药厂负责人，群体具备极高的相互保护特质，且绝无吸毒、赌博、黑帮侵蚀。其社会关系是极佳的良性支持系统。",
+                evidence: {
+                    icon1: "fa-prescription-bottle-medical",
+                    name1: "印度制格列宁化学成分鉴定书 (纯度达99%)",
+                    icon2: "fa-truck-ramp-box",
+                    name2: "印度至海关港口的进出口报关提单",
+                    icon3: "fa-file-signature",
+                    name3: "一千三百余名慢粒白血病病友联名请愿书",
+                    transcript: `
+                        <p><strong class="text-red-500">经办人:</strong> "程勇，你知不知道私自走私进口国家未批的药属于销售假药罪？即使你不赚差价，这也是重罪，是要判重刑的！"</p>
+                        <p><strong class="text-gray-100">程勇:</strong> "我懂法，我也知道犯法。但我看着那些吃不起四万一瓶正版药的人，为了活命只能等死，我良心过不去。如果法律一定要抓一个替死鬼，那我进去，不要断了病人的药..."</p>
+                        <p><strong class="text-red-500">经办人:</strong> "那你为什么后来宁愿自己贴钱，每一瓶亏200块钱也要往国内带？"</p>
+                        <p><strong class="text-gray-100">程勇:</strong> "吕受益没了...看着那些信任我的眼睛，我闭不上眼。我宁可不赚这厂里的钱，我也要把药弄进来。我不入地狱，谁入地狱..."</p>
+                    `
+                },
+                jurors: [
+                    { role: "公众人物", name: "柴静 (媒体深度调查员)", sentence: "免予刑事处罚 / 缓刑", bg: "bg-purple-950/20 border-purple-800/30", icon: "fa-microphone", opinion: "他的行为是典型的利他性违法，没有从侵害财产权或人身安全中获利。法律若无情斩断这种民间救助，便是在制度层面上抹杀底层微茫的道德温度。" },
+                    { role: "平民百姓", name: "王阿姨 (白血病患者家属)", sentence: "无罪释放", bg: "bg-emerald-950/20 border-emerald-800/30", icon: "fa-heart", opinion: "程老板救了我们全家人的命！他是大恩人！如果他犯罪了，那吃不起四万一瓶天价药的我们更是犯了‘想活下去’的罪！" },
+                    { role: "专业刑辩律师", name: "张三 (知名刑法讲师)", sentence: "无罪 (紧急避险抗辩)", bg: "bg-blue-950/20 border-blue-800/30", icon: "fa-user-shield", opinion: "本案在生命法权与行政法法益剧烈对立的情况下，程勇采取了合乎理性的手段挽救生命。其性质符合紧急避险，主观不具有应罚的反社会恶性。" },
+                    { role: "保守工商业代表", name: "周总 (跨国药企大中华总监)", sentence: "有期徒刑1年 (缓刑)", bg: "bg-amber-950/20 border-amber-800/30", icon: "fa-industry", opinion: "知识产权保护是支撑药物研发的唯一原动力，私自进口低价仿制药会破坏全球契约。法理尊严不容践踏，但鉴于其救命初心，支持极度减轻量刑。" },
+                    { role: "伦理学家", name: "钱教授 (社会发展学者)", sentence: "不予追究刑事责任", bg: "bg-cyan-950/20 border-cyan-800/30", icon: "fa-brain", opinion: "资本和法律的合谋，在这里彻底挤压了生命本身。根据非比较性正义，一个在法网真空处贴钱维护弱者生命的人不仅不该受罚，甚至理应获得法律层面的‘国家级豁免’。" }
+                ]
+            },
+            'gaoqiqiang': {
+                name: "高启强",
+                id: "ID: 00192",
+                case: "黑社会性质组织犯罪",
+                risk: 9.8,
+                level: "极度危险级",
+                themeColor: "text-red-500 font-extrabold",
+                bgImg: "https://images.unsplash.com/photo-1549923746-c502d488f3aa?q=80&w=2070&auto=format&fit=crop",
+                avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=500&auto=format&fit=crop&q=60",
+                basic: "54岁 / 男 / 汉族 (强盛集团创始人)",
+                build: "172cm / 68kg / 体型紧凑",
+                face: "眼神内敛深邃，常带有一种温和却令人战栗的微笑，额部细纹重",
+                special: "双手粗糙，手指有常年水产零售浸泡造成的陈旧角质瘢痕",
+                ageNum: "54岁",
+                priors: "12次 (多项在指控阶段因证据灭失未诉)",
+                violations: "4次 (假释违规记录严重)",
+                employment: "极其丰厚 (强盛集团董事局主席)",
+                credit: "极佳 (9.5) / 表面信用，实为资本垄断",
+                marital: "丧偶 (配偶陈书婷)",
+                radar: [9.9, 9.5, 9.2, 1.2, 2.5, 9.8],
+                histogramTop: "2%",
+                anchors: [
+                    { id: "market-fights", label: "旧厂街市场斗殴" },
+                    { id: "gang-build", label: "陈书婷婚姻与涉黑联姻" },
+                    { id: "black-emperor", label: "强盛集团地下帝国" }
+                ],
+                linearStages: [
+                    { years: "1990-2000", title: "旧厂街市场鱼贩", text: "早年父母双亡，独自在农贸市场以杀鱼卖鱼供养弟妹，长期遭受市场管理员欺压。" },
+                    { years: "2000.02", title: "年夜饭打架拘留", text: "因摊位续约争议与管理员斗殴，人生首次被警方带走，心理防线发生畸变。", isWarning: true, warningText: "AI 警示: 心理认知崩塌，首次对公权力及暴力的控制力产生扭曲崇拜" },
+                    { years: "2001-2003", title: "狐假虎威与越轨升级", text: "借用刑警关系在市场建立威望，被卷入地方高利贷及徐江团伙，完成向职业暴徒的过渡。" },
+                    { years: "2004-2008", title: "迎娶陈书婷与拜认义父", text: "依附建工集团，通过婚姻完成黑道资源置换，并正式取代原有骨干，成为地方黑恶头目。" },
+                    { years: "2009-2021", title: "强盛集团黑金帝国", text: "表面洗白为政协委员与慈善家，暗中通过暴力拆迁、垄断砂石及非法高利贷建立地下王国。", isWarning: true, warningText: "AI 警示: 系统性黑恶控制，具备极强的反社会对抗和政治渗透性" }
+                ],
+                verticalStages: [
+                    {
+                        icon: "fa-fish",
+                        iconColor: "text-gray-500",
+                        time: "2000 年前 : 底层艰难隐忍期",
+                        title: "悲惨的底层挣扎",
+                        content: "在此期间，【金融征信】极低。作为抚养三个弟妹的孤儿，高启强为了生存忍受了市场的底层黑恶剥削。此阶段其社会控制（Social Bonding）连接极其紧密（责任心极强，保护家人为主）。"
+                    },
+                    {
+                        icon: "fa-gavel",
+                        iconColor: "text-yellow-500",
+                        time: "2001.03 : 首次卷入故意伤害与包庇（未定罪关键节点）",
+                        title: "电击徐雷致死案笔录（案件转折之谜）",
+                        content: `
+                            <div class="grid grid-cols-2 gap-4 mb-4">
+                                <div class="bg-black/60 p-3 rounded border border-gray-800 text-xs">
+                                    <span class="text-[10px] text-gray-500 block mb-1 font-bold">市局专案卷宗</span>
+                                    "高启强接受雇佣前去威胁徐雷还债，现场徐雷在使用电网非法电鱼时，不幸因漏电触电溺亡。高启强在现场目击死亡过程，但未报警并迅速逃离。并以此向雇主冒充系自己雇凶所为。"
+                                </div>
+                                <div class="bg-red-950/20 p-3 rounded border border-red-900/30 text-xs">
+                                    <span class="text-[10px] text-red-400 block mb-1 font-bold">黑道阶梯蜕变 (Kiviat 涌现理论)</span>
+                                    由于底层自尊的丧失，高启强深刻意识到，相比真相，别人对他的“恐惧”反而是他保护自己和弟妹的强力护身符。这一次撒谎，让他被动走上再无回头的暴力代理人道路。
+                                </div>
+                            </div>
+                        `
+                    },
+                    {
+                        icon: "fa-shield-halved",
+                        iconColor: "text-red-500",
+                        time: "2021 年至今 : 寡头控制与多维越轨",
+                        title: "垄断型犯罪组织，对政法机关实施多重围猎",
+                        content: "高启强当前虽然拥有【极佳的财务征信】与【稳定的社会政商头衔】，但这纯属由地下洗钱和黑恶暴利堆积的伪饰。量化算法识别出其高达9.8的超高再犯分值。但在非比较视角下，他的高分完全是其“主观极度贪婪”与“资本吞噬性扩张”的结果。"
+                    }
+                ],
+                intent: "系统性扩张、黑恶洗白与对抗法律。其越轨性质早已不是生存所迫，而是追求至高无上的地方特权、垄断利益及对司法制度的阻碍和操纵。主观恶性极高，无任何悔过自省，且具备高超的隐蔽伪装特质。",
+                network: "社会关系网络庞大且有毒。由腐败官僚（强力政治庇护伞）、打手、集团高管、洗钱商等组成紧密关联的黑道矩阵。同时，其家族直系亲属高度涉入犯罪洗钱，形成了牢固的利益/攻守同盟，极难实现非体制化救助。",
+                evidence: {
+                    icon1: "fa-skull-crossbones",
+                    name1: "水库死者徐雷电击现场勘验照片",
+                    icon2: "fa-receipt",
+                    name2: "白江波手下转账给高启强2万元定金收据",
+                    icon3: "fa-fingerprint",
+                    name3: "水库草丛残留烟蒂DNA配对鉴定书",
+                    transcript: `
+                        <p><strong class="text-red-500">刑警安欣:</strong> "老高，你是个老实人，徐雷触电的时候，你到底在不在现场？你弟弟和人家高利贷到底有没有牵扯？"</p>
+                        <p><strong class="text-gray-100">高启强:</strong> "(双手死死交叠，眼神颤抖，嘴唇发白) 安警官...我就在旧厂街市场卖鱼，天天一睁眼就是三个人的饭钱。我弟要开店，我妹要交学费，徐雷那种道上的大流氓，我怎么敢去碰他啊..."</p>
+                        <p><strong class="text-red-500">刑警安欣:</strong> "可是有人看见你在现场周围出现过，而且白江波的人找过你。"</p>
+                        <p><strong class="text-gray-100">高启强:</strong> "真没有啊安警官...我是坐警车吃过年夜饭的人，我懂感恩，我怎么会去做那种违法掉脑袋的事？我发誓，我一辈子都踏踏实实卖鱼，绝不沾黑。"</p>
+                    `
+                },
+                jurors: [
+                    { role: "公众人物", name: "王政法 (反腐专栏作家)", sentence: "死刑 / 无期徒刑 (不得减刑)", bg: "bg-purple-950/20 border-purple-800/30", icon: "fa-microphone", opinion: "他是典型的系统性毒瘤。高启强早已偏离了底层迫害的范畴，他是在主动通过暴力和政治渗透围猎国家公权力。没有任何宽大和不比较司法纠偏的空间。" },
+                    { role: "平民百姓", name: "老王 (旧厂街受害者)", sentence: "立即死刑 / 极刑", bg: "bg-emerald-950/20 border-emerald-800/30", icon: "fa-gavel", opinion: "以前他杀鱼的时候我们同情他。但他发家后强拆我们的房子、打残我的工友、垄断菜市场。这样的人不枪毙，老天爷都不答应！" },
+                    { role: "专业刑辩律师", name: "罗翔 (法学教授)", sentence: "无期徒刑 + 没收全部财产", bg: "bg-blue-950/20 border-blue-800/30", icon: "fa-user-shield", opinion: "诚然，环境不公对早期的他具有压迫和挤压。但在其有能力选择合法的‘自保’后，他却主动利用公权力贪欲构建邪恶堡垒。他的应得刑罚（Desert）应当是非常顶格的报应正义。" },
+                    { role: "保守工商业代表", name: "李会长 (本地商会会长)", sentence: "死缓 / 无期", bg: "bg-amber-950/20 border-amber-800/30", icon: "fa-industry", opinion: "他的强盛集团把持了京海绝大多数的建筑和砂石供应，打压了大量的自由竞争商户。不仅扰乱市场，更涉嫌多起恶性血案。法理绝对不能对涉黑寡头施以人道缓刑。" },
+                    { role: "伦理学家", name: "周伦理 (反社会心理学家)", sentence: "终身禁锢 + 剥夺政治权利", bg: "bg-cyan-950/20 border-cyan-800/30", icon: "fa-brain", opinion: "高启强高阶演化的过程中，社会纽带（Social Bonding）已经沦为他利益输送、攻守同盟的犯罪纽带。其精神特质具有极强的隐蔽毒害性，任何非体制化的‘社区救助’只会成为他继续滋生犯罪的土壤。" }
+                ]
+            }
+        };
+
+        let currentActiveKey = 'marcus';
+
+        // 统一雷达图生成逻辑
+        function renderRadar(customData) {
+            const svg = document.getElementById('radar-svg');
+            if(!svg) return;
+            
+            const cx = 120, cy = 120, radius = 70;
+            const levels = 5;
+            
+            const data = [
+                { label: '暴力再犯', value: customData[0], angle: -90 },
+                { label: '一般再犯', value: customData[1], angle: -30 },
+                { label: '心理稳定', value: customData[2], angle: 30 },
+                { label: '监管合规', value: customData[3], angle: 90 },
+                { label: '社会融入', value: customData[4], angle: 150 },
+                { label: '信用婚姻', value: customData[5], angle: 210 }
+            ];
+
+            let gridHtml = '';
+            for (let i = 1; i <= levels; i++) {
+                let r = (radius / levels) * i;
+                let points = data.map(d => {
+                    let rad = d.angle * Math.PI / 180;
+                    return `${cx + r * Math.cos(rad)},${cy + r * Math.sin(rad)}`;
+                }).join(' ');
+                gridHtml += `<polygon points="${points}" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="1"/>`;
+            }
+
+            let axisHtml = '';
+            data.forEach(d => {
+                let rad = d.angle * Math.PI / 180;
+                let endX = cx + radius * Math.cos(rad);
+                let endY = cy + radius * Math.sin(rad);
+                axisHtml += `<line x1="${cx}" y1="${cy}" x2="${endX}" y2="${endY}" stroke="rgba(255,255,255,0.15)" stroke-width="1"/>`;
+                
+                let textR = radius + 15;
+                if(Math.abs(d.angle) === 90) textR += 3;
+                
+                let tx = cx + textR * Math.cos(rad);
+                let ty = cy + textR * Math.sin(rad);
+                
+                let anchor = 'middle';
+                if (Math.cos(rad) > 0.1) anchor = 'start';
+                else if (Math.cos(rad) < -0.1) anchor = 'end';
+                
+                let baseline = 'middle';
+                if (Math.sin(rad) > 0.1) baseline = 'hanging';
+                else if (Math.sin(rad) < -0.1) baseline = 'baseline';
+                
+                let valStr = d.value.toFixed(1);
+                
+                axisHtml += `<text x="${tx}" y="${ty - 3}" text-anchor="${anchor}" alignment-baseline="${baseline}" fill="#a1a1aa" font-size="8" font-weight="600">${d.label}</text>`;
+                axisHtml += `<text x="${tx}" y="${ty + 7}" text-anchor="${anchor}" alignment-baseline="${baseline}" fill="#00f0ff" font-size="9" font-family="monospace" font-weight="bold">${valStr}</text>`;
+            });
+
+            let dataPoints = data.map(d => {
+                let rad = d.angle * Math.PI / 180;
+                let r = radius * (d.value / 10);
+                return `${cx + r * Math.cos(rad)},${cy + r * Math.sin(rad)}`;
+            }).join(' ');
+            
+            let dataPolygonHtml = `
+                <polygon points="${dataPoints}" fill="rgba(0, 240, 255, 0.18)" stroke="#00f0ff" stroke-width="1.5" />
+            `;
+            
+            let dataDotsHtml = data.map(d => {
+                let rad = d.angle * Math.PI / 180;
+                let r = radius * (d.value / 10);
+                let x = cx + r * Math.cos(rad);
+                let y = cy + r * Math.sin(rad);
+                return `<circle cx="${x}" cy="${y}" r="2" fill="#fff" />`;
+            }).join('');
+
+            svg.innerHTML = gridHtml + axisHtml + dataPolygonHtml + dataDotsHtml;
+        }
+
+        function renderHistogram(topPercentStr) {
+            const container = document.getElementById('histogram-container');
+            if(!container) return;
+            
+            let html = '';
+            const barCount = 45;
+            const topVal = parseFloat(topPercentStr);
+            const markerIndex = Math.floor(barCount * (1 - (topVal / 100)));
+            
+            for (let i = 0; i < barCount; i++) {
+                let x = (i - barCount / 2.5) / (barCount / 5); 
+                let heightPercent = Math.exp(-(x * x) / 2) * 85; 
+                heightPercent += Math.random() * 5;
+                if(heightPercent < 5) heightPercent = 5;
+
+                let isRedZone = i >= Math.floor(barCount * 0.85);
+                let isMarker = (i === markerIndex);
+                
+                let bgClass = isRedZone ? 'bg-red-500/50' : 'bg-cyan-600/30';
+                let extraStyles = isMarker ? 'bg-cyan-400 w-[3px] shadow-[0_0_8px_rgba(0,240,255,1)] z-10' : 'w-[2px] opacity-70';
+                
+                html += `
+                    <div class="h-full flex flex-col justify-end items-center relative group">
+                        ${isMarker ? `<div class="absolute -bottom-3 text-[8px] text-cyan-400 animate-bounce"><i class="fa-solid fa-caret-up"></i></div>` : ''}
+                        <div class="${bgClass} ${extraStyles} transition-all rounded-t-sm" style="height: ${heightPercent}%"></div>
+                    </div>
+                `;
+            }
+            container.innerHTML = html;
+        }
+
+        // 切换案件全局渲染函数
+        function switchCase(key) {
+            currentActiveKey = key;
+            const data = caseLibrary[key];
+            if(!data) return;
+
+            // 隐藏上一个案例的 AI 输出
+            const outputBox = document.getElementById('gemini-output-box');
+            outputBox.classList.add('hidden');
+            outputBox.innerHTML = '';
+            const runBtn = document.getElementById('run-gemini-btn');
+            runBtn.innerHTML = '<i class="fa-solid fa-network-wired"></i> 一键启动 Gemini AI 深度研判与相似案例分析';
+            runBtn.disabled = false;
+
+            // 1. 更新顶部和全局名称
+            document.getElementById('current-case-name').textContent = `${data.name} - ${data.case}`;
+            document.getElementById('case-dropdown').classList.add('hidden');
+            
+            // 2. 更换背景大图
+            const bgImg = document.getElementById('bg-suspect-img');
+            bgImg.style.opacity = '0';
+            setTimeout(() => {
+                bgImg.src = data.bgImg;
+                bgImg.style.opacity = '0.25';
+            }, 300);
+
+            // 3. 更新基本档案信息
+            document.getElementById('suspect-avatar').src = data.avatar;
+            document.getElementById('suspect-name').textContent = data.name;
+            document.getElementById('suspect-id').textContent = data.id;
+            
+            document.getElementById('suspect-basic').textContent = data.basic;
+            document.getElementById('suspect-build').textContent = data.build;
+            document.getElementById('suspect-face').textContent = data.face;
+            document.getElementById('suspect-special').textContent = data.special;
+
+            // 4. 更新风险评估数值与表格
+            const scoreNum = document.getElementById('overall-score-num');
+            const scoreLevel = document.getElementById('overall-score-level');
+            const scoreCard = document.getElementById('risk-score-card');
+            
+            scoreNum.textContent = data.risk.toFixed(1);
+            scoreLevel.textContent = data.level;
+
+            if(data.risk >= 8.0) {
+                scoreNum.className = "text-4xl font-bold data-font tracking-tighter text-red-500";
+                scoreLevel.className = "text-[11px] font-bold text-red-500 mt-0.5 uppercase tracking-[0.2em] animate-pulse";
+                scoreCard.className = "border border-red-900 bg-red-950/30 rounded-lg p-3 relative overflow-hidden shadow-inner";
+            } else if (data.risk >= 5.0) {
+                scoreNum.className = "text-4xl font-bold data-font tracking-tighter text-yellow-500";
+                scoreLevel.className = "text-[11px] font-bold text-yellow-500 mt-0.5 uppercase tracking-[0.2em]";
+                scoreCard.className = "border border-yellow-900 bg-yellow-950/30 rounded-lg p-3 relative overflow-hidden shadow-inner";
+            } else {
+                scoreNum.className = "text-4xl font-bold data-font tracking-tighter text-green-400";
+                scoreLevel.className = "text-[11px] font-bold text-green-400 mt-0.5 uppercase tracking-[0.2em]";
+                scoreCard.className = "border border-green-900/30 bg-green-950/20 rounded-lg p-3 relative overflow-hidden shadow-inner";
+            }
+
+            document.getElementById('table-age').textContent = data.ageNum;
+            document.getElementById('table-priors').textContent = data.priors;
+            
+            const tViolations = document.getElementById('table-violations');
+            tViolations.textContent = data.violations;
+            if(parseInt(data.violations) > 0) {
+                tViolations.className = "text-red-400 font-bold data-font";
+            } else {
+                tViolations.className = "text-cyan-400 font-bold data-font";
+            }
+
+            document.getElementById('table-employment').textContent = data.employment;
+            document.getElementById('table-credit').textContent = data.credit;
+            document.getElementById('table-marital').textContent = data.marital;
+
+            // 5. 重新渲染雷达图与直方图
+            renderRadar(data.radar);
+            document.getElementById('histogram-top-percent').textContent = data.histogramTop;
+            renderHistogram(data.histogramTop);
+
+            // 6. 动态生成底部下钻联动标签按钮
+            const anchorGroup = document.getElementById('anchor-btn-group');
+            anchorGroup.innerHTML = '';
+            data.anchors.forEach(anc => {
+                const btn = document.createElement('button');
+                btn.className = "px-2.5 py-1 rounded bg-cyan-900/10 hover:bg-cyan-900/40 border border-cyan-800/40 text-[10px] text-cyan-400 hover:text-cyan-200 transition-all shadow-inner flex items-center gap-1 group font-semibold";
+                btn.innerHTML = `<i class="fa-solid fa-hashtag text-[9px] opacity-70"></i> ${anc.label}`;
+                btn.onclick = () => {
+                    const target = document.getElementById(anc.id);
+                    const container = document.getElementById('narrative-container');
+                    if(target && container) {
+                        const containerRect = container.getBoundingClientRect();
+                        const nodeRect = target.getBoundingClientRect();
+                        const scrollTop = container.scrollTop + (nodeRect.top - containerRect.top) - 40;
+                        
+                        container.scrollTo({ top: scrollTop, behavior: 'smooth' });
+
+                        target.classList.remove('highlight-node');
+                        void target.offsetWidth; 
+                        target.classList.add('highlight-node');
+                        setTimeout(() => target.classList.remove('highlight-node'), 3000);
+                    }
+                };
+                anchorGroup.appendChild(btn);
+            });
+
+            // 7. 渲染右侧横向线性生平轨迹
+            const rowContainer = document.getElementById('linear-timeline-row');
+            rowContainer.innerHTML = '';
+            data.linearStages.forEach(st => {
+                const step = document.createElement('div');
+                step.className = "min-w-[190px] flex flex-col gap-2 relative snap-start";
+                
+                let warningHtml = "";
+                if(st.isWarning) {
+                    warningHtml = `
+                        <div class="text-[9px] text-yellow-300 bg-yellow-950/40 border border-yellow-800/40 p-2 rounded leading-normal font-bold">
+                            <i class="fa-solid fa-triangle-exclamation mr-1"></i> ${st.warningText}
+                        </div>
+                    `;
+                }
+
+                step.innerHTML = `
+                    <div class="text-xs text-cyan-400 data-font font-bold">${st.years}</div>
+                    <div class="h-1 w-full bg-gray-800 relative">
+                        <div class="absolute left-0 top-1/2 -translate-y-1/2 w-3 h-3 rounded-full ${st.isWarning ? 'bg-yellow-500' : 'bg-gray-500'} ring-2 ring-black"></div>
+                    </div>
+                    <div class="text-xs text-gray-200 font-bold">${st.title}</div>
+                    <div class="text-[10px] text-gray-400 narrative-text leading-relaxed">${st.text}</div>
+                    ${warningHtml}
+                `;
+                rowContainer.appendChild(step);
+            });
+
+            // 8. 渲染右侧深度纵向时间线节点
+            const verticalBox = document.getElementById('vertical-timeline-box');
+            verticalBox.innerHTML = '';
+            data.verticalStages.forEach(vst => {
+                const node = document.createElement('div');
+                node.id = vst.id || "";
+                node.className = "relative pl-10 transition-all duration-500 rounded-xl p-1 -ml-1";
+                
+                node.innerHTML = `
+                    <div class="absolute left-[19px] top-2.5 w-2.5 h-2.5 rounded-full bg-gray-500 ring-4 ring-black z-10"></div>
+                    <div class="text-xs text-cyan-400 data-font mb-2 font-bold flex items-center gap-1.5">
+                        <i class="fa-solid ${vst.icon} ${vst.iconColor} text-[10px]"></i> ${vst.time}
+                    </div>
+                    <div class="bg-gray-800/40 border border-gray-700/50 rounded-lg p-5 hover:border-cyan-500/30 transition-all">
+                        <h4 class="text-gray-200 font-bold mb-3 text-sm tracking-wide flex items-center gap-2">
+                            ${vst.title}
+                        </h4>
+                        <div class="narrative-text text-xs text-gray-400 leading-relaxed space-y-3">
+                            ${vst.content}
+                        </div>
+                    </div>
+                `;
+                verticalBox.appendChild(node);
+            });
+
+            // 9. 更新核心叙事补充：犯罪意图与关系网络
+            document.getElementById('intent-analysis-text').textContent = data.intent;
+            document.getElementById('social-network-text').textContent = data.network;
+
+            // 10. 更新首次犯罪证据与笔录
+            document.getElementById('evidence-name-1').textContent = data.evidence.name1;
+            document.getElementById('evidence-name-2').textContent = data.evidence.name2;
+            document.getElementById('evidence-name-3').textContent = data.evidence.name3;
+            document.getElementById('first-crime-transcript').innerHTML = data.evidence.transcript;
+
+            const eIcon1 = document.getElementById('evidence-icon-1');
+            const eIcon2 = document.getElementById('evidence-icon-2');
+            const eIcon3 = document.getElementById('evidence-icon-3');
+            eIcon1.className = `fa-solid ${data.evidence.icon1}`;
+            eIcon2.className = `fa-solid ${data.evidence.icon2}`;
+            eIcon3.className = `fa-solid ${data.evidence.icon3}`;
+
+            // 11. 更新陪审员系统
+            const jurorsBox = document.getElementById('jurors-grid');
+            jurorsBox.innerHTML = '';
+            data.jurors.forEach(jur => {
+                const card = document.createElement('div');
+                card.className = `p-3.5 rounded-lg border flex flex-col justify-between transition-all hover:scale-[1.02] ${jur.bg}`;
+                card.innerHTML = `
+                    <div>
+                        <div class="flex justify-between items-center mb-1.5 border-b border-gray-800/40 pb-1.5">
+                            <span class="text-[9px] uppercase tracking-wider font-bold text-cyan-400 bg-cyan-950/50 px-1.5 py-0.5 rounded border border-cyan-900/30">
+                                <i class="fa-solid ${jur.icon} mr-1"></i> ${jur.role}
+                            </span>
+                            <span class="text-[10px] text-gray-400 font-bold">${jur.name}</span>
+                        </div>
+                        <p class="text-[10px] text-gray-300 leading-relaxed narrative-text h-24 overflow-y-auto pr-1">
+                            "${jur.opinion}"
+                        </p>
+                    </div>
+                    <div class="mt-3 pt-2 border-t border-gray-800/60 flex justify-between items-center">
+                        <span class="text-[9px] text-gray-500 font-bold">量刑偏好:</span>
+                        <span class="text-[10px] text-red-400 font-bold">${jur.sentence}</span>
+                    </div>
+                `;
+                jurorsBox.appendChild(card);
+            });
+            
+            // 12. 更新道德评估对话框中的锚定数值
+            document.getElementById('modal-risk-display').textContent = data.risk.toFixed(1);
+        }
+
+        // ================= GEMINI API INTEGRATION & BACKOFF =================
+        const apiKey = ""; // Runtime embeds key here
+
+        async function makeGeminiCallWithBackoff(suspectData) {
+            // 本地演示兜底：无 API Key 时立即返回预置研判，避免 ~31s 重试后报错
+            if (!apiKey) {
+                await new Promise(r => setTimeout(r, 600));
+                return `## 本地演示模式（未接入实时 Gemini）
+本页为离线展示版本，以下为预置研判示例，用于说明系统的分析维度。
+
+**一、非比较性正义校准**：剥离群体基线后，对 ${suspectData && suspectData.name ? suspectData.name : '该个体'} 的判断应回到具体生命事件与情境诱因，而非与同类标签做横向比较。
+
+**二、情境减责因子**：突发生活危机、社会支持网络强度、初次违法的偶发性，均应作为风险评分的下调依据。
+
+**三、算法偏见红旗**：与族群、社区相关的代理变量需被标注并剔除，避免历史数据中的偏见在预测里自我复制。
+
+*接入有效 API Key 后，此处将由 Gemini 实时生成个案研判。*`;
+            }
+
+            const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+            
+            const promptText = `
+                你是一个具有高度严谨性、反思性、和深刻同理心的叙事型司法AI顾问。
+                请结合 Feinberg 的"非比较正义"（判定当事人是否得到其应得的对待，而非仅仅看群体概率分）和 Kiviat 的"时间演化与涌现"理论，对以下被审查人员的档案进行深度司法研判。
+                
+                【被评估人卷宗】:
+                姓名: ${suspectData.name}
+                系统量化风险得分: ${suspectData.risk}分/10 (级别: ${suspectData.level})
+                历史定罪: ${suspectData.priors}
+                违规记录: ${suspectData.violations}
+                就业/征信/婚姻状况: 就业${suspectData.employment}，征信${suspectData.credit}，婚姻${suspectData.marital}。
+                主观意图概要: ${suspectData.intent}
+                首次犯罪笔录: ${suspectData.evidence.transcript}
+                
+                【您的研判报告结构规范】:
+                请输出符合法官或审查官审阅的高保真排版文本。要求：
+                1. 统一字体和格式，全部使用中文回复，除大标题外不要出现任何英文。语气应当冰冷中带有人文洞察。
+                2. 必须包含一个名为【AI高危倾向/被迫情境标注】的章节：对于真正有反社会人格、主观恶意极大、资本扩张野心或拉拢涉黑团伙的危险倾向（例如高启强的阶梯演变），请直接用 <span class="text-red-500 font-bold border border-red-500/20 bg-red-950/30 px-1.5 py-0.5 rounded mr-1">危险特征</span> 标注出细节并做出严重警示建议。对于生活死角、亲人病故、走私平价药救人等被迫情境，请在报告中进行红色的“司法纠偏豁免”和生存权抗辩警示。
+                3. 必须包含一个名为【相似历史/叙事案例推荐】的章节：在文学（如《悲惨世界》冉阿让）、经典电影（如《我不是药神》）或真实社会司法史中，寻找一个与其灵魂深处、生活绝境或涉黑蜕变轨迹高度契合的“同款相似案例”，阐述两者为什么在非比较正义层面上具有惊人的共鸣，并给出修正量刑分数的具体纠偏策略建议。
+            `;
+
+            const payload = {
+                contents: [{
+                    parts: [{ text: promptText }]
+                }]
+            };
+
+            let delay = 1000;
+            const maxRetries = 5;
+
+            for (let i = 0; i < maxRetries; i++) {
+                try {
+                    const response = await fetch(endpoint, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+
+                    const result = await response.json();
+                    const aiText = result.candidates?.[0]?.content?.parts?.[0]?.text;
+                    if (aiText) {
+                        return aiText;
+                    } else {
+                        throw new Error("Empty candidate parts from Gemini response.");
+                    }
+                } catch (error) {
+                    if (i === maxRetries - 1) {
+                        throw error; // 最后一轮失败，直接向外抛出错误
+                    }
+                    // 自动执行指数级退避
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                    delay *= 2; 
+                }
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Dropdown 显隐切换
+            const switchBtn = document.getElementById('case-switch-btn');
+            const dropdown = document.getElementById('case-dropdown');
+            switchBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                dropdown.classList.toggle('hidden');
+            });
+            document.addEventListener('click', () => {
+                dropdown.classList.add('hidden');
+            });
+
+            // 初始化第一个案例 (Marcus J.)
+            switchCase('marcus');
+
+            // --- AI 研判控制舱激活逻辑 ---
+            const runGeminiBtn = document.getElementById('run-gemini-btn');
+            const geminiOutputBox = document.getElementById('gemini-output-box');
+
+            runGeminiBtn.addEventListener('click', async () => {
+                const currentData = caseLibrary[currentActiveKey];
+                if (!currentData) return;
+
+                // 启动视觉加载动画
+                runGeminiBtn.disabled = true;
+                runGeminiBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin text-cyan-400"></i> 正在连入 Gemini 大模型，提取 ${currentData.name} 的社会学关系与犯罪学动因...`;
+                geminiOutputBox.classList.remove('hidden');
+                geminiOutputBox.innerHTML = `
+                    <div class="flex flex-col items-center justify-center py-6 gap-3">
+                        <div class="w-8 h-8 rounded-full border-2 border-cyan-500/20 border-t-cyan-400 animate-spin"></div>
+                        <div class="text-[11px] text-cyan-400/80 animate-pulse">正在利用 AI 推算非比较性公正概率、标注高危红字指标、并行匹配历史同谋案例...</div>
+                    </div>
+                `;
+
+                try {
+                    const analysisResult = await makeGeminiCallWithBackoff(currentData);
+                    
+                    // 将 Markdown 粗体和列表符号简单替换成符合 HTML 精致排版的格式，并保障安全
+                    let formattedResult = analysisResult
+                        .replace(/\n/g, '<br>')
+                        .replace(/\*\*(.*?)\*\*/g, '<strong class="text-cyan-400 font-bold">$1</strong>')
+                        .replace(/### (.*?)(<br>|$)/g, '<h4 class="text-white font-bold text-sm border-l-2 border-cyan-500 pl-2 my-4">$1</h4>')
+                        .replace(/## (.*?)(<br>|$)/g, '<h3 class="text-white font-extrabold text-base border-b border-gray-800 pb-1.5 my-5">$1</h3>');
+
+                    geminiOutputBox.innerHTML = `
+                        <div class="border-b border-cyan-950 pb-3 mb-3 flex justify-between items-center">
+                            <span class="text-[10px] text-cyan-500 font-bold tracking-widest uppercase"><i class="fa-solid fa-circle-check text-green-500"></i> 司法研判意见装载完毕</span>
+                            <span class="text-[10px] text-gray-500">计算时延: <span class="data-font">~2.4s</span></span>
+                        </div>
+                        <div class="narrative-text text-xs text-gray-300 leading-relaxed space-y-2">
+                            ${formattedResult}
+                        </div>
+                    `;
+                    runGeminiBtn.innerHTML = `<i class="fa-solid fa-arrows-rotate"></i> 重新运行 Gemini 实时研判`;
+                    runGeminiBtn.disabled = false;
+                } catch (err) {
+                    geminiOutputBox.innerHTML = `
+                        <div class="p-4 border border-red-900 bg-red-950/20 rounded-lg text-red-400 flex items-start gap-2">
+                            <i class="fa-solid fa-triangle-exclamation mt-0.5"></i>
+                            <div>
+                                <strong class="block text-xs font-bold">API 研判终端运行中断</strong>
+                                <span class="text-[11px] text-red-500/80 leading-normal block mt-1">
+                                    无法与 Gemini 预审模型建立安全握手。请检查本地网络状况或确认 API 环境是否具备对应授信。
+                                </span>
+                            </div>
+                        </div>
+                    `;
+                    runGeminiBtn.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> 研判失败，点击重试`;
+                    runGeminiBtn.disabled = false;
+                }
+            });
+
+            // --- Modal 面板逻辑 ---
+            const modal = document.getElementById('ethical-modal');
+            const modalContent = document.getElementById('modal-content');
+            const openBtn = document.getElementById('open-checklist-btn');
+            const closeBtn = document.getElementById('close-modal-btn');
+            const cancelBtn = document.getElementById('cancel-modal-btn');
+            const textarea = document.getElementById('justification-text');
+            const wordCountSpan = document.getElementById('word-count');
+            const submitBtn = document.getElementById('submit-decision-btn');
+            const checkboxes = document.querySelectorAll('.ethical-cb');
+
+            const toggleModal = (show) => {
+                if(show) {
+                    modal.classList.remove('hidden');
+                    setTimeout(() => {
+                        modal.classList.remove('opacity-0');
+                        modalContent.classList.remove('scale-95');
+                    }, 10);
+                } else {
+                    modal.classList.add('opacity-0');
+                    modalContent.classList.add('scale-95');
+                    setTimeout(() => modal.classList.add('hidden'), 300);
+                }
+            };
+
+            openBtn.addEventListener('click', () => toggleModal(true));
+            closeBtn.addEventListener('click', () => toggleModal(false));
+            cancelBtn.addEventListener('click', () => toggleModal(false));
+
+            const validateForm = () => {
+                const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+                const textLength = textarea.value.trim().length;
+                wordCountSpan.textContent = textLength;
+
+                if (allChecked && textLength >= 50) {
+                    submitBtn.disabled = false;
+                    submitBtn.classList.replace('bg-gray-600', 'bg-cyan-600');
+                    submitBtn.classList.replace('text-gray-400', 'text-white');
+                    submitBtn.classList.add('hover:bg-cyan-500', 'shadow-[0_0_15px_rgba(0,240,255,0.4)]');
+                } else {
+                    submitBtn.disabled = true;
+                    submitBtn.classList.replace('bg-cyan-600', 'bg-gray-600');
+                    submitBtn.classList.replace('text-white', 'text-gray-400');
+                    submitBtn.classList.remove('hover:bg-cyan-500', 'shadow-[0_0_15px_rgba(0,240,255,0.4)]');
+                }
+            };
+
+            checkboxes.forEach(cb => cb.addEventListener('change', validateForm));
+            textarea.addEventListener('input', validateForm);
+
+            submitBtn.addEventListener('click', () => {
+                if(!submitBtn.disabled){
+                    alert(`针对被审查人 ${caseLibrary[currentActiveKey].name} 的非比较性裁决已被记录并写入该系统，算法打分偏倚已修正！`);
+                    toggleModal(false);
+                    textarea.value = "";
+                    checkboxes.forEach(cb => cb.checked = false);
+                    validateForm();
+                }
+            });
+        });
+    </script>
+</body>
+</html>

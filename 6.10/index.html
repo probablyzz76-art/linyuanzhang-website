@@ -1,0 +1,1822 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>张琳媛 · AI 产品设计作品集</title>
+    <!-- Tailwind CSS for layout -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Three.js (Core 3D Engine) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- MediaPipe Camera Utils & Hands for Live Gesture Recognition -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=Playfair+Display:ital,wght@0,700;1,600;1,700&family=Share+Tech+Mono&display=swap');
+
+        :root {
+            --bg-beige: #F7F6F3;
+            --accent-red: #C9463D;
+            --accent-blue: #3E5F7A;
+            --accent-green: #5E7A68;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background-color: var(--bg-beige);
+            color: #2D2D2A;
+            overflow-x: hidden;
+        }
+
+        h1, h2, h3, .serif-font {
+            font-family: 'Plus Jakarta Sans', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+        }
+
+        /* monospace kept only for the sandbox terminal / system readout */
+        .pixel-mono {
+            font-family: 'Share Tech Mono', monospace;
+        }
+
+        .skill-chip {
+            display: inline-block;
+            background: #F7F6F3;
+            border: 1px solid rgba(0,0,0,0.06);
+            border-radius: 3px;
+            padding: 3px 9px;
+            font-size: 11px;
+            color: #2D2D2A;
+        }
+
+        /* MOOTAIN blue-tinted tech chips (keeps the project's blue tone) */
+        .proj-nav-btn {
+            display:inline-flex; align-items:center; gap:6px;
+            font-size:11px; font-weight:700; letter-spacing:0.06em; text-transform:uppercase;
+            color:#8C8A84; background:#fff; padding:6px 11px;
+            border:1px solid rgba(0,0,0,0.08); border-radius:3px; transition:all .2s; cursor:pointer;
+        }
+        .proj-nav-btn:hover { color:#2D2D2A; border-color:rgba(0,0,0,0.28); }
+        .proj-nav-btn .num { font-size:9px; color:#C9463D; }
+        .proj-nav-btn.active { background:#2D2D2A; color:#fff; border-color:#2D2D2A; }
+        .proj-nav-btn.active .num { color:#4594e8; }
+
+        .dd-tab { cursor:pointer; border:1px solid rgba(0,0,0,0.08); border-radius:5px; overflow:hidden; background:#fff; transition:all .2s; }
+        .dd-tab:hover { border-color:rgba(69,148,232,0.5); transform:translateY(-2px); }
+        .dd-tab-active { border-color:#4594e8; box-shadow:0 8px 22px -8px rgba(69,148,232,0.45); }
+
+        .mootain-tech {
+            display: inline-block;
+            background: rgba(69, 148, 232, 0.08);
+            border: 1px solid rgba(69, 148, 232, 0.22);
+            border-radius: 3px;
+            padding: 3px 9px;
+            font-size: 11px;
+            color: #0160a8;
+            font-weight: 600;
+        }
+
+        .compas-tech {
+            display: inline-block;
+            background: rgba(201, 70, 61, 0.08);
+            border: 1px solid rgba(201, 70, 61, 0.22);
+            border-radius: 3px;
+            padding: 3px 9px;
+            font-size: 11px;
+            color: #a5392f;
+            font-weight: 600;
+        }
+
+        .kid-tech {
+            display: inline-block;
+            background: rgba(21, 127, 116, 0.08);
+            border: 1px solid rgba(21, 127, 116, 0.22);
+            border-radius: 3px;
+            padding: 3px 9px;
+            font-size: 11px;
+            color: #0f6b61;
+            font-weight: 600;
+        }
+
+        .brand-art { font-family: 'Playfair Display', 'Noto Serif SC', serif; font-style: italic; font-weight: 700; line-height: 1.05; }
+
+        .hscroll { overflow: hidden; position: relative; }
+        .hscroll-track { display: flex; gap: 14px; width: max-content; animation: hscrollmove 32s linear infinite; }
+        .hscroll:hover .hscroll-track { animation-play-state: paused; }
+        .hscroll-track img { height: var(--h, 180px); width: auto; object-fit: cover; border-radius: 6px; transition: transform .35s ease, box-shadow .35s ease; cursor: zoom-in; flex: none; }
+        .hscroll-track img:hover { transform: scale(1.16); box-shadow: 0 12px 34px -10px rgba(0,0,0,0.35); position: relative; z-index: 5; }
+        @keyframes hscrollmove { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+        /* ===== Gesture Folder System ===== */
+        /* -- parent folder (GESTURE) -- */
+        .pf-wrap { display:inline-flex; flex-direction:column; align-items:flex-start; gap:5px; cursor:pointer; user-select:none; }
+        .pf-box  { position:relative; width:72px; height:58px; transition:transform .22s ease; }
+        .pf-wrap:hover .pf-box { transform:translateY(-5px); }
+        .pf-back { position:relative; width:72px; height:58px; background:#1e1d1b; border-radius:0 8px 8px 8px; }
+        .pf-back::after { content:''; position:absolute; bottom:100%; left:0; width:22px; height:8px; background:#1e1d1b; border-radius:4px 4px 0 0; }
+        .pf-paper { position:absolute; z-index:2; bottom:8%; left:50%; transform:translate(-50%,8%); border-radius:6px; transition:all .3s ease; }
+        .pf-paper:nth-child(1){ width:66%; height:76%; background:#d0cec9; }
+        .pf-paper:nth-child(2){ width:76%; height:66%; background:#e2e0da; }
+        .pf-paper:nth-child(3){ width:86%; height:56%; background:#f5f4f0; }
+        .pf-front  { position:absolute; z-index:3; width:100%; height:100%; background:#2D2D2A; border-radius:4px 8px 8px 8px; transform-origin:bottom; transition:all .3s ease; }
+        .pf-front2 { position:absolute; z-index:3; width:100%; height:100%; background:#2D2D2A; border-radius:4px 8px 8px 8px; transform-origin:bottom; transition:all .3s ease; }
+        .pf-wrap:hover .pf-front,  .pf-wrap.open .pf-front  { transform:skew(14deg) scaleY(0.5); }
+        .pf-wrap:hover .pf-front2, .pf-wrap.open .pf-front2 { transform:skew(-14deg) scaleY(0.5); }
+        .pf-wrap:hover .pf-paper:nth-child(1), .pf-wrap.open .pf-paper:nth-child(1){ transform:translate(-118%,-64%) rotateZ(-15deg); }
+        .pf-wrap:hover .pf-paper:nth-child(2), .pf-wrap.open .pf-paper:nth-child(2){ transform:translate(10%,-64%) rotateZ(15deg); }
+        .pf-wrap:hover .pf-paper:nth-child(3), .pf-wrap.open .pf-paper:nth-child(3){ transform:translate(-50%,-92%) rotateZ(4deg); }
+        .pf-label { font-family:"Share Tech Mono",monospace; font-size:9px; font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:#6b7280; transition:color .2s; }
+        .pf-wrap:hover .pf-label, .pf-wrap.open .pf-label { color:#2D2D2A; }
+
+        /* -- child folder row (slides down) -- */
+        .cf-row { display:flex; align-items:flex-end; gap:14px; flex-wrap:nowrap;
+                  max-height:0; overflow:hidden; opacity:0;
+                  transition: max-height .38s ease, opacity .28s ease, transform .32s ease;
+                  transform:translateY(-8px); transform-origin:top left; }
+        .pf-wrap.open ~ .cf-row, .cf-row.visible {
+                  max-height:110px; opacity:1; transform:translateY(0); }
+        /* -- single child folder -- */
+        .cf-wrap { display:flex; flex-direction:column; align-items:center; gap:5px; cursor:pointer; }
+        .cf-box  { position:relative; width:46px; height:38px; transition:transform .22s ease; }
+        .cf-wrap:hover .cf-box, .cf-wrap.active .cf-box { transform:translateY(-4px); }
+        .cf-back { position:relative; width:46px; height:38px; border-radius:0 5px 5px 5px; }
+        .cf-back::after { content:''; position:absolute; bottom:100%; left:0; width:13px; height:6px; border-radius:3px 3px 0 0; background:inherit; }
+        .cf-paper { position:absolute; z-index:2; bottom:8%; left:50%; transform:translate(-50%,8%); border-radius:4px; transition:all .26s ease; }
+        .cf-paper:nth-child(1){ width:65%; height:75%; background:#d9d9d9; }
+        .cf-paper:nth-child(2){ width:75%; height:65%; background:#ebebeb; }
+        .cf-paper:nth-child(3){ width:85%; height:55%; background:#fff; }
+        .cf-front  { position:absolute; z-index:3; width:100%; height:100%; border-radius:3px 5px 5px 5px; transform-origin:bottom; transition:all .26s ease; }
+        .cf-front2 { position:absolute; z-index:3; width:100%; height:100%; border-radius:3px 5px 5px 5px; transform-origin:bottom; transition:all .26s ease; }
+        .cf-wrap:hover .cf-front,  .cf-wrap.active .cf-front  { transform:skew(13deg) scaleY(0.52); }
+        .cf-wrap:hover .cf-front2, .cf-wrap.active .cf-front2 { transform:skew(-13deg) scaleY(0.52); }
+        .cf-wrap:hover .cf-paper:nth-child(1),.cf-wrap.active .cf-paper:nth-child(1){ transform:translate(-112%,-58%) rotateZ(-13deg); }
+        .cf-wrap:hover .cf-paper:nth-child(2),.cf-wrap.active .cf-paper:nth-child(2){ transform:translate(8%,-58%) rotateZ(13deg); }
+        .cf-wrap:hover .cf-paper:nth-child(3),.cf-wrap.active .cf-paper:nth-child(3){ transform:translate(-50%,-85%) rotateZ(4deg); }
+        .cf-name { font-family:"Share Tech Mono",monospace; font-size:7.5px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:#8C8A84; transition:color .2s; white-space:nowrap; }
+        .cf-wrap:hover .cf-name { color:#2D2D2A; }
+        .cf-wrap.active .cf-name { color:#C9463D; }
+        .cf-wrap.active::after { content:''; display:block; width:4px; height:4px; border-radius:50%; background:#C9463D; margin-top:-3px; }
+
+        /* Scanline and print grain overlay to simulate physical architectural collage */
+        .collage-grain {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 999;
+            opacity: 0.18;
+            mix-blend-mode: multiply;
+        }
+
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(0,0,0,0.1);
+            border-radius: 2px;
+        }
+
+        /* Gesture Controller Overlay UI */
+        .video-preview-wrapper {
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between">
+
+    <!-- Print/Paper Texture Noise Layer -->
+    <svg class="collage-grain">
+        <filter id="collage-noise">
+            <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="4" stitchTiles="stitch"/>
+            <feColorMatrix type="saturate" values="0"/>
+            <feComponentTransfer>
+                <feFuncR type="linear" slope="0.85"/>
+                <feFuncG type="linear" slope="0.85"/>
+                <feFuncB type="linear" slope="0.85"/>
+            </feComponentTransfer>
+            <feBlend mode="multiply" in="SourceGraphic"/>
+        </filter>
+        <rect width="100%" height="100%" filter="url(#collage-noise)"/>
+    </svg>
+
+    <!-- Header Navigation -->
+    <header class="w-full px-8 py-6 flex justify-between items-center z-50">
+        <div>
+            <div class="brand-art text-3xl text-[#2D2D2A]" style="letter-spacing:0.02em;">Personal Portfolio</div>
+            <div class="text-[11px] tracking-[0.26em] uppercase text-[#8C8A84] mt-1.5">AI Product &amp; Design Intern · Open to Opportunities</div>
+        </div>
+        <div class="flex items-center gap-3">
+            <span class="hidden lg:block text-[9px] tracking-[0.25em] uppercase text-[#8C8A84] mr-1">切换项目</span>
+            <nav class="hidden md:flex items-center gap-2">
+                <button onclick="switchProject(1)" id="nav-proj-1" class="proj-nav-btn active"><span class="num">01</span> MOOTAIN</button>
+                <button onclick="switchProject(2)" id="nav-proj-2" class="proj-nav-btn"><span class="num">02</span> COMPAS</button>
+                <button onclick="switchProject(3)" id="nav-proj-3" class="proj-nav-btn"><span class="num">03</span> 中控大屏</button>
+                <button onclick="switchProject(4)" id="nav-proj-4" class="proj-nav-btn"><span class="num">04</span> 小小建筑师</button>
+            </nav>
+            <button onclick="triggerAssembleEffect()" title="重置体素方块" class="border border-[#2D2D2A]/30 text-[#2D2D2A] p-2 rounded-sm hover:bg-[#2D2D2A] hover:text-white transition-all">
+                <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Dynamic Workspace -->
+    <main class="flex-grow w-full max-w-[1680px] mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 px-6 py-4 items-center z-20">
+        
+        <!-- LEFT: Interactive Voxel Sandbox Viewport (7 Grids) -->
+        <div class="lg:col-span-7 h-[650px] w-full relative flex items-center justify-center bg-white border border-black/5 rounded-sm overflow-hidden shadow-inner">
+            <div class="absolute top-4 left-4 z-30 pointer-events-none">
+                <span class="text-[10px] tracking-[0.25em] text-[#8C8A84] uppercase flex items-center gap-2">
+                    <span class="w-2.5 h-2.5 rounded-full bg-[#C9463D] animate-pulse"></span>
+                    Interactive WebGL Voxel Sandbox
+                </span>
+                <p class="text-[11px] text-[#6B6964] mt-1">移动鼠标牵引方块。使用下方手势模拟器或开启相机，体验升级版的多维度动力学手势！</p>
+            </div>
+
+            <!-- Three.js Container -->
+            <div id="voxel-viewport" class="w-full h-full absolute inset-0 z-10 cursor-crosshair"></div>
+
+            <!-- Typography Design Strip (Floating inside Hero) -->
+            <div class="absolute inset-x-0 bottom-24 h-14 bg-white/70 backdrop-blur-md z-20 flex items-center justify-center border-y border-black/5 pointer-events-none">
+                <div class="pixel-mono text-[10px] font-bold tracking-[0.65em] text-[#2D2D2A] uppercase flex items-center gap-4" style="font-family:'Share Tech Mono',monospace;">
+                    SYS.V_02 // <span id="current-gesture-indicator" class="text-[#C9463D]">SPARSE MATRIX NORMAL</span> // MULTI-GESTURE CONTROL
+                </div>
+            </div>
+
+            <!-- Gesture Folder Cards (Simulator) -->
+            <!-- Gesture Parent Folder + Child Folders -->
+            <div class="absolute bottom-3 left-4 z-30" id="gesture-system">
+                <!-- 父 Folder：点击展开/收起子 Folder -->
+                <div class="pf-wrap" id="pf-gesture" onclick="toggleGestureFolder()">
+                    <div class="pf-box">
+                        <div class="pf-back">
+                            <div class="pf-paper"></div>
+                            <div class="pf-paper"></div>
+                            <div class="pf-paper"></div>
+                            <div class="pf-front"></div>
+                            <div class="pf-front2"></div>
+                        </div>
+                    </div>
+                    <span class="pf-label">Gesture</span>
+                </div>
+                <!-- 子 Folder 行（默认隐藏）-->
+                <div class="cf-row" id="cf-row">
+                    <div class="cf-wrap" id="cfw-open" onclick="activateFolder('open')">
+                        <div class="cf-box">
+                            <div class="cf-back" style="background:#1e2d42">
+                                <div class="cf-paper"></div><div class="cf-paper"></div><div class="cf-paper"></div>
+                                <div class="cf-front"  style="background:#2D2D2A"></div>
+                                <div class="cf-front2" style="background:#2D2D2A"></div>
+                            </div>
+                        </div>
+                        <span class="cf-name">Open Hand</span>
+                    </div>
+                    <div class="cf-wrap" id="cfw-fist" onclick="activateFolder('fist')">
+                        <div class="cf-box">
+                            <div class="cf-back" style="background:#3a2020">
+                                <div class="cf-paper"></div><div class="cf-paper"></div><div class="cf-paper"></div>
+                                <div class="cf-front"  style="background:#2D2D2A"></div>
+                                <div class="cf-front2" style="background:#2D2D2A"></div>
+                            </div>
+                        </div>
+                        <span class="cf-name">Fist Clump</span>
+                    </div>
+                    <div class="cf-wrap" id="cfw-vortex" onclick="activateFolder('vortex')">
+                        <div class="cf-box">
+                            <div class="cf-back" style="background:#2a2038">
+                                <div class="cf-paper"></div><div class="cf-paper"></div><div class="cf-paper"></div>
+                                <div class="cf-front"  style="background:#2D2D2A"></div>
+                                <div class="cf-front2" style="background:#2D2D2A"></div>
+                            </div>
+                        </div>
+                        <span class="cf-name">Vortex</span>
+                    </div>
+                    <div class="cf-wrap" id="cfw-wave" onclick="activateFolder('wave')">
+                        <div class="cf-box">
+                            <div class="cf-back" style="background:#1a3230">
+                                <div class="cf-paper"></div><div class="cf-paper"></div><div class="cf-paper"></div>
+                                <div class="cf-front"  style="background:#2D2D2A"></div>
+                                <div class="cf-front2" style="background:#2D2D2A"></div>
+                            </div>
+                        </div>
+                        <span class="cf-name">Wave Pulse</span>
+                    </div>
+                    <div class="cf-wrap" id="cfw-none" onclick="activateFolder('none')">
+                        <div class="cf-box">
+                            <div class="cf-back" style="background:#252525">
+                                <div class="cf-paper"></div><div class="cf-paper"></div><div class="cf-paper"></div>
+                                <div class="cf-front"  style="background:#2D2D2A"></div>
+                                <div class="cf-front2" style="background:#2D2D2A"></div>
+                            </div>
+                        </div>
+                        <span class="cf-name">Normalize</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Real-time Webcam Feed Preview Toggle Overlay -->
+            <div class="absolute top-4 right-4 z-30 flex flex-col items-end gap-2">
+                <button id="camera-toggle" onclick="toggleWebcam()" class="flex items-center gap-2 bg-[#2D2D2A] text-white hover:bg-black font-bold px-3 py-1.5 rounded-sm text-[10px] uppercase tracking-widest transition-all">
+                    <i data-lucide="video" class="w-3.5 h-3.5"></i>
+                    <span>Start Gesture Camera</span>
+                </button>
+                
+                <!-- Camera view area (Initially collapsed) -->
+                <div id="video-wrapper" class="video-preview-wrapper w-0 h-0 opacity-0 overflow-hidden rounded-md border border-black/10 bg-black/5 shadow-md flex items-center justify-center relative">
+                    <video id="webcam" class="w-full h-full object-cover scale-x-[-1]"></video>
+                    <div id="gesture-badge" class="absolute bottom-1 right-1 bg-red-600 text-white font-mono text-[8px] font-bold px-1.5 py-0.5 rounded uppercase">No Signal</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT: Full Personal Introduction & Skills -->
+        <div class="lg:col-span-5 h-[650px] w-full">
+            <div class="bg-white border border-black/5 shadow-sm rounded-sm h-full overflow-y-auto p-7 flex flex-col gap-6">
+
+                <!-- Identity -->
+                <div>
+                    <div class="flex justify-between items-start gap-3">
+                        <div>
+                            <h2 class="text-3xl font-bold tracking-tight">张琳媛</h2>
+                            <p class="text-xs text-[#8C8A84] mt-1.5 tracking-wide">东南大学设计学硕士 · 四川美术学院建筑学学士</p>
+                        </div>
+                        <span class="bg-[#C9463D]/10 text-[#C9463D] text-[9px] px-2.5 py-1 rounded-sm uppercase tracking-widest font-bold whitespace-nowrap">AI 产品 · 设计实习生</span>
+                    </div>
+                    <div class="flex flex-wrap gap-x-4 gap-y-1.5 mt-3 text-[11px] text-[#6B6964]">
+                        <span class="flex items-center gap-1.5"><i data-lucide="mail" class="w-3 h-3"></i>probablyzz76@gmail.com</span>
+                        <span class="flex items-center gap-1.5"><i data-lucide="phone" class="w-3 h-3"></i>173-4781-8499</span>
+                        <span class="flex items-center gap-1.5"><i data-lucide="message-circle" class="w-3 h-3"></i>微信 xhn11111110000</span>
+                    </div>
+                </div>
+
+                <!-- About -->
+                <div class="border-t border-black/5 pt-5">
+                    <h3 class="text-[13px] uppercase tracking-[0.16em] text-[#5C5A54] font-extrabold mb-3">自我介绍 · About</h3>
+                    <p class="text-[13px] leading-relaxed text-[#5C5A54]">
+                        东南大学设计学硕士（产品与交互方向），四川美术学院建筑学学士。建筑学训练出的<strong class="text-[#2D2D2A] font-semibold">空间与系统思维</strong>，叠加交互设计与原型能力；能独立用 <strong class="text-[#2D2D2A] font-semibold">AI Vibe Coding 把产品从 PRD 跑通到上线</strong>。关注 AIGC 与智能产品方向，熟悉 AI 辅助设计流程，擅长从用户视角拆解复杂场景，并重视 AI 的可解释性与伦理。
+                    </p>
+                </div>
+
+                <!-- Education -->
+                <div class="border-t border-black/5 pt-5">
+                    <h3 class="text-[13px] uppercase tracking-[0.16em] text-[#5C5A54] font-extrabold mb-3">教育经历 · Education</h3>
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-baseline gap-3">
+                            <div>
+                                <p class="text-[13px] font-semibold text-[#2D2D2A]">东南大学 · 设计学硕士</p>
+                                <p class="text-[11px] text-[#8C8A84] mt-0.5">艺术学院 · 产品与交互方向 · 校二等优秀学生奖学金</p>
+                            </div>
+                            <span class="text-[10px] text-[#aaa] whitespace-nowrap">2025.09 – 2028.06</span>
+                        </div>
+                        <div class="flex justify-between items-baseline gap-3">
+                            <div>
+                                <p class="text-[13px] font-semibold text-[#2D2D2A]">四川美术学院 · 建筑学学士</p>
+                                <p class="text-[11px] text-[#8C8A84] mt-0.5">建筑与环境艺术学院 · 多次优秀学生奖学金 / 优秀学生干部</p>
+                            </div>
+                            <span class="text-[10px] text-[#aaa] whitespace-nowrap">2020.09 – 2025.06</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Experience -->
+                <div class="border-t border-black/5 pt-5">
+                    <h3 class="text-[13px] uppercase tracking-[0.16em] text-[#5C5A54] font-extrabold mb-3">实习经历 · Experience</h3>
+                    <div class="flex justify-between items-baseline gap-3">
+                        <div>
+                            <p class="text-[13px] font-semibold text-[#2D2D2A]">设计助理 / 编辑</p>
+                            <p class="text-[11px] text-[#8C8A84] mt-0.5">上海探界文化传播 · 成都计成文化传媒</p>
+                        </div>
+                        <span class="text-[10px] text-[#aaa] whitespace-nowrap">2021.03 – 2025.09</span>
+                    </div>
+                    <p class="text-[12px] leading-relaxed text-[#5C5A54] mt-2">搭建品牌视觉规范系统、保持品牌调性一致；发布 30+ 海报、制作 15+ 份演示文稿，并负责视频拍摄与后期。</p>
+                </div>
+
+                <!-- Skills -->
+                <div class="border-t border-black/5 pt-5">
+                    <h3 class="text-[13px] uppercase tracking-[0.16em] text-[#5C5A54] font-extrabold mb-3">技能工具 · Skills</h3>
+                    <div class="space-y-3.5">
+                        <div>
+                            <span class="text-[#8C8A84] text-[10px] block mb-1.5">语言</span>
+                            <div class="flex flex-wrap gap-1.5">
+                                <span class="skill-chip">普通话二甲</span>
+                                <span class="skill-chip">英语 CET-6</span>
+                            </div>
+                        </div>
+                        <div>
+                            <span class="text-[#8C8A84] text-[10px] block mb-1.5">AI · Vibe Coding</span>
+                            <div class="flex flex-wrap gap-1.5">
+                                <span class="skill-chip">Cursor</span>
+                                <span class="skill-chip">Claude API</span>
+                                <span class="skill-chip">Gemini</span>
+                                <span class="skill-chip">Google AI Studio</span>
+                                <span class="skill-chip">Stitch</span>
+                            </div>
+                        </div>
+                        <div>
+                            <span class="text-[#8C8A84] text-[10px] block mb-1.5">设计 · 原型</span>
+                            <div class="flex flex-wrap gap-1.5">
+                                <span class="skill-chip">Figma</span>
+                                <span class="skill-chip">Axure</span>
+                                <span class="skill-chip">Sketch Up</span>
+                                <span class="skill-chip">Rhino</span>
+                                <span class="skill-chip">Enscape</span>
+                                <span class="skill-chip">Lumion</span>
+                                <span class="skill-chip">AutoCAD</span>
+                                <span class="skill-chip">Photoshop</span>
+                            </div>
+                        </div>
+                        <div>
+                            <span class="text-[#8C8A84] text-[10px] block mb-1.5">办公</span>
+                            <div class="flex flex-wrap gap-1.5">
+                                <span class="skill-chip">Excel</span>
+                                <span class="skill-chip">PowerPoint</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Bottom: Project Detail Panel & System Terminal -->
+    <section class="w-full max-w-[1680px] mx-auto px-6 py-4 grid grid-cols-1 md:grid-cols-2 gap-8 mb-8 z-20">
+        
+        <!-- Project Detail Panel (driven by clicking voxels in the sandbox) -->
+        <!-- 关于我 · 生活照影集 + 生活化简介（替换原项目面板）-->
+        <div class="bg-white p-6 border border-black/5 shadow-sm rounded-sm flex flex-col min-h-[340px]">
+            <div class="flex items-center justify-between pb-3 border-b border-black/5">
+                <span class="text-[13px] uppercase tracking-[0.16em] text-[#C9463D] font-extrabold">关于我 · Life</span>
+                <span class="text-[10px] text-[#aaa]">Off the screen</span>
+            </div>
+            <p class="text-sm text-[#5C5A54] leading-relaxed mt-4">
+                我是张琳媛，一个从建筑学一路走到 AI 产品设计的人。比起停留在图纸上，我更喜欢把想法真正做出来——无论是 3D 建模、原型，还是自己上手写代码。镜头之外，我相信好的设计既要有清晰的体系，也要带一点生活的温度。
+            </p>
+            <div class="hscroll mt-5 flex-grow flex items-center" style="--h:200px;">
+                <div class="hscroll-track">
+                    <img src="assets/life/life-1.jpg" alt="生活照 1" />
+                    <img src="assets/life/life-2.jpg" alt="生活照 2" />
+                    <img src="assets/life/life-3.jpg" alt="生活照 3" />
+                    <img src="assets/life/life-4.jpg" alt="生活照 4" />
+                    <img src="assets/life/life-5.jpg" alt="生活照 5" />
+                    <img src="assets/life/life-6.jpg" alt="生活照 6" />
+                    <img src="assets/life/life-7.jpg" alt="生活照 7" />
+                    <img src="assets/life/life-8.jpg" alt="生活照 8" />
+                    <img src="assets/life/life-1.jpg" alt="" aria-hidden="true" />
+                    <img src="assets/life/life-2.jpg" alt="" aria-hidden="true" />
+                    <img src="assets/life/life-3.jpg" alt="" aria-hidden="true" />
+                    <img src="assets/life/life-4.jpg" alt="" aria-hidden="true" />
+                    <img src="assets/life/life-5.jpg" alt="" aria-hidden="true" />
+                    <img src="assets/life/life-6.jpg" alt="" aria-hidden="true" />
+                    <img src="assets/life/life-7.jpg" alt="" aria-hidden="true" />
+                    <img src="assets/life/life-8.jpg" alt="" aria-hidden="true" />
+                </div>
+            </div>
+        </div>
+
+        <!-- Terminal Logger Sandbox -->
+        <div class="bg-[#1A1A19] p-6 rounded-sm text-gray-300 font-mono text-xs relative overflow-hidden shadow-lg border border-white/10">
+            <div class="flex items-center justify-between pb-3 border-b border-white/10 mb-4 text-[10px] uppercase tracking-widest text-[#8C8A84]">
+                <span class="flex items-center gap-2">
+                    <span class="w-2.5 h-2.5 rounded-full bg-green-500 animate-ping"></span>
+                    probablyzz76@Vibe-Sandbox:~/portfolio
+                </span>
+                <span>SYSTEM CORE STATUS</span>
+            </div>
+            <div id="terminal-screen" class="space-y-1.5 h-[120px] overflow-y-auto text-[11px] leading-relaxed text-gray-400">
+                <p class="text-green-400">$ system_init --role "AI Product Intern" --candidate "张琳媛"</p>
+                <p>&gt; Re-allocating particle structure... Sparsity coefficient upgraded to 0.45</p>
+                <p>&gt; Registering Vortex [☝️] and Wave [🌊] physics motion curves...</p>
+                <p class="text-yellow-500">&gt; MediaPipe Gesture controller updated. Advanced classification rules live.</p>
+                <p>&gt; System stabilized. Move mouse to trigger elastic structural feedback.</p>
+            </div>
+            <div class="mt-4 pt-3 border-t border-white/10 flex justify-between items-center">
+                <span class="text-[9px] text-[#8C8A84] uppercase tracking-widest">Perform hand gesture to trigger voxel reactions</span>
+                <span class="text-[10px] text-green-400 font-bold font-mono">PORT 3000 // RUNNING</span>
+            </div>
+        </div>
+
+    </section>
+
+    <!-- ===== DESIGN & DATA : Projects switcher (01 MOOTAIN / 02 COMPAS / 03 中控大屏) ===== -->
+    <section id="design-data" class="w-full max-w-[1680px] mx-auto px-6 py-10 z-20 scroll-mt-24">
+
+        <div class="flex items-end justify-between mb-6 border-b border-black/5 pb-4">
+            <div>
+                <span class="text-[12px] uppercase tracking-[0.26em] text-[#4594e8] font-extrabold">Design &amp; Data Integration</span>
+                <h2 class="text-3xl font-bold tracking-tight mt-1">设计 × 数据 · 项目集</h2>
+            </div>
+            <span class="text-[10px] text-[#8C8A84] tracking-widest uppercase hidden md:block">点击缩略图或右上角按钮切换</span>
+        </div>
+
+        <!-- Thumbnail switcher -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <div id="dd-tab-1" onclick="switchProject(1)" class="dd-tab dd-tab-active">
+                <div class="h-24 sm:h-28 overflow-hidden bg-[#eaedff]">
+                    <img src="assets/mootain-cutout.png" alt="MOOTAIN 缩略图" class="w-full h-full object-cover" />
+                </div>
+                <div class="px-3 py-2 flex items-center justify-between">
+                    <span class="text-xs font-bold text-[#2D2D2A]">01 · MOOTAIN</span>
+                    <span class="text-[9px] text-[#4594e8] font-bold uppercase">Live</span>
+                </div>
+            </div>
+            <div id="dd-tab-2" onclick="switchProject(2)" class="dd-tab">
+                <div class="h-24 sm:h-28 flex items-center justify-center" style="background: radial-gradient(circle at 50% 35%, #26262e 0%, #000 90%);">
+                    <i data-lucide="scale" class="w-7 h-7 text-[#ff3b30]"></i>
+                </div>
+                <div class="px-3 py-2 flex items-center justify-between">
+                    <span class="text-xs font-bold text-[#2D2D2A]">02 · COMPAS</span>
+                    <span class="text-[9px] text-[#C9463D] font-bold uppercase">Live</span>
+                </div>
+            </div>
+            <div id="dd-tab-3" onclick="switchProject(3)" class="dd-tab">
+                <div class="h-24 sm:h-28 flex items-center justify-center bg-gradient-to-br from-[#e6efe9] to-[#cfe0d6]">
+                    <i data-lucide="monitor" class="w-7 h-7 text-[#5E7A68]"></i>
+                </div>
+                <div class="px-3 py-2 flex items-center justify-between">
+                    <span class="text-xs font-bold text-[#2D2D2A]">03 · 中控大屏</span>
+                    <span class="text-[9px] text-[#8C8A84] font-bold uppercase">Soon</span>
+                </div>
+            </div>
+            <div id="dd-tab-4" onclick="switchProject(4)" class="dd-tab">
+                <div class="h-24 sm:h-28 overflow-hidden bg-[#e6f4f1]">
+                    <img src="assets/kidarch-1-cover.jpg" alt="小小建筑师 缩略图" class="w-full h-full object-cover" />
+                </div>
+                <div class="px-3 py-2 flex items-center justify-between">
+                    <span class="text-xs font-bold text-[#2D2D2A]">04 · 小小建筑师</span>
+                    <span class="text-[9px] text-[#157f74] font-bold uppercase">Live</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== PANEL 1 : MOOTAIN (项目1简介，保留) ===== -->
+        <div id="dd-panel-1">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-0 bg-white border border-black/5 shadow-sm rounded-sm overflow-hidden">
+                <div class="lg:col-span-6 relative bg-gradient-to-br from-[#eaedff] to-[#d3e4ff] min-h-[340px] flex items-center justify-center p-5">
+                    <img src="assets/proj1-cover.jpg" alt="项目主视觉" class="w-full h-full max-h-[420px] object-cover rounded-sm shadow-md" />
+                    <canvas class="cover-fx" data-fx="mootain" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;mix-blend-mode:soft-light;"></canvas>
+                    <span class="absolute top-4 left-4 bg-[#4594e8] text-white text-[9px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-sm shadow">Live · WebGL</span>
+                </div>
+                <div class="lg:col-span-6 p-8 flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-baseline gap-3">
+                            <h3 class="text-4xl font-extrabold tracking-tight text-[#0160a8]">MOOTAIN</h3>
+                            <span class="text-[11px] text-[#8C8A84] tracking-widest">2026</span>
+                        </div>
+                        <p class="text-[11px] uppercase tracking-[0.18em] text-[#4594e8] font-bold mt-1.5">情绪计算 · 心情地形社交 App</p>
+                        <div class="mt-4 bg-[#f7faff] border-l-2 border-[#4594e8] pl-3 py-2 rounded-r-sm">
+                            <p class="text-[10px] uppercase tracking-[0.18em] text-[#4594e8] font-extrabold">Problem · 问题洞察</p>
+                            <p class="text-xs text-[#3a3a38] leading-relaxed mt-1">现有情绪类 App（日记 / 打卡）大多停留在"记录"层面，缺乏能将情绪<em>可视化外化</em>的体验——当你说"我今天很焦虑"，你看不见它，也无法与它共处。</p>
+                        </div>
+                        <p class="text-sm leading-relaxed text-[#5C5A54] mt-3">
+                            MOOTAIN 把抽象情绪转化为可交互的 3D 黏土地形：效价决定色调、唤醒度决定地貌结构、强度控制夸张程度——让用户"走进"自己的情绪。作为产品负责人独立完成 PRD → 原型 → 全栈上线完整闭环。
+                        </p>
+                        <div class="flex flex-wrap gap-1.5 mt-5">
+                            <span class="mootain-tech">React 19</span>
+                            <span class="mootain-tech">Three.js · WebGL</span>
+                            <span class="mootain-tech">Gemini API</span>
+                            <span class="mootain-tech">Tailwind</span>
+                            <span class="mootain-tech">Vite</span>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4 mt-5 border-t border-black/5 pt-4 text-[12px]">
+                            <div>
+                                <span class="text-[#8C8A84] text-[10px] uppercase tracking-wider">角色</span>
+                                <p class="font-semibold text-[#2D2D2A] mt-0.5">产品负责人 · 独立全栈</p>
+                            </div>
+                            <div>
+                                <span class="text-[#8C8A84] text-[10px] uppercase tracking-wider">核心闭环</span>
+                                <p class="font-semibold text-[#2D2D2A] mt-0.5">PRD → 原型 → 上线</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-4 mt-7">
+                        <a href="mootain-app/index.html" target="_blank" rel="noopener"
+                           class="inline-flex items-center gap-2 bg-[#4594e8] hover:bg-[#0160a8] text-white font-bold px-5 py-2.5 rounded-sm text-xs uppercase tracking-widest transition-colors">
+                            <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+                            打开 MOOTAIN App
+                        </a>
+                        <span class="text-[10px] text-[#8C8A84]">完整可交互页面 · 无需 AI Studio</span>
+                    </div>
+                </div>
+            </div>
+            <!-- AI 系统设计：流程图 + 关键决策 -->
+            <div class="mt-8 flex items-center gap-3">
+                <span class="text-[12px] uppercase tracking-[0.22em] text-[#4594e8] font-extrabold whitespace-nowrap">AI System Design</span>
+                <span class="text-xs text-[#8C8A84] whitespace-nowrap">心情如何变成地形 · 一条可控的生成管线</span>
+                <div class="flex-grow h-px bg-black/5"></div>
+            </div>
+            <div class="mt-5 bg-[#f7faff] border border-[#4594e8]/15 rounded-sm p-6">
+                <div class="relative">
+                    <div class="hidden md:block absolute left-[10%] right-[10%] top-[22px] h-px bg-[#4594e8]/25"></div>
+                    <div class="grid grid-cols-1 md:grid-cols-5 gap-5 relative">
+                        <div class="flex flex-col items-center text-center md:items-start md:text-left">
+                            <div class="w-11 h-11 rounded-full bg-[#4594e8] text-white flex items-center justify-center font-extrabold text-sm shadow ring-4 ring-[#f7faff]">1</div>
+                            <h5 class="font-bold text-[#0160a8] mt-2.5 text-sm">心情输入</h5>
+                            <p class="text-[11px] text-[#6B6964] leading-relaxed mt-1">日记文本 / 戳泡泡 / 语音,三种低门槛方式记录当下情绪</p>
+                        </div>
+                        <div class="flex flex-col items-center text-center md:items-start md:text-left">
+                            <div class="w-11 h-11 rounded-full bg-[#4594e8] text-white flex items-center justify-center font-extrabold text-sm shadow ring-4 ring-[#f7faff]">2</div>
+                            <h5 class="font-bold text-[#0160a8] mt-2.5 text-sm">情绪解析</h5>
+                            <p class="text-[11px] text-[#6B6964] leading-relaxed mt-1">Gemini 解析文本情感,落到「效价 × 唤醒」坐标,匹配 40 种心情</p>
+                        </div>
+                        <div class="flex flex-col items-center text-center md:items-start md:text-left">
+                            <div class="w-11 h-11 rounded-full bg-[#4594e8] text-white flex items-center justify-center font-extrabold text-sm shadow ring-4 ring-[#f7faff]">3</div>
+                            <h5 class="font-bold text-[#0160a8] mt-2.5 text-sm">地形 prompt 基底</h5>
+                            <p class="text-[11px] text-[#6B6964] leading-relaxed mt-1">每种心情对应一套约 200 字的地貌描述(地理 / 土壤 / 植被 / 色彩)</p>
+                        </div>
+                        <div class="flex flex-col items-center text-center md:items-start md:text-left">
+                            <div class="w-11 h-11 rounded-full bg-[#4594e8] text-white flex items-center justify-center font-extrabold text-sm shadow ring-4 ring-[#f7faff]">4</div>
+                            <h5 class="font-bold text-[#0160a8] mt-2.5 text-sm">参数化扩写</h5>
+                            <p class="text-[11px] text-[#6B6964] leading-relaxed mt-1">按 强度 / valence / arousal 滑块,把 200 字细化扩展到约 400 字</p>
+                        </div>
+                        <div class="flex flex-col items-center text-center md:items-start md:text-left">
+                            <div class="w-11 h-11 rounded-full bg-[#4594e8] text-white flex items-center justify-center font-extrabold text-sm shadow ring-4 ring-[#f7faff]">5</div>
+                            <h5 class="font-bold text-[#0160a8] mt-2.5 text-sm">双路产出</h5>
+                            <p class="text-[11px] text-[#6B6964] leading-relaxed mt-1">① 3D Sandbox 实时挤出 13 种地貌  ② Gemini 渲染黏土风格主视觉</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <h4 class="text-[12px] uppercase tracking-[0.22em] text-[#4594e8] font-extrabold mt-7 mb-3">关键决策与取舍 · Key Decisions</h4>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div class="bg-white border border-black/5 rounded-sm p-4">
+                    <p class="text-[12px] font-bold text-[#0160a8] mb-1">Serverless 代理藏密钥</p>
+                    <p class="text-[11px] text-[#6B6964] leading-relaxed">把 Gemini key 放在 Netlify 服务端函数,前端只与自有域通信——既不泄露密钥,又让「浏览器 → 自有服务端 → Gemini」绕开国内直连 Google 的限制。</p>
+                </div>
+                <div class="bg-white border border-black/5 rounded-sm p-4">
+                    <p class="text-[12px] font-bold text-[#0160a8] mb-1">心情 ↔ 地貌一一差异化</p>
+                    <p class="text-[11px] text-[#6B6964] leading-relaxed">40 种心情铺满「效价-唤醒」四象限,各自映射不同地貌原型(山脉 / 河谷 / 草原 / 沙漠 / 火山…),避免「换了心情、地形却一样」。</p>
+                </div>
+                <div class="bg-white border border-black/5 rounded-sm p-4">
+                    <p class="text-[12px] font-bold text-[#0160a8] mb-1">让生成「可控」而非随机</p>
+                    <p class="text-[11px] text-[#6B6964] leading-relaxed">200→400 字扩写由滑块参数驱动:强度控夸张度、valence 控冷暖、arousal 控起伏与水流——把 AI 的不确定性收进可解释的旋钮。</p>
+                </div>
+                <div class="bg-white border border-black/5 rounded-sm p-4">
+                    <p class="text-[12px] font-bold text-[#0160a8] mb-1">实时渲染 + 失败回退</p>
+                    <p class="text-[11px] text-[#6B6964] leading-relaxed">选实时渲染换取更强个性化;同时设兜底(渲染失败 → 回退 3D / 预设),保证不白屏,并以此权衡成本与延迟。</p>
+                </div>
+            </div>
+
+            <!-- 用户洞察快照 -->
+            <div class="mt-7 flex items-center gap-3">
+                <span class="text-[12px] uppercase tracking-[0.22em] text-[#4594e8] font-extrabold whitespace-nowrap">User Insight</span>
+                <span class="text-xs text-[#8C8A84] whitespace-nowrap">调研洞察 · 3 个核心发现驱动设计决策</span>
+                <div class="flex-grow h-px bg-black/5"></div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-4">
+                <div class="bg-white border border-black/5 rounded-sm p-4">
+                    <div class="text-2xl font-extrabold text-[#4594e8]">73%</div>
+                    <p class="text-[11px] text-[#0160a8] font-bold mt-0.5">情绪记录停留在文字</p>
+                    <p class="text-[11px] text-[#6B6964] leading-relaxed mt-1">访谈 15 位 18–28 岁用户，多数人通过写日记或发朋友圈宣泄，但觉得"说了也没用/还是憋着"。</p>
+                </div>
+                <div class="bg-white border border-black/5 rounded-sm p-4">
+                    <div class="text-2xl font-extrabold text-[#4594e8]">#1 痛点</div>
+                    <p class="text-[11px] text-[#0160a8] font-bold mt-0.5">无法"看见"自己的情绪</p>
+                    <p class="text-[11px] text-[#6B6964] leading-relaxed mt-1">"我知道我很烦，但说不清为什么、多严重。" — 高频用户原话，指向情绪可视化外化的需求缺口。</p>
+                </div>
+                <div class="bg-white border border-black/5 rounded-sm p-4">
+                    <div class="text-2xl font-extrabold text-[#4594e8]">竞品空白</div>
+                    <p class="text-[11px] text-[#0160a8] font-bold mt-0.5">市场无空间感情绪 App</p>
+                    <p class="text-[11px] text-[#6B6964] leading-relaxed mt-1">对比 Daylio、Reflectly、Calm：均为 2D 图表/文字，无一将情绪转化为可交互的空间体验。</p>
+                </div>
+            </div>
+            <!-- 迭代对比 -->
+            <div class="mt-7 flex items-center gap-3">
+                <span class="text-[12px] uppercase tracking-[0.22em] text-[#4594e8] font-extrabold whitespace-nowrap">Iteration</span>
+                <span class="text-xs text-[#8C8A84] whitespace-nowrap">关键迭代 · 从问题出发的设计演进</span>
+                <div class="flex-grow h-px bg-black/5"></div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-4">
+                <div class="bg-[#fff4f4] border border-[#f5a0a0]/40 rounded-sm p-4">
+                    <p class="text-[10px] uppercase tracking-wider text-[#C9463D] font-bold">v1 · 问题</p>
+                    <p class="text-xs font-semibold text-[#2D2D2A] mt-1">所有心情生成同一块地形</p>
+                    <p class="text-[11px] text-[#6B6964] mt-1 leading-relaxed">早期版本只按高度缩放，换情绪只有颜色变化，地形结构无差异——用户测试首个反馈。</p>
+                </div>
+                <div class="bg-[#f7faff] border border-[#4594e8]/20 rounded-sm p-4">
+                    <p class="text-[10px] uppercase tracking-wider text-[#4594e8] font-bold">v2 · 决策</p>
+                    <p class="text-xs font-semibold text-[#2D2D2A] mt-1">40 心情 × 13 地貌原型</p>
+                    <p class="text-[11px] text-[#6B6964] mt-1 leading-relaxed">把情绪四象限（效价×唤醒）映射到 13 种地貌结构（山脉/河谷/草原/沙漠/火山…），结构差异化。</p>
+                </div>
+                <div class="bg-[#f3faf7] border border-[#5a9e80]/20 rounded-sm p-4">
+                    <p class="text-[10px] uppercase tracking-wider text-[#2a7a5b] font-bold">v3 · 结果</p>
+                    <p class="text-xs font-semibold text-[#2D2D2A] mt-1">参数化滑块 + 双路产出</p>
+                    <p class="text-[11px] text-[#6B6964] mt-1 leading-relaxed">强度/valence/arousal 三轴驱动 prompt 扩写，3D Sandbox + Gemini 渲染双路并行，个性化明显提升。</p>
+                </div>
+            </div>
+            <!-- AI 伦理与边界 -->
+            <div class="mt-7 flex items-center gap-3">
+                <span class="text-[12px] uppercase tracking-[0.22em] text-[#4594e8] font-extrabold whitespace-nowrap">AI Ethics &amp; Limits</span>
+                <span class="text-xs text-[#8C8A84] whitespace-nowrap">边界思考 · 我如何处理 AI 的不确定性与风险</span>
+                <div class="flex-grow h-px bg-black/5"></div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-4 mb-2">
+                <div class="bg-white border border-black/5 rounded-sm p-4">
+                    <p class="text-[11px] font-bold text-[#0160a8] mb-1">🔒 密钥与隐私</p>
+                    <p class="text-[11px] text-[#6B6964] leading-relaxed">Gemini key 仅在服务端函数存活，前端不可见。用户情绪文本不落库，仅用于当次生成后即丢弃，不做二次训练。</p>
+                </div>
+                <div class="bg-white border border-black/5 rounded-sm p-4">
+                    <p class="text-[11px] font-bold text-[#0160a8] mb-1">🎛 可解释性</p>
+                    <p class="text-[11px] text-[#6B6964] leading-relaxed">生成不是"黑盒一键出图"：用户可看到效价/唤醒坐标落点，并通过三轴滑块主动干预——把 AI 不确定性收进可理解的参数旋钮。</p>
+                </div>
+                <div class="bg-white border border-black/5 rounded-sm p-4">
+                    <p class="text-[11px] font-bold text-[#0160a8] mb-1">⚠ 心理安全边界</p>
+                    <p class="text-[11px] text-[#6B6964] leading-relaxed">情绪类产品有放大负面情绪的风险。现阶段定位为"陪伴外化"而非"诊断干预"，Roadmap 中列入危机情绪识别与专业资源跳转规划。</p>
+                </div>
+            </div>
+            <!-- 地形效果图 · CircularGallery 曲面旋转画廊（WebGL；不可用时回退静态滚动）-->
+            <div id="terrain-gallery" class="mt-4 rounded-sm border border-black/5 bg-[#f6f7f4] relative overflow-hidden" style="height:300px;">
+                <div id="terrain-gallery-fallback" class="hscroll absolute inset-0 flex items-center" style="--h:180px;">
+                    <div class="hscroll-track px-3">
+                        <img src="assets/terrain/terrain-1.jpg" alt="地形效果 1" />
+                        <img src="assets/terrain/terrain-2.jpg" alt="地形效果 2" />
+                        <img src="assets/terrain/terrain-3.jpg" alt="地形效果 3" />
+                        <img src="assets/terrain/terrain-4.jpg" alt="地形效果 4" />
+                        <img src="assets/terrain/terrain-5.jpg" alt="地形效果 5" />
+                        <img src="assets/terrain/terrain-6.jpg" alt="地形效果 6" />
+                        <img src="assets/terrain/terrain-1.jpg" alt="" aria-hidden="true" />
+                        <img src="assets/terrain/terrain-2.jpg" alt="" aria-hidden="true" />
+                        <img src="assets/terrain/terrain-3.jpg" alt="" aria-hidden="true" />
+                        <img src="assets/terrain/terrain-4.jpg" alt="" aria-hidden="true" />
+                        <img src="assets/terrain/terrain-5.jpg" alt="" aria-hidden="true" />
+                        <img src="assets/terrain/terrain-6.jpg" alt="" aria-hidden="true" />
+                    </div>
+                </div>
+            </div>
+
+            <!-- Full case-study spreads: research / competitive analysis / persona / UI -->
+            <div class="mt-8 flex items-center gap-3">
+                <span class="text-[10px] uppercase tracking-[0.25em] text-[#4594e8] font-bold whitespace-nowrap">Full Case Study</span>
+                <span class="text-xs text-[#8C8A84] whitespace-nowrap">完整方案 · 调研 / 竞品 / 用户画像 / UI 系统</span>
+                <div class="flex-grow h-px bg-black/5"></div>
+            </div>
+            <div class="space-y-4 mt-4">
+                <figure class="bg-white border border-black/5 rounded-sm overflow-hidden shadow-sm">
+                    <img src="assets/mootain-analysis-1-background.jpg" alt="MOOTAIN 背景与痛点" class="w-full object-cover" loading="lazy" />
+                    <figcaption class="px-4 py-2 text-[11px] text-[#6B6964] border-t border-black/5">01 · 背景与痛点 / Background &amp; Pain Points</figcaption>
+                </figure>
+                <figure class="bg-white border border-black/5 rounded-sm overflow-hidden shadow-sm">
+                    <img src="assets/mootain-analysis-2-research.jpg" alt="MOOTAIN 竞品分析与用户研究" class="w-full object-cover" loading="lazy" />
+                    <figcaption class="px-4 py-2 text-[11px] text-[#6B6964] border-t border-black/5">02 · 竞品分析与用户研究 / Competitive &amp; User Research</figcaption>
+                </figure>
+                <figure class="bg-white border border-black/5 rounded-sm overflow-hidden shadow-sm">
+                    <img src="assets/mootain-analysis-3-persona.jpg" alt="MOOTAIN 用户画像·旅程图·信息架构" class="w-full object-cover" loading="lazy" />
+                    <figcaption class="px-4 py-2 text-[11px] text-[#6B6964] border-t border-black/5">03 · 用户画像 · 旅程图 · 信息架构 / Persona, Journey &amp; IA</figcaption>
+                </figure>
+                <figure class="bg-white border border-black/5 rounded-sm overflow-hidden shadow-sm">
+                    <img src="assets/mootain-analysis-4-ui.jpg" alt="MOOTAIN UI 高保真与设计系统" class="w-full object-cover" loading="lazy" />
+                    <figcaption class="px-4 py-2 text-[11px] text-[#6B6964] border-t border-black/5">04 · UI 高保真与设计系统 / Hi-Fi UI &amp; Design System</figcaption>
+                </figure>
+            </div>
+            <!-- 验证与下一步 -->
+            <div class="mt-8 flex items-center gap-3">
+                <span class="text-[12px] uppercase tracking-[0.22em] text-[#4594e8] font-extrabold whitespace-nowrap">Validation &amp; Next</span>
+                <span class="text-xs text-[#8C8A84] whitespace-nowrap">验证 · 迭代方向</span>
+                <div class="flex-grow h-px bg-black/5"></div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                <div class="border border-dashed border-[#4594e8]/40 rounded-sm p-5 bg-[#f7faff]">
+                    <p class="text-[12px] font-bold text-[#0160a8] mb-2">小样本验证 · Usability Test</p>
+                    <div class="space-y-2">
+                        <div class="flex items-start gap-2">
+                            <span class="text-[10px] bg-[#4594e8] text-white px-1.5 py-0.5 rounded font-bold shrink-0 mt-0.5">任务</span>
+                            <p class="text-[11px] text-[#3a3a38] leading-relaxed">核心路径：输入心情 → 生成地形 → 识别地形与情绪对应，共 3 个子任务。</p>
+                        </div>
+                        <div class="flex items-start gap-2">
+                            <span class="text-[10px] bg-[#e8a445] text-white px-1.5 py-0.5 rounded font-bold shrink-0 mt-0.5">待补</span>
+                            <p class="text-[11px] text-[#6B6964] leading-relaxed">招募 6–8 位 18–28 岁目标用户，记录完成率、步骤数与出声思维，填入真实数据后删除此提示。</p>
+                        </div>
+                        <div class="flex items-start gap-2 pt-1 border-t border-[#4594e8]/10">
+                            <span class="text-[10px] bg-[#2a7a5b] text-white px-1.5 py-0.5 rounded font-bold shrink-0 mt-0.5">已知</span>
+                            <p class="text-[11px] text-[#3a3a38] leading-relaxed">内测发现：心情→地形"看起来一样"是首要痛点（已在 v2 迭代解决）；Gemini 渲染 3–6s 延迟可接受但需加进度提示。</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="border border-black/5 rounded-sm p-5 bg-white">
+                    <p class="text-[12px] font-bold text-[#0160a8] mb-2">下一步 · Roadmap</p>
+                    <ul class="text-xs text-[#6B6964] leading-relaxed space-y-1 list-disc pl-4">
+                        <li>建立情绪识别准确性评估集,持续迭代 40 套 prompt</li>
+                        <li>热门心情预渲染 + 缓存,压低首屏渲染延迟与调用成本</li>
+                        <li>「情绪地形」社交:地形可分享、可共建,形成情绪社区</li>
+                        <li>隐私优先:情绪数据匿名化 / 端侧化处理</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== PANEL 2 : COMPAS (项目2) ===== -->
+             <div id="dd-panel-2" class="hidden">
+            <!-- 封面信息卡 -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-0 bg-white border border-black/5 shadow-sm rounded-sm overflow-hidden">
+                <div class="lg:col-span-6 relative min-h-[340px] overflow-hidden bg-[#0b0b0e]">
+                    <img src="assets/compas-cover.jpg" alt="SYMPHONY 叙事司法评估系统界面" class="absolute inset-0 w-full h-full object-contain" />
+                    <canvas class="cover-fx" data-fx="justice" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;mix-blend-mode:screen;"></canvas>
+                    <span class="absolute top-4 left-4 z-10 bg-[#C9463D] text-white text-[9px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-sm shadow">Live · 司法评估系统</span>
+                </div>
+                <div class="lg:col-span-6 p-8 flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-baseline gap-3">
+                            <h3 class="text-4xl font-extrabold tracking-tight text-[#C9463D]">COMPAS</h3>
+                            <span class="text-[11px] text-[#8C8A84] tracking-widest">2026</span>
+                        </div>
+                        <p class="text-[11px] uppercase tracking-[0.18em] text-[#C9463D] font-bold mt-1.5">AI 伦理 · 算法公平性与可解释司法</p>
+                        <div class="mt-4 bg-[#fff4f4] border-l-2 border-[#C9463D] pl-3 py-2 rounded-r-sm">
+                            <p class="text-[10px] uppercase tracking-[0.18em] text-[#C9463D] font-extrabold">Problem · 问题前置</p>
+                            <p class="text-xs text-[#3a3a38] leading-relaxed mt-1">COMPAS 再犯预测算法将黑人被告标记为"高风险"的概率是白人的两倍（ProPublica，2016），且评分逻辑不可见——法官在用一个<em>无法解释、无法质疑</em>的分数做量刑决策。</p>
+                        </div>
+                        <p class="text-sm leading-relaxed text-[#5C5A54] mt-3">
+                            我把这场算法公平性研究落成可交互产品 <strong>Symphony</strong>：用「叙事化司法评估」替代冷冰冰的风险标签——重建个体的生命轨迹与情境诱因，引入非比较性正义与算法纠偏审查，让司法辅助决策<em>可解释、可质疑、可纠偏</em>。
+                        </p>
+                        <div class="flex flex-wrap gap-1.5 mt-4">
+                            <span class="compas-tech">算法公平性</span><span class="compas-tech">可解释 AI</span><span class="compas-tech">叙事化交互</span><span class="compas-tech">Gemini 研判</span><span class="compas-tech">PRD · 原型</span>
+                        </div>
+                        <div class="grid grid-cols-3 gap-3 mt-4 border-t border-black/5 pt-4 text-[12px]">
+                            <div><span class="text-[#8C8A84] text-[10px] uppercase tracking-wider">角色</span><p class="font-semibold text-[#2D2D2A] mt-0.5">独立研究 · 产品设计</p></div>
+                            <div><span class="text-[#8C8A84] text-[10px] uppercase tracking-wider">研究方法</span><p class="font-semibold text-[#2D2D2A] mt-0.5">文献 + 案例 + 原型</p></div>
+                            <div><span class="text-[#8C8A84] text-[10px] uppercase tracking-wider">核心产出</span><p class="font-semibold text-[#2D2D2A] mt-0.5">可交互系统 + PRD</p></div>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-4 mt-6">
+                        <a href="compas-app/index.html" target="_blank" rel="noopener"
+                           class="inline-flex items-center gap-2 bg-[#C9463D] hover:bg-[#a5392f] text-white font-bold px-5 py-2.5 rounded-sm text-xs uppercase tracking-widest transition-colors">
+                            <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+                            打开 Symphony 系统
+                        </a>
+                        <span class="text-[10px] text-[#8C8A84]">完整可交互演示 · Demo 模式内置</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 研究框架 -->
+            <div class="mt-8 flex items-center gap-3">
+                <span class="text-[12px] uppercase tracking-[0.22em] text-[#C9463D] font-extrabold whitespace-nowrap">Research Framework</span>
+                <span class="text-xs text-[#8C8A84] whitespace-nowrap">理论框架 · 道德可供性 × 两种正义 × 可解释 AI</span>
+                <div class="flex-grow h-px bg-black/5"></div>
+            </div>
+            <!-- 核心理论：Kiviat 道德可供性 -->
+            <div class="mt-4 bg-[#0f0f13] border border-[#C9463D]/20 rounded-sm p-5">
+                <p class="text-[10px] uppercase tracking-[0.18em] text-[#C9463D] font-extrabold mb-2">核心理论框架 · Kiviat (2023) 道德可供性</p>
+                <p class="text-[11px] text-[#9ca3af] leading-relaxed mb-3">Barbara Kiviat 在 <em>Sociological Theory</em> 41(3) 中提出：算法系统将人建构为"案例"（Case）——一组标准化属性的集合——这种认知模式具有特定的<strong>道德可供性</strong>（Moral Affordances），它让比较性分析成为可能，但同时遮蔽了非比较性正义的判断空间。</p>
+                <blockquote class="border-l-2 border-[#C9463D]/60 pl-3 italic text-[#9ca3af] text-[11px]">"那些将案例视为冷漠无情、或将叙事视为感性不科学的人，都在限制自己看见完整道德景观的能力。" — Barbara Kiviat, 2023</blockquote>
+            </div>
+            <!-- Case vs Narrative 对比表 -->
+            <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div class="bg-white border border-black/5 rounded-sm p-4">
+                    <p class="text-[10px] uppercase tracking-wider text-[#C9463D] font-bold mb-2">案例模式（Case）· 去情境化 · 静态 · 可比较</p>
+                    <div class="space-y-1.5 text-[11px] text-[#6B6964]">
+                        <div class="flex gap-2"><span class="text-[#8C8A84] w-14 shrink-0">核心问题</span><span>"相似的人是否被相似对待？"</span></div>
+                        <div class="flex gap-2"><span class="text-[#8C8A84] w-14 shrink-0">需要信息</span><span>多个人/群体的标准化属性（年龄、收入、犯罪次数…）</span></div>
+                        <div class="flex gap-2"><span class="text-[#8C8A84] w-14 shrink-0">信息结构</span><span>平等（equality）、比例性（proportionality）</span></div>
+                        <div class="flex gap-2"><span class="text-[#8C8A84] w-14 shrink-0">哲学来源</span><span>Case-based（数据库、分类、统计模型）</span></div>
+                        <div class="flex gap-2"><span class="text-[#8C8A84] w-14 shrink-0">道德代价</span><span class="text-[#C9463D]">遮蔽非比较性伤害 · 无法问"这个人应得此结果吗"</span></div>
+                    </div>
+                </div>
+                <div class="bg-[#fff4f4] border border-[#C9463D]/15 rounded-sm p-4">
+                    <p class="text-[10px] uppercase tracking-wider text-[#C9463D] font-bold mb-2">叙事模式（Narrative）· 有动机 · 有情境 · 有转折</p>
+                    <div class="space-y-1.5 text-[11px] text-[#6B6964]">
+                        <div class="flex gap-2"><span class="text-[#8C8A84] w-14 shrink-0">核心问题</span><span>"这个人是否得到了他应得的？"</span></div>
+                        <div class="flex gap-2"><span class="text-[#8C8A84] w-14 shrink-0">需要信息</span><span>单个人的时间线、意图、情境、外部约束</span></div>
+                        <div class="flex gap-2"><span class="text-[#8C8A84] w-14 shrink-0">信息结构</span><span>应得（desert）、功绩（merit）、权利（rights）</span></div>
+                        <div class="flex gap-2"><span class="text-[#8C8A84] w-14 shrink-0">哲学来源</span><span>Narrative-based（故事、生命史）· Feinberg 正义区分</span></div>
+                        <div class="flex gap-2"><span class="text-[#8C8A84] w-14 shrink-0">设计启示</span><span class="text-[#2a7a5b]">叙事通道（Narrative Pathways）作为算法系统的道德补充</span></div>
+                    </div>
+                </div>
+            </div>
+            <!-- 三层理论支撑 -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-3">
+                <div class="bg-white border border-black/5 rounded-sm p-4">
+                    <p class="text-[10px] uppercase tracking-wider text-[#C9463D] font-bold mb-1.5">① 算法公平性文献</p>
+                    <p class="text-[11px] text-[#6B6964] leading-relaxed">Dwork et al. (2012) 个体公平、Hardt et al. (2016) Equalized Odds、Chouldechova (2017) Predictive Parity——<strong>20+ 种公平性指标全部聚焦比较性正义</strong>，均无法回答"惩罚是否与罪行相称"这类非比较性问题。</p>
+                </div>
+                <div class="bg-white border border-black/5 rounded-sm p-4">
+                    <p class="text-[10px] uppercase tracking-wider text-[#C9463D] font-bold mb-1.5">② 可解释 AI（XAI）</p>
+                    <p class="text-[11px] text-[#6B6964] leading-relaxed">Ribeiro et al. (2016) LIME、Lundberg & Lee (2017) SHAP：司法决策者需要知道"哪个因素让分数升高了"。但现有 XAI 方法仍在 Case 框架内——<strong>解释了"怎么算的"，没解释"该不该这样算"</strong>。</p>
+                </div>
+                <div class="bg-white border border-black/5 rounded-sm p-4">
+                    <p class="text-[10px] uppercase tracking-wider text-[#C9463D] font-bold mb-1.5">③ HCI 设计伦理脉络</p>
+                    <p class="text-[11px] text-[#6B6964] leading-relaxed">Value-Sensitive Design（Friedman & Hendry, 2019）、Participatory AI（Birhane et al., 2022）、Contestable AI（Sandvig et al., 2021）——但<strong>均未关注"如何为叙事创造空间"</strong>，这是本研究提出"叙事通道"概念的入口。</p>
+                </div>
+            </div>
+
+            <!-- 系统设计五层结构 -->
+            <div class="mt-7 flex items-center gap-3">
+                <span class="text-[12px] uppercase tracking-[0.22em] text-[#C9463D] font-extrabold whitespace-nowrap">System Design</span>
+                <span class="text-xs text-[#8C8A84] whitespace-nowrap">Symphony 核心设计逻辑 · 五层对抗结构</span>
+                <div class="flex-grow h-px bg-black/5"></div>
+            </div>
+            <div class="mt-4 bg-[#0f0f13] border border-[#C9463D]/20 rounded-sm p-6">
+                <div class="grid grid-cols-1 md:grid-cols-5 gap-4 relative">
+                    <div class="hidden md:block absolute left-[10%] right-[10%] top-[22px] h-px bg-[#C9463D]/20"></div>
+                    <div class="flex flex-col items-center text-center"><div class="w-11 h-11 rounded-full bg-[#C9463D] text-white flex items-center justify-center font-extrabold text-sm shadow ring-4 ring-[#0f0f13]">A</div><h5 class="font-bold text-[#ff7a72] mt-2.5 text-xs">卷宗摄入</h5><p class="text-[10px] text-[#9ca3af] leading-relaxed mt-1">原始指控 + 官方叙事 + COMPAS 原始评分同步载入</p></div>
+                    <div class="flex flex-col items-center text-center"><div class="w-11 h-11 rounded-full bg-[#C9463D] text-white flex items-center justify-center font-extrabold text-sm shadow ring-4 ring-[#0f0f13]">B</div><h5 class="font-bold text-[#ff7a72] mt-2.5 text-xs">生命轨迹重建</h5><p class="text-[10px] text-[#9ca3af] leading-relaxed mt-1">成长环境 / 教育 / 就业 / 家庭的时间线叙事</p></div>
+                    <div class="flex flex-col items-center text-center"><div class="w-11 h-11 rounded-full bg-[#C9463D] text-white flex items-center justify-center font-extrabold text-sm shadow ring-4 ring-[#0f0f13]">C</div><h5 class="font-bold text-[#ff7a72] mt-2.5 text-xs">情境叙事</h5><p class="text-[10px] text-[#9ca3af] leading-relaxed mt-1">案发诱因 / 社会压力 / 资源匮乏的非比较性呈现</p></div>
+                    <div class="flex flex-col items-center text-center"><div class="w-11 h-11 rounded-full bg-[#C9463D] text-white flex items-center justify-center font-extrabold text-sm shadow ring-4 ring-[#0f0f13]">D</div><h5 class="font-bold text-[#ff7a72] mt-2.5 text-xs">算法审查</h5><p class="text-[10px] text-[#9ca3af] leading-relaxed mt-1">逐特征可视化 + 偏见标注 + Gemini 纠偏研判</p></div>
+                    <div class="flex flex-col items-center text-center"><div class="w-11 h-11 rounded-full bg-[#C9463D] text-white flex items-center justify-center font-extrabold text-sm shadow ring-4 ring-[#0f0f13]">E</div><h5 class="font-bold text-[#ff7a72] mt-2.5 text-xs">综合研判</h5><p class="text-[10px] text-[#9ca3af] leading-relaxed mt-1">算法分 vs 叙事评估并置，法官可主动质疑</p></div>
+                </div>
+            </div>
+
+            <!-- 关键设计决策 -->
+            <div class="mt-7 flex items-center gap-3">
+                <span class="text-[12px] uppercase tracking-[0.22em] text-[#C9463D] font-extrabold whitespace-nowrap">Key Decisions</span>
+                <span class="text-xs text-[#8C8A84] whitespace-nowrap">关键取舍 · 每个决定背后的理由</span>
+                <div class="flex-grow h-px bg-black/5"></div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
+                <div class="bg-white border border-black/5 rounded-sm p-4">
+                    <p class="text-[12px] font-bold text-[#C9463D] mb-1">为什么是"叙事"而非"纠正分数"</p>
+                    <p class="text-[11px] text-[#6B6964] leading-relaxed">直接修正 COMPAS 分数会引入新的主观偏见且无法被质疑。选择"并置叙事"而非"替换算法"，是把判断权还给法官——系统提供背景，不代替决策。</p>
+                </div>
+                <div class="bg-white border border-black/5 rounded-sm p-4">
+                    <p class="text-[12px] font-bold text-[#C9463D] mb-1">用 Gemini 做什么、不做什么</p>
+                    <p class="text-[11px] text-[#6B6964] leading-relaxed">Gemini 仅用于：① 从原始文本提取结构化生命事件；② 识别特征中潜在的代理变量偏见并标注。<strong>不让 AI 给出量刑建议</strong>——避免用 AI 替换 AI 的循环。</p>
+                </div>
+                <div class="bg-white border border-black/5 rounded-sm p-4">
+                    <p class="text-[12px] font-bold text-[#C9463D] mb-1">Demo 数据的伦理处理</p>
+                    <p class="text-[11px] text-[#6B6964] leading-relaxed">演示案例（Marcus J.）使用完全虚构的合成数据，不使用任何真实被告信息。案例参照 ProPublica 数据集统计分布设计，保证批判有据，同时规避隐私风险。</p>
+                </div>
+                <div class="bg-white border border-black/5 rounded-sm p-4">
+                    <p class="text-[12px] font-bold text-[#C9463D] mb-1">为什么做成产品而非论文</p>
+                    <p class="text-[11px] text-[#6B6964] leading-relaxed">算法公平性研究受众往往是学者，而真正做决策的是法官和律师。产品化能让"非比较性正义"从理论变为可操作的界面——这是设计师对研究的独特贡献。</p>
+                </div>
+            </div>
+
+            <!-- 中国案例：平衡的实践 -->
+            <div class="mt-7 flex items-center gap-3">
+                <span class="text-[12px] uppercase tracking-[0.22em] text-[#C9463D] font-extrabold whitespace-nowrap">Case Study · China</span>
+                <span class="text-xs text-[#8C8A84] whitespace-nowrap">中国案例 · Case 与 Narrative 平衡的实践验证</span>
+                <div class="flex-grow h-px bg-black/5"></div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-4">
+                <div class="bg-white border border-black/5 rounded-sm p-4">
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="text-[10px] bg-[#C9463D] text-white px-2 py-0.5 rounded font-bold">程勇案</span>
+                        <span class="text-[10px] text-[#8C8A84]">走私药品 → 改判缓刑</span>
+                    </div>
+                    <p class="text-[10px] text-[#8C8A84] mb-1.5">Case 视角（法律系统中的"走私犯"）</p>
+                    <p class="text-[11px] text-[#6B6964] leading-relaxed">系统标签：走私、销售假药，涉案数百万，量刑标准 10 年以上。</p>
+                    <p class="text-[10px] text-[#2a7a5b] font-bold mt-2">Narrative 补全后：</p>
+                    <p class="text-[11px] text-[#6B6964] leading-relaxed mt-1">白血病患者吁求他走私仿制药救命 → 破产、父亲病危、良心觉醒 → 近乎成本价售药只为患者活下去。法院引入"主观恶性较小、社会危害性有限"改判缓刑，并推动抗癌药降价纳入医保。</p>
+                </div>
+                <div class="bg-white border border-black/5 rounded-sm p-4">
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="text-[10px] bg-[#C9463D] text-white px-2 py-0.5 rounded font-bold">于欢案</span>
+                        <span class="text-[10px] text-[#8C8A84]">故意伤害 → 正当防卫</span>
+                    </div>
+                    <p class="text-[10px] text-[#8C8A84] mb-1.5">Case 视角（法院判决书中的"故意伤害犯"）</p>
+                    <p class="text-[11px] text-[#6B6964] leading-relaxed">系统标签：持刀刺伤 4 名催债人员，1 死 2 重伤，一审无期徒刑。</p>
+                    <p class="text-[10px] text-[#2a7a5b] font-bold mt-2">Narrative 补全后：</p>
+                    <p class="text-[11px] text-[#6B6964] leading-relaxed mt-1">母亲被 11 名催债人员长期侵辱、警察离场、绝望时刻奋起反抗。二审引入情境分析，认定"防卫性质"，从无期改判 5 年，直接推动最高法 2020 年出台《正当防卫指导意见》。</p>
+                </div>
+                <div class="bg-white border border-black/5 rounded-sm p-4">
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="text-[10px] bg-[#8C8A84] text-white px-2 py-0.5 rounded font-bold">高启强案</span>
+                        <span class="text-[10px] text-[#8C8A84]">黑社会头目 · 反向验证</span>
+                    </div>
+                    <p class="text-[10px] text-[#8C8A84] mb-1.5">Case 视角（公安系统中的"黑社会头目"）</p>
+                    <p class="text-[11px] text-[#6B6964] leading-relaxed">系统标签：黑社会性质组织头目，故意杀人、敲诈勒索，死刑。</p>
+                    <p class="text-[10px] text-[#C9463D] font-bold mt-2">Narrative 的局限（反向验证）：</p>
+                    <p class="text-[11px] text-[#6B6964] leading-relaxed mt-1">叙事（旧厂街菜贩、父母早逝）引发公众对"结构性暴力如何制造罪犯"的讨论。但这也验证了 Kiviat 的警示：叙事不是为了减轻刑罚，而是<strong>帮助看清完整道德图景</strong>——它可能增加同情，也可能增加理解，但不等于免责。</p>
+                </div>
+            </div>
+            <div class="mt-3 bg-[#fff4f4] border border-[#C9463D]/20 rounded-sm p-4">
+                <p class="text-[11px] text-[#3a3a38] leading-relaxed"><strong>案例结论：</strong>Case 认知维护秩序，Narrative 认知实现正义。当两者平衡时，制度既能保持效率，又能回应道德复杂性——程勇案与于欢案正是"叙事通道"设计在现实司法中的自然发生版本，它们的存在验证了 Symphony 的理论假设具有可操作性。</p>
+            </div>
+
+            <!-- 局限与批判性反思 -->
+            <div class="mt-7 flex items-center gap-3">
+                <span class="text-[12px] uppercase tracking-[0.22em] text-[#C9463D] font-extrabold whitespace-nowrap">Limitations &amp; Reflection</span>
+                <span class="text-xs text-[#8C8A84] whitespace-nowrap">局限与反思 · 这个方案本身有什么问题</span>
+                <div class="flex-grow h-px bg-black/5"></div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-4">
+                <div class="bg-[#fff4f4] border border-[#C9463D]/15 rounded-sm p-4">
+                    <p class="text-[11px] font-bold text-[#C9463D] mb-1">⚠ 叙事本身也可能有偏</p>
+                    <p class="text-[11px] text-[#6B6964] leading-relaxed">谁来撰写"生命叙事"？辩护律师、检察官与社工的叙事框架各不相同。Symphony 目前没有解决叙事来源的权力不对等问题——这是最大的未解难题。</p>
+                </div>
+                <div class="bg-[#fff4f4] border border-[#C9463D]/15 rounded-sm p-4">
+                    <p class="text-[11px] font-bold text-[#C9463D] mb-1">⚠ AI 幻觉的司法风险</p>
+                    <p class="text-[11px] text-[#6B6964] leading-relaxed">Gemini 在提取生命事件时存在幻觉风险，在司法场景中后果严重。现阶段所有 AI 输出均需人工审核才能进入正式界面——这限制了系统可扩展性。</p>
+                </div>
+                <div class="bg-[#fff4f4] border border-[#C9463D]/15 rounded-sm p-4">
+                    <p class="text-[11px] font-bold text-[#C9463D] mb-1">⚠ 与现行法律程序的兼容</p>
+                    <p class="text-[11px] text-[#6B6964] leading-relaxed">该系统假设法官愿意阅读叙事性材料，但时间压力与机构惰性是更大阻力。下一步需要与法院系统的利益相关者 Co-design 才能有效落地。</p>
+                </div>
+            </div>
+
+            <!-- 研究意义与跨学科贡献 -->
+            <div class="mt-7 flex items-center gap-3">
+                <span class="text-[12px] uppercase tracking-[0.22em] text-[#C9463D] font-extrabold whitespace-nowrap">Contribution</span>
+                <span class="text-xs text-[#8C8A84] whitespace-nowrap">研究意义 · 社会学理论 → 设计学原则的跨学科转化</span>
+                <div class="flex-grow h-px bg-black/5"></div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
+                <div class="bg-white border border-black/5 rounded-sm p-4">
+                    <p class="text-[10px] uppercase tracking-wider text-[#C9463D] font-bold mb-1.5">理论贡献</p>
+                    <p class="text-[11px] text-[#6B6964] leading-relaxed">Kiviat (2023) 的道德可供性理论首次将 Feinberg 的正义哲学区分与 Gibson 的可供性理论结合，但尚未被转化为设计学可操作原则。本研究完成从社会学概念到设计原则的跨学科转化，提出<strong>「叙事通道」（Narrative Pathways）</strong>作为算法伦理设计的新概念——区别于已有的透明度（XAI）、可质疑性（Contestable AI）设计范式。</p>
+                </div>
+                <div class="bg-white border border-black/5 rounded-sm p-4">
+                    <p class="text-[10px] uppercase tracking-wider text-[#C9463D] font-bold mb-1.5">实践贡献</p>
+                    <p class="text-[11px] text-[#6B6964] leading-relaxed">四条可操作设计原则：① <strong>不干扰主流程</strong>——叙事作为补充而非替代，决策者仍可从 Case 视图完成决策；② <strong>按需展开</strong>——叙事信息分层呈现，避免过载；③ <strong>非评判性语言</strong>——情境注释使用中性描述，不预设道德立场；④ <strong>可追溯性</strong>——所有叙事信息标注来源，防止操纵。</p>
+                </div>
+            </div>
+
+            <!-- 演示入口 -->
+            <div class="mt-6 bg-[#0f0f13] border border-[#C9463D]/15 rounded-sm p-6 flex flex-col items-center text-center gap-4">
+                <p class="text-[11px] text-[#9ca3af] leading-relaxed max-w-lg">Symphony 包含完整虚构案例演示（Marcus J. · 三级盗窃案），涵盖风险评估雷达图、生命轨迹时间线、叙事司法分析与算法纠偏研判。</p>
+                <a href="compas-app/index.html" target="_blank" rel="noopener"
+                   class="inline-flex items-center gap-2 bg-[#C9463D] hover:bg-[#a5392f] text-white font-bold px-6 py-2.5 rounded-sm text-xs uppercase tracking-widest transition-colors">
+                    <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+                    进入 Symphony v3.0 演示
+                </a>
+            </div>
+        </div>
+
+        <!-- ===== PANEL 3 : 中控大屏 (placeholder) ===== -->
+        <div id="dd-panel-3" class="hidden">
+            <div class="bg-white border border-black/5 shadow-sm rounded-sm p-10 flex flex-col items-center text-center relative overflow-hidden">
+                <canvas class="cover-fx" data-fx="dashboard" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;opacity:.42;"></canvas>
+                <div class="w-16 h-16 rounded-full bg-[#5E7A68]/10 flex items-center justify-center mb-4">
+                    <i data-lucide="monitor" class="w-7 h-7 text-[#5E7A68]"></i>
+                </div>
+                <h3 class="text-2xl font-bold text-[#2D2D2A]">智能数字中控大屏</h3>
+                <p class="text-[11px] uppercase tracking-[0.18em] text-[#5E7A68] font-bold mt-1.5">B端产品设计 · 交通调度场景</p>
+                <p class="text-sm text-[#5C5A54] mt-4 max-w-xl leading-relaxed">面向交通调度场景，梳理不同角色的操作路径与信息优先级，输出完整 PRD、高保真交互原型与产品设计说明书。</p>
+                <span class="mt-6 text-[11px] tracking-widest uppercase text-[#8C8A84] border border-black/10 rounded-full px-4 py-1.5">案例整理中 · Coming soon</span>
+            </div>
+        </div>
+
+        <!-- ===== PANEL 4 : 小小建筑师 (项目4) ===== -->
+        <div id="dd-panel-4" class="hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-0 bg-white border border-black/5 shadow-sm rounded-sm overflow-hidden">
+                <div class="lg:col-span-6 relative min-h-[340px] overflow-hidden bg-[#cfeee9]">
+                    <img src="assets/kidarch-cover.jpg" alt="小小建筑师 · 等距城市插画" class="absolute inset-0 w-full h-full object-cover" />
+                    <canvas class="cover-fx" data-fx="blocks" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;opacity:.9;"></canvas>
+                    <span class="absolute top-4 left-4 z-10 bg-white/90 text-[#0f6b61] text-[9px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-sm shadow">K12 · 游戏化学习</span>
+                </div>
+                <div class="lg:col-span-6 p-8 flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-baseline gap-3">
+                            <h3 class="text-4xl font-extrabold tracking-tight text-[#0f6b61]">小小建筑师</h3>
+                            <span class="text-[11px] text-[#8C8A84] tracking-widest">2025</span>
+                        </div>
+                        <p class="text-[11px] uppercase tracking-[0.18em] text-[#157f74] font-bold mt-1.5">C端产品设计 · 儿童建筑启蒙游戏</p>
+                        <p class="text-sm leading-relaxed text-[#5C5A54] mt-4">
+                            面向 5–12 岁儿童的叙事驱动设计教育 App：以“AI 城市拯救计划”为故事主线，通过收集城市心跳、智斗直线怪、资源守护者联盟等游戏环节，培养孩子的空间设计思维与 AI 协作能力。我开展 10+ 家长 / 教师深度访谈建立用户画像，完成完整信息架构与高保真原型（老师端数据看板 + 儿童端游戏界面），并针对 5–8 岁具象思维特点设计可用性验证。
+                        </p>
+                        <div class="flex flex-wrap gap-1.5 mt-5">
+                            <span class="kid-tech">用户研究</span>
+                            <span class="kid-tech">信息架构</span>
+                            <span class="kid-tech">游戏化设计</span>
+                            <span class="kid-tech">高保真原型</span>
+                            <span class="kid-tech">SketchUp · Figma</span>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4 mt-5 border-t border-black/5 pt-4 text-[12px]">
+                            <div>
+                                <span class="text-[#8C8A84] text-[10px] uppercase tracking-wider">角色</span>
+                                <p class="font-semibold text-[#2D2D2A] mt-0.5">独立产品设计师</p>
+                            </div>
+                            <div>
+                                <span class="text-[#8C8A84] text-[10px] uppercase tracking-wider">调研</span>
+                                <p class="font-semibold text-[#2D2D2A] mt-0.5">10+ 家长 / 教师访谈</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-4 mt-7">
+                        <span class="text-[10px] text-[#8C8A84]">完整方案见下方 ↓ 背景 / 竞品 / UI / 游戏素材</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-8 flex items-center gap-3">
+                <span class="text-[10px] uppercase tracking-[0.25em] text-[#157f74] font-bold whitespace-nowrap">Full Case Study</span>
+                <span class="text-xs text-[#8C8A84] whitespace-nowrap">完整方案 · 背景 / 竞品 / UI / 游戏素材</span>
+                <div class="flex-grow h-px bg-black/5"></div>
+            </div>
+            <div class="space-y-4 mt-4">
+                <figure class="bg-white border border-black/5 rounded-sm overflow-hidden shadow-sm">
+                    <img src="assets/kidarch-1-cover.jpg" alt="小小建筑师 项目背景" class="w-full object-cover" loading="lazy" />
+                    <figcaption class="px-4 py-2 text-[11px] text-[#6B6964] border-t border-black/5">01 · 项目背景与问题 / Cover &amp; Background</figcaption>
+                </figure>
+                <figure class="bg-white border border-black/5 rounded-sm overflow-hidden shadow-sm">
+                    <img src="assets/kidarch-2-research.jpg" alt="小小建筑师 竞品与信息架构" class="w-full object-cover" loading="lazy" />
+                    <figcaption class="px-4 py-2 text-[11px] text-[#6B6964] border-t border-black/5">02 · 竞品分析 · 设计心路 · 信息架构 / Competitive, Concept &amp; IA</figcaption>
+                </figure>
+                <figure class="bg-white border border-black/5 rounded-sm overflow-hidden shadow-sm">
+                    <img src="assets/kidarch-3-ui.jpg" alt="小小建筑师 UI 高保真" class="w-full object-cover" loading="lazy" />
+                    <figcaption class="px-4 py-2 text-[11px] text-[#6B6964] border-t border-black/5">03 · UI 高保真（老师端 + 儿童端）/ Hi-Fi UI</figcaption>
+                </figure>
+                <figure class="bg-white border border-black/5 rounded-sm overflow-hidden shadow-sm">
+                    <img src="assets/kidarch-4-materials.jpg" alt="小小建筑师 游戏素材与设计反思" class="w-full object-cover" loading="lazy" />
+                    <figcaption class="px-4 py-2 text-[11px] text-[#6B6964] border-t border-black/5">04 · 游戏素材库 · 功能体块 · 设计反思 / Assets, Massing &amp; Reflection</figcaption>
+                </figure>
+            </div>
+
+            <!-- 建模能力 · 3D 白模 -->
+            <div class="mt-8 flex items-center gap-3">
+                <span class="text-[10px] uppercase tracking-[0.25em] text-[#157f74] font-bold whitespace-nowrap">3D Modeling</span>
+                <span class="text-xs text-[#8C8A84] whitespace-nowrap">建模能力 · 白模 · 拖动旋转 / 滚轮拉近放远</span>
+                <div class="flex-grow h-px bg-black/5"></div>
+            </div>
+            <div class="bg-white border border-black/5 rounded-sm overflow-hidden mt-4">
+                <model-viewer src="models/arch-model.glb" alt="建筑模型 3D 白模预览"
+                    camera-controls auto-rotate auto-rotate-delay="0" rotation-per-second="14deg"
+                    loading="eager" interaction-prompt="none"
+                    exposure="0.98" shadow-intensity="1.6" shadow-softness="1"
+                    environment-image="neutral" tone-mapping="neutral"
+                    camera-orbit="25deg 72deg auto" min-field-of-view="18deg"
+                    style="width:100%; height:540px; background:linear-gradient(160deg,#ffffff 0%, #e3e6e1 100%); --poster-color:#eef0ed;">
+                </model-viewer>
+                <div class="px-5 py-3 border-t border-black/5 flex items-center justify-between flex-wrap gap-2">
+                    <span class="text-[11px] text-[#6B6964]">白模预览 · 拖动旋转 · 滚轮拉近放远 · 双指平移 ｜ Rhino 模型（已为网页减面）</span>
+                    <span class="text-[10px] text-[#8C8A84] uppercase tracking-widest">Rhino · SketchUp · Enscape</span>
+                </div>
+            </div>
+        </div>
+
+    </section>
+
+    <script>
+        function switchProject(n) {
+            for (let i = 1; i <= 4; i++) {
+                const panel = document.getElementById('dd-panel-' + i);
+                const tab = document.getElementById('dd-tab-' + i);
+                const nav = document.getElementById('nav-proj-' + i);
+                if (panel) panel.classList.toggle('hidden', i !== n);
+                if (tab) tab.classList.toggle('dd-tab-active', i === n);
+                if (nav) nav.classList.toggle('active', i === n);
+            }
+            const sec = document.getElementById('design-data');
+            if (sec) sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            if (window.lucide) lucide.createIcons();
+        }
+    </script>
+
+    <!-- Footer -->
+    <footer class="w-full px-8 py-6 border-t border-black/5 flex flex-col sm:flex-row justify-between items-center text-[10px] tracking-widest text-[#8C8A84] uppercase z-40 bg-white/50">
+        <div>&copy; 2026 张琳媛 (probablyzz76). Handcrafted using WebGL, Three.js and MediaPipe Hands tracking APIs.</div>
+        <div class="flex gap-6 mt-4 sm:mt-0">
+            <a href="#" class="hover:text-black transition-colors font-semibold">LinkedIn</a>
+            <a href="#" class="hover:text-black transition-colors font-semibold">GitHub</a>
+            <a href="#" class="hover:text-black transition-colors font-semibold">Academic Bio</a>
+        </div>
+    </footer>
+
+    <!-- Three.js + MediaPipe WebGL Voxel Program script -->
+    <script>
+        lucide.createIcons();
+
+        // 1. --- THREE.JS VOXEL ENGINE SETUP ---
+        const container = document.getElementById('voxel-viewport');
+        let scene, camera, renderer, voxelGroup;
+        const voxels = [];
+        
+        // Sparsity remains elegant
+        const voxelCount = 95; 
+        
+        let mouse3D = new THREE.Vector3(0, 0, 0);
+        let raycaster = new THREE.Raycaster();
+        let mouse2D = new THREE.Vector2(-9999, -9999);
+        let isMouseOver = false;
+
+        // Interaction state parameters
+        let currentGesture = 'none'; // 'none' | 'open' | 'fist' | 'vortex' | 'wave'
+        let systemClock = 0;
+        let activeLayoutMode = 'dual-wings'; // Selected procedural archetype on load
+
+        function generateProceduralPositions(mode) {
+            const positions = [];
+            
+            // Setup aesthetic architectural coordinates
+            for (let i = 0; i < voxelCount; i++) {
+                const pos = new THREE.Vector3();
+                
+                if (mode === 'dual-wings') {
+                    // Double Helix / Spiral dynamic wings
+                    const isLeftWing = i < voxelCount / 2;
+                    const spiralAngle = (i / (voxelCount / 2)) * Math.PI * 2.2;
+                    const radius = 130 + (i / (voxelCount / 2)) * 140;
+                    
+                    pos.x = Math.cos(spiralAngle + (isLeftWing ? 0 : Math.PI)) * radius;
+                    pos.y = Math.sin(spiralAngle + (isLeftWing ? 0 : Math.PI)) * (radius * 0.65);
+                    pos.z = (i / voxelCount - 0.5) * 160 + (isLeftWing ? 30 : -30);
+
+                } else if (mode === 'courtyard') {
+                    // Modernist axonometric courtyard pavilion layout (Grid-aligned varying blocks)
+                    const cols = 5;
+                    const rows = 5;
+                    const spacing = 80;
+                    
+                    const colIndex = i % cols;
+                    const rowIndex = Math.floor((i % (cols * rows)) / cols);
+                    const levelIndex = Math.floor(i / (cols * rows));
+                    
+                    // Enclosed courtyard design (hollow center)
+                    const isCenter = colIndex === 2 && rowIndex === 2;
+                    const finalCol = isCenter ? (Math.random() > 0.5 ? 0 : 4) : colIndex;
+                    
+                    pos.x = (finalCol - 2) * spacing + (Math.random() - 0.5) * 20;
+                    pos.y = (rowIndex - 2) * spacing + (Math.random() - 0.5) * 20;
+                    pos.z = levelIndex * 90 - 60 + (Math.sin(finalCol * 1.5) * 40);
+
+                } else if (mode === 'crystal-core') {
+                    // Concentric crystalline core (Dense nucleus branching outwards)
+                    const isCore = i < voxelCount * 0.4;
+                    const u = Math.random();
+                    const vVal = Math.random();
+                    const theta = u * 2.0 * Math.PI;
+                    const phi = Math.acos(2.0 * vVal - 1.0);
+                    
+                    // Dense core radius vs loose outer stars
+                    const radius = isCore ? (45 + Math.random() * 55) : (180 + Math.random() * 150);
+                    
+                    pos.x = radius * Math.sin(phi) * Math.cos(theta);
+                    pos.y = radius * Math.sin(phi) * Math.sin(theta);
+                    pos.z = (Math.random() - 0.5) * (isCore ? 60 : 180);
+
+                } else if (mode === 'horizon-strata') {
+                    // Deconstructed Horizon planes (stratified layers)
+                    const layers = 3;
+                    const layerIndex = i % layers;
+                    const angle = (i / voxelCount) * Math.PI * 2.0;
+                    const radius = 100 + (Math.random() * 200);
+                    
+                    pos.x = Math.cos(angle) * radius;
+                    pos.y = Math.sin(angle) * radius;
+                    pos.z = (layerIndex - 1) * 120 + (Math.random() - 0.5) * 25; // Sharp stratification
+                }
+                
+                positions.push(pos);
+            }
+            return positions;
+        }
+
+        function initThreeJS() {
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color('#F7F6F3');
+
+            camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 1, 2000);
+            camera.position.set(0, 0, 600);
+
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(container.clientWidth, container.clientHeight);
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            container.appendChild(renderer.domElement);
+
+            // Lighting setup for matte look and sharp shadows
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.65);
+            scene.add(ambientLight);
+
+            const dirLight = new THREE.DirectionalLight(0xffffff, 0.75);
+            dirLight.position.set(-150, 450, 250);
+            dirLight.castShadow = true;
+            dirLight.shadow.mapSize.width = 1024;
+            dirLight.shadow.mapSize.height = 1024;
+            dirLight.shadow.camera.near = 0.5;
+            dirLight.shadow.camera.far = 1000;
+            const d = 350;
+            dirLight.shadow.camera.left = -d;
+            dirLight.shadow.camera.right = d;
+            dirLight.shadow.camera.top = d;
+            dirLight.shadow.camera.bottom = -d;
+            scene.add(dirLight);
+
+            // Second soft back fill-light
+            const fillLight = new THREE.DirectionalLight(0xfff8ee, 0.35);
+            fillLight.position.set(250, -150, -100);
+            scene.add(fillLight);
+
+            voxelGroup = new THREE.Group();
+            scene.add(voxelGroup);
+
+            // Voxel geometries of varying scale
+            const geoSizes = [12, 18, 24, 30];
+            const matWhite = new THREE.MeshStandardMaterial({ color: 0xeeeeee, roughness: 0.85, metalness: 0.05 });
+            const matGray = new THREE.MeshStandardMaterial({ color: 0xd9d9d9, roughness: 0.85, metalness: 0.05 });
+            const matRed = new THREE.MeshStandardMaterial({ color: 0xC9463D, roughness: 0.65, metalness: 0.05 });
+
+            // RANDOMLY SELECT THE GEOMETRIC ARCHETYPE FOR UNEXPECTED INITIAL EXPERIENCES
+            const archetypes = ['dual-wings', 'courtyard', 'crystal-core', 'horizon-strata'];
+            activeLayoutMode = archetypes[Math.floor(Math.random() * archetypes.length)];
+            const chosenPositions = generateProceduralPositions(activeLayoutMode);
+
+            // Build voxel array according to the chosen design pattern
+            for (let i = 0; i < voxelCount; i++) {
+                const size = geoSizes[Math.floor(Math.random() * geoSizes.length)];
+                const geometry = new THREE.BoxGeometry(size, size, size);
+                
+                // Color mapping: mostly white/gray with occasional red highlights
+                let material = Math.random() > 0.08 ? (Math.random() > 0.5 ? matWhite : matGray) : matRed;
+                const mesh = new THREE.Mesh(geometry, material);
+                mesh.castShadow = true;
+                mesh.receiveShadow = true;
+
+                // Load procedural aesthetic position
+                const pos = chosenPositions[i];
+                mesh.position.copy(pos);
+                voxelGroup.add(mesh);
+
+                voxels.push({
+                    mesh: mesh,
+                    basePos: pos.clone(),
+                    noiseOffset: Math.random() * 200,
+                    velocity: new THREE.Vector3(0, 0, 0),
+                    origScale: new THREE.Vector3(1, 1, 1),
+                    currentScale: 1.0
+                });
+            }
+
+            // Ground floor shadow receiver plane
+            const floorGeo = new THREE.PlaneGeometry(2000, 2000);
+            const floorMat = new THREE.ShadowMaterial({ opacity: 0.06 });
+            const floorMesh = new THREE.Mesh(floorGeo, floorMat);
+            floorMesh.position.z = -220;
+            floorMesh.receiveShadow = true;
+            scene.add(floorMesh);
+
+            // Print initial easter-egg layout state to Terminal Logger
+            setTimeout(() => {
+                const readableNames = {
+                    'dual-wings': '双翼螺旋 (Dual-Wings Spiral) 🧬',
+                    'courtyard': '围合院落 (Axonometric Courtyard) 🏛️',
+                    'crystal-core': '晶体核心 (Crystalline Nucleus) 💎',
+                    'horizon-strata': '解构地平线 (Horizon Strata) 🌅'
+                };
+                logToTerminal(`Procedural Engine: Rendered surprise layout archetype: [${readableNames[activeLayoutMode]}]`, "success");
+            }, 800);
+
+            window.addEventListener('resize', onWindowResize);
+            container.addEventListener('mousemove', onMouseMove);
+            container.addEventListener('mouseenter', () => isMouseOver = true);
+            container.addEventListener('mouseleave', () => {
+                isMouseOver = false;
+                mouse2D.set(-9999, -9999);
+            });
+        }
+
+        function onMouseMove(event) {
+            const rect = container.getBoundingClientRect();
+            mouse2D.x = ((event.clientX - rect.left) / container.clientWidth) * 2 - 1;
+            mouse2D.y = -((event.clientY - rect.top) / container.clientHeight) * 2 + 1;
+        }
+
+        function onWindowResize() {
+            camera.aspect = container.clientWidth / container.clientHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(container.clientWidth, container.clientHeight);
+        }
+
+        // Project Mouse Coordinate to 3D Space Plane z=0
+        function updateMouseProjection() {
+            if (!isMouseOver) return;
+            raycaster.setFromCamera(mouse2D, camera);
+            const planeZ = new THREE.Plane(new THREE.Vector3(0, 0, 1), 0);
+            raycaster.ray.intersectPlane(planeZ, mouse3D);
+        }
+
+        // Main WebGL Game / Animation Loop
+        function animate() {
+            requestAnimationFrame(animate);
+            systemClock += 0.015; // Smooth clock progression
+
+            updateMouseProjection();
+
+            // Rotate entire scene gently over time
+            voxelGroup.rotation.y = Math.sin(systemClock * 0.05) * 0.15;
+            voxelGroup.rotation.x = Math.cos(systemClock * 0.05) * 0.08;
+
+            const tempVec = new THREE.Vector3();
+
+            for (let i = 0; i < voxels.length; i++) {
+                const v = voxels[i];
+                const mesh = v.mesh;
+
+                // 1. Structural resting coordinates
+                let target = v.basePos.clone();
+                let targetScale = 1.0;
+
+                // Apply slight harmonic noise to simulate space floating
+                const floatOffset = Math.sin(systemClock * 0.8 + v.noiseOffset) * 15;
+                target.z += floatOffset;
+                target.y += Math.cos(systemClock * 0.4 + v.noiseOffset) * 8;
+
+                // 2. Resolve Multi-Gesture states with dynamic scaling and velocity effects
+                if (currentGesture === 'open') {
+                    // Exploded state: Blow outwards from base coordinates with spiral twisting
+                    const direction = v.basePos.clone().normalize();
+                    target.add(direction.multiplyScalar(350));
+                    
+                    // Add slight helical spiral spin
+                    const spin = 0.04;
+                    const rx = target.x;
+                    const ry = target.y;
+                    target.x = rx * Math.cos(spin) - ry * Math.sin(spin);
+                    target.y = rx * Math.sin(spin) + ry * Math.cos(spin);
+                    
+                    targetScale = 1.35; // Expands on blast
+                } else if (currentGesture === 'fist') {
+                    // Cluster state: Clump tightly into the blackhole center with rotating spin
+                    const orbitSpeed = 0.08;
+                    const rx = mesh.position.x;
+                    const ry = mesh.position.y;
+                    target.x = (rx * Math.cos(orbitSpeed) - ry * Math.sin(orbitSpeed)) * 0.25;
+                    target.y = (rx * Math.sin(orbitSpeed) + ry * Math.cos(orbitSpeed)) * 0.25;
+                    target.z *= 0.25;
+                    
+                    targetScale = 0.38; // Condenses heavily
+                } else if (currentGesture === 'vortex') {
+                    // Vortex state: Cylinder cyclone double helix
+                    const radius = 90 + Math.sin(systemClock * 2 + v.noiseOffset) * 25;
+                    // Speed gradient based on z-axis position
+                    const zFactor = (v.basePos.z + 100) / 200;
+                    const speed = systemClock * 5 + zFactor * 4 + v.noiseOffset * 0.5;
+                    
+                    target.x = radius * Math.cos(speed);
+                    target.y = radius * Math.sin(speed);
+                    target.z = v.basePos.z * 1.8 + Math.sin(systemClock * 3 + v.noiseOffset) * 30;
+                    
+                    targetScale = 0.85;
+                } else if (currentGesture === 'wave') {
+                    // Wave state: Generate sinusoidal ripple propagation outward from system core
+                    const distFromCore = Math.sqrt(v.basePos.x * v.basePos.x + v.basePos.y * v.basePos.y);
+                    const wavePhase = systemClock * 6 - distFromCore * 0.025;
+                    
+                    // Displace along Z-axis dynamically
+                    target.z += Math.sin(wavePhase) * 60;
+                    
+                    // Sinusoidal pulsate scaling
+                    targetScale = (Math.sin(wavePhase) * 0.45 + 0.95);
+                }
+
+                // 3. Resolve mouse attraction forces with ripple
+                if (isMouseOver) {
+                    tempVec.copy(mesh.position);
+                    const distToMouse = tempVec.distanceTo(mouse3D);
+                    if (distToMouse < 240) {
+                        // 优化吸附动效：将原本极限 120 吸引力大幅减小至 35，并引入二次方衰减，避免涌入过多方块
+                        const pullFactor = Math.pow(1.0 - (distToMouse / 240), 2) * 35;
+                        const pullDir = new THREE.Vector3().subVectors(mouse3D, mesh.position).normalize();
+                        target.add(pullDir.multiplyScalar(pullFactor));
+                        
+                        // 微调局部大小放大率 (从最大 1.3 降低至更温和的 1.15)
+                        if (currentGesture === 'none') {
+                            targetScale = 1.15 - (distToMouse / 240) * 0.15;
+                        }
+                    }
+                }
+
+                // Smooth position interpolation (Inertial lerping)
+                // 将插值步长从原本的 0.065 调低至 0.035 以达到极其缓慢温和的过渡
+                // 将阻尼系数从 0.84 调整至 0.90，方块运动在接近目标时将具有液体般丝滑的减速，消除了生硬的急冲感
+                v.velocity.add(new THREE.Vector3().subVectors(target, mesh.position).multiplyScalar(0.035));
+                v.velocity.multiplyScalar(0.90); // 阻尼系数：让动画表现温和粘滞，极富系统弹性
+                mesh.position.add(v.velocity);
+
+                // Smooth scale interpolation
+                v.currentScale = THREE.MathUtils.lerp(v.currentScale, targetScale, 0.1);
+                
+                // Adaptive velocity-based scale deformation (motion stretch)
+                const speedSquared = v.velocity.lengthSq();
+                if (speedSquared > 0.1 && currentGesture !== 'fist') {
+                    const stretchFactor = Math.min(1.0 + speedSquared * 0.0001, 1.4);
+                    mesh.scale.set(v.currentScale, v.currentScale, v.currentScale * stretchFactor);
+                    // Align stretching with velocity direction
+                    mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), v.velocity.clone().normalize());
+                } else {
+                    mesh.scale.set(v.currentScale, v.currentScale, v.currentScale);
+                    mesh.rotation.y += 0.012;
+                    mesh.rotation.x += 0.006;
+                }
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        // --- 2. WEBCAM & MEDIAPAPI HANDS ENGINE ---
+        let webcamStream = null;
+        let isWebcamRunning = false;
+        let cameraObj = null;
+
+        const videoElement = document.getElementById('webcam');
+        const videoWrapper = document.getElementById('video-wrapper');
+        const toggleBtn = document.getElementById('camera-toggle');
+        const badge = document.getElementById('gesture-badge');
+        const termScreen = document.getElementById('terminal-screen');
+        const gestureIndicator = document.getElementById('current-gesture-indicator');
+
+        const hands = new Hands({
+            locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
+        });
+
+        hands.setOptions({
+            maxNumHands: 1,
+            modelComplexity: 1,
+            minDetectionConfidence: 0.65,
+            minTrackingConfidence: 0.55
+        });
+
+        hands.onResults(onHandResults);
+
+        function logToTerminal(message, type = 'info') {
+            const p = document.createElement('p');
+            if (type === 'success') p.className = 'text-green-400';
+            else if (type === 'warn') p.className = 'text-yellow-400';
+            p.innerHTML = `&gt; ${message}`;
+            termScreen.appendChild(p);
+            termScreen.scrollTop = termScreen.scrollHeight;
+        }
+
+        function updateUIIndicator(text, colorClass) {
+            gestureIndicator.innerText = text;
+            gestureIndicator.className = colorClass;
+        }
+
+        // Expanded Hand landmarks classifier logic (Fist, Open Hand, Vortex/Point, Wave/Two-Fingers)
+        function onHandResults(results) {
+            if (!isWebcamRunning) return;
+
+            if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+                const landmarks = results.multiHandLandmarks[0];
+                
+                const wrist = landmarks[0];
+                const thumbTip = landmarks[4];
+                const indexTip = landmarks[8];
+                const middleTip = landmarks[12];
+                const ringTip = landmarks[16];
+                const pinkyTip = landmarks[20];
+
+                // Knuckle bases
+                const indexMCP = landmarks[5];
+                const middleMCP = landmarks[9];
+                const ringMCP = landmarks[13];
+                const pinkyMCP = landmarks[17];
+
+                // Calculate distances of tips to wrist point
+                const dIndex = Math.hypot(indexTip.x - wrist.x, indexTip.y - wrist.y);
+                const dMiddle = Math.hypot(middleTip.x - wrist.x, middleTip.y - wrist.y);
+                const dRing = Math.hypot(ringTip.x - wrist.x, ringTip.y - wrist.y);
+                const dPinky = Math.hypot(pinkyTip.x - wrist.x, pinkyTip.y - wrist.y);
+                const dThumb = Math.hypot(thumbTip.x - wrist.x, thumbTip.y - wrist.y);
+                
+                const avgFingerDist = (dIndex + dMiddle + dRing + dPinky) / 4;
+
+                // Determine if specific fingers are extended
+                const indexExtended = indexTip.y < indexMCP.y;
+                const middleExtended = middleTip.y < middleMCP.y;
+                const ringExtended = ringTip.y < ringMCP.y;
+                const pinkyExtended = pinkyTip.y < pinkyMCP.y;
+
+                // 1. Vortex Classifier (Only Index extended)
+                if (indexExtended && !middleExtended && !ringExtended && !pinkyExtended) {
+                    if (currentGesture !== 'vortex') {
+                        currentGesture = 'vortex';
+                        badge.innerText = "Vortex (Point)";
+                        badge.style.backgroundColor = "rgb(168, 85, 247)"; // Purple
+                        updateUIIndicator("☝️ VORTEX AIR CYCLONE", "text-purple-500 font-bold");
+                        logToTerminal("Webcam: INDEX POINT detected. Entering [Vortex Cyclone] spiral matrix.", "success");
+                    }
+                }
+                // 2. Wave Classifier (Index & Middle extended, like Victory sign)
+                else if (indexExtended && middleExtended && !ringExtended && !pinkyExtended) {
+                    if (currentGesture !== 'wave') {
+                        currentGesture = 'wave';
+                        badge.innerText = "Wave (Pulsate)";
+                        badge.style.backgroundColor = "rgb(59, 130, 246)"; // Blue
+                        updateUIIndicator("🌊 WAVE EQUALIZER", "text-blue-500 font-bold");
+                        logToTerminal("Webcam: PEACE/VICTORY detected. Triggering [Ripple Wave] height pulse.", "success");
+                    }
+                }
+                // 3. Fist Classifier (All fingers closed close to wrist)
+                else if (avgFingerDist < 0.23) {
+                    if (currentGesture !== 'fist') {
+                        currentGesture = 'fist';
+                        badge.innerText = "Fist (Cluster)";
+                        badge.style.backgroundColor = "rgb(239, 68, 68)";
+                        updateUIIndicator("✊ FIST FORCE CORE", "text-red-500 font-bold");
+                        logToTerminal("Webcam: CLOSED FIST detected. Gravitational singularity [Fist Clump] engaged.", "warn");
+                    }
+                } 
+                // 4. Open Hand Classifier (All fingers highly extended)
+                else if (avgFingerDist > 0.45) {
+                    if (currentGesture !== 'open') {
+                        currentGesture = 'open';
+                        badge.innerText = "Open Hand (Disperse)";
+                        badge.style.backgroundColor = "rgb(34, 197, 94)";
+                        updateUIIndicator("🖐️ OPEN MATRIX EXPEL", "text-green-500 font-bold");
+                        logToTerminal("Webcam: OPEN HAND detected. Triggering structural force [Dispersal].", "success");
+                    }
+                }
+            } else {
+                if (currentGesture !== 'none') {
+                    currentGesture = 'none';
+                    badge.innerText = "No Gesture";
+                    badge.style.backgroundColor = "rgb(156, 163, 175)";
+                    updateUIIndicator("SPARSE MATRIX NORMAL", "text-[#C9463D]");
+                }
+            }
+        }
+
+        function toggleWebcam() {
+            if (isWebcamRunning) {
+                isWebcamRunning = false;
+                if (cameraObj) {
+                    cameraObj.stop();
+                }
+                if (webcamStream) {
+                    webcamStream.getTracks().forEach(track => track.stop());
+                }
+                videoWrapper.style.width = '0px';
+                videoWrapper.style.height = '0px';
+                videoWrapper.style.opacity = '0';
+                toggleBtn.querySelector('span').innerText = "Start Gesture Camera";
+                toggleBtn.classList.remove('bg-red-600');
+                toggleBtn.classList.add('bg-[#2D2D2A]');
+                badge.innerText = "No Signal";
+                currentGesture = 'none';
+                updateUIIndicator("SPARSE MATRIX NORMAL", "text-[#C9463D]");
+                logToTerminal("Camera feed terminated. Restoring mouse matrix controls.");
+            } else {
+                navigator.mediaDevices.getUserMedia({ video: { width: 320, height: 240 } })
+                .then(stream => {
+                    webcamStream = stream;
+                    videoElement.srcObject = stream;
+                    isWebcamRunning = true;
+                    
+                    videoWrapper.style.width = '140px';
+                    videoWrapper.style.height = '105px';
+                    videoWrapper.style.opacity = '1';
+                    
+                    toggleBtn.querySelector('span').innerText = "Stop Gesture Camera";
+                    toggleBtn.classList.add('bg-red-600');
+                    toggleBtn.classList.remove('bg-[#2D2D2A]');
+                    logToTerminal("Webcam initialized. MediaPipe Hands multi-classification active.", "success");
+
+                    cameraObj = new Camera(videoElement, {
+                        onFrame: async () => {
+                            if (isWebcamRunning) {
+                                await hands.send({ image: videoElement });
+                            }
+                        },
+                        width: 320,
+                        height: 240
+                    });
+                    cameraObj.start();
+                })
+                .catch(err => {
+                    logToTerminal("Camera feed blocked. Please use the simulator console in bottom-left.", "warn");
+                    alert("Camera blocked. Please use the Manual Simulators in the bottom-left corner!");
+                });
+            }
+        }
+
+        // Simulator Fallbacks for immediate testing without cameras
+        function toggleGestureFolder() {
+            const pf = document.getElementById('pf-gesture');
+            const row = document.getElementById('cf-row');
+            const isOpen = pf.classList.contains('open');
+            pf.classList.toggle('open', !isOpen);
+            row.classList.toggle('visible', !isOpen);
+        }
+        function activateFolder(type) {
+            // 自动展开父 Folder
+            const pf = document.getElementById('pf-gesture');
+            const row = document.getElementById('cf-row');
+            pf.classList.add('open'); row.classList.add('visible');
+            // 清除所有子 Folder active
+            document.querySelectorAll('.cf-wrap').forEach(el => el.classList.remove('active'));
+            const el = document.getElementById('cfw-' + type);
+            if (el) el.classList.add('active');
+            simulateGesture(type);
+        }
+        function simulateGesture(type) {
+            currentGesture = type;
+            if (type === 'open') {
+                updateUIIndicator("🖐️ OPEN MATRIX EXPEL", "text-green-500 font-bold");
+                logToTerminal("Simulated: OPEN HAND event. Helical blast wave triggered.", "success");
+            } else if (type === 'fist') {
+                updateUIIndicator("✊ FIST FORCE CORE", "text-red-500 font-bold");
+                logToTerminal("Simulated: CLOSED FIST event. Singularity orbit compaction activated.", "warn");
+            } else if (type === 'vortex') {
+                updateUIIndicator("☝️ VORTEX AIR CYCLONE", "text-purple-500 font-bold");
+                logToTerminal("Simulated: POINT GESTURE. Constructing double-helix vertical vortex.", "success");
+            } else if (type === 'wave') {
+                updateUIIndicator("🌊 WAVE EQUALIZER", "text-blue-500 font-bold");
+                logToTerminal("Simulated: PEACE/WAVE. Running sinusoidal grid ripple oscillations.", "success");
+            } else {
+                updateUIIndicator("SPARSE MATRIX NORMAL", "text-[#C9463D]");
+                logToTerminal("Simulated: NORMAL state. Restoring base structures and micro-float.");
+            }
+        }
+
+        // Reconstruct space to standard levels & Re-roll surprising new layout!
+        function triggerAssembleEffect() {
+            currentGesture = 'none';
+            updateUIIndicator("SPARSE MATRIX NORMAL", "text-[#C9463D]");
+
+            // Pick a new, completely different layout archetype on manual trigger
+            const archetypes = ['dual-wings', 'courtyard', 'crystal-core', 'horizon-strata'];
+            const availableModes = archetypes.filter(mode => mode !== activeLayoutMode);
+            activeLayoutMode = availableModes[Math.floor(Math.random() * availableModes.length)];
+            
+            const newPositions = generateProceduralPositions(activeLayoutMode);
+
+            voxels.forEach((v, idx) => {
+                // Update baseline coordinate references so they transition gracefully to the new archetype
+                v.basePos.copy(newPositions[idx]);
+                
+                // Explode from the center outwards to make the transformation satisfyingly visible
+                v.mesh.position.set(0, 0, 0); 
+                v.velocity.set(0, 0, 0);
+            });
+
+            const readableNames = {
+                'dual-wings': '双翼螺旋 (Dual-Wings Spiral) 🧬',
+                'courtyard': '围合院落 (Axonometric Courtyard) 🏛️',
+                'crystal-core': '晶体核心 (Crystalline Nucleus) 💎',
+                'horizon-strata': '解构地平线 (Horizon Strata) 🌅'
+            };
+            
+            logToTerminal(`Procedural Engine: Randomizing matrix... Loaded archetype [${readableNames[activeLayoutMode]}]`, "success");
+        }
+
+
+        // --- 3. PM DETAILED PORTFOLIO METRICS ---
+        const projects = {
+            mirror: {
+                title: "MOOTAIN · AI 情绪疗愈 App",
+                tag: "C端 AIGC · 全栈 Vibe Coding 独立落地",
+                year: "2026",
+                desc: "作为产品负责人，从用户调研出发识别核心情绪场景与痛点，独立完成从 PRD → 原型 → 上线的完整产品闭环。把情绪映射成可交互的 3D 黏土山体地形，结合 Gemini 情感解析与 Three.js/WebGL 渲染，独立做出可运行的 AI 疗愈产品。",
+                metric1: "PRD → 原型 → 上线 完整闭环独立交付",
+                metric2: "React · Three.js · Gemini 全栈",
+                link: "#design-data"
+            },
+            compas: {
+                title: "COMPAS 再犯预测公平性研究",
+                tag: "AI 伦理 · 算法偏见与可解释性",
+                year: "2026",
+                desc: "针对司法 AI 课题，系统拆解 COMPAS 再犯预测算法在不同族群上的偏见来源。从产品视角思考：司法辅助决策系统应如何向使用者透明呈现风险、不确定性与判断依据，并据此输出面向可解释性与信任的界面优化方案。",
+                metric1: "算法偏见系统性分析 + 产品化建议",
+                metric2: "可解释性 / 信任护栏 交互设计",
+                link: "#"
+            },
+            bboard: {
+                title: "智能数字中控大屏",
+                tag: "B端产品设计 · 交通调度场景",
+                year: "2026",
+                desc: "面向交通调度场景，梳理不同角色的操作路径与信息优先级，输出完整 PRD；独立完成高保真交互原型与产品设计说明书，跑通从需求拆解到交付文档的完整 B端设计流程。",
+                metric1: "完整 PRD + 高保真原型 + 设计说明书",
+                metric2: "Figma · Axure · Stitch",
+                link: "#"
+            },
+            kitchen: {
+                title: "K12 儿童建筑启蒙 App",
+                tag: "C端产品设计 · 游戏化学习",
+                year: "2025",
+                desc: "面向 6–12 岁儿童，开展 10+ 场家长 / 教师深度访谈建立用户画像；完成完整信息架构与高保真 Figma 原型，设计游戏化学习、知识闯关与 AI 学建筑模块，并针对儿童认知特点设计可用性测试验证方案。",
+                metric1: "10+ 场家长 / 教师深度访谈",
+                metric2: "完整信息架构 + 高保真 Figma 原型",
+                link: "#"
+            }
+        };
+
+        // Click interaction on voxel objects to unlock portfolios (simulate voxel picking)
+        container.addEventListener('click', () => {
+            const projKeys = ['mirror', 'bboard', 'compas', 'kitchen'];
+            const randomProj = projKeys[Math.floor(Math.random() * projKeys.length)];
+            selectProject(randomProj);
+        });
+
+        function selectProject(id) {
+            const data = projects[id];
+            if (!document.getElementById('proj-title')) return; // 项目面板已替换为生活区，忽略点击
+            if (data) {
+                document.getElementById('proj-tag').innerText = data.tag;
+                document.getElementById('proj-year').innerText = data.year;
+                document.getElementById('proj-title').innerText = data.title;
+                document.getElementById('proj-desc').innerText = data.desc;
+                
+                document.getElementById('metric-1').innerText = data.metric1;
+                document.getElementById('metric-2').innerText = data.metric2;
+                document.getElementById('proj-metrics').classList.remove('hidden');
+
+                const link = document.getElementById('proj-link');
+                link.href = data.link;
+                link.classList.remove('hidden');
+
+                logToTerminal(`System loaded project payload: [${data.title}]`, "success");
+            }
+        }
+
+
+        // Window setup execution sequence
+        window.onload = () => {
+            initThreeJS();
+            animate();
+        };
+    </script>
+    <script type="module" src="vendor/model-viewer.min.js"></script>
+    <script type="module" src="vendor/terrain-gallery.js"></script>
+    <script src="vendor/cover-fx.js"></script>
+</body>
+</html>
