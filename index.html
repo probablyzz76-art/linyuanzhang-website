@@ -494,35 +494,85 @@
             </div>
         </div>
         <!-- ===== PANEL 5 : 其他项目 ===== -->
+        <!-- ===== PANEL 5 : 其他项目 ===== -->
         <div id="dd-panel-5" class="hidden">
-            <div class="bg-white border border-black/5 shadow-sm rounded-sm overflow-hidden">
-                <div class="px-6 pt-6 pb-4 border-b border-black/5 flex items-baseline gap-3 flex-wrap">
-                    <h3 class="text-3xl font-extrabold tracking-tight text-[#2D2D2A]">其他项目</h3>
-                    <span class="text-[11px] text-[#8C8A84] tracking-widest">2020 – 2025</span>
-                    <span class="text-[11px] uppercase tracking-[0.18em] text-[#8C8A84] font-bold ml-auto">建筑学本科阶段 · 设计探索</span>
-                </div>
-                <div class="relative cd-gallery" id="cdg">
-                    <div class="cd-track" id="cdg-track">
-                        <div class="cd-slide">
-                            <img src="assets/extra/extra-1-fashion.jpg" alt="旧物新生" />
-                            <div class="cd-caption"><h4>《旧物新生》· 服装设计 · 可持续利用材料</h4><p>3 件作品 · 斜肩挎包 / 挂脖上衣 / 背心 · 2022–23 年级工作坊</p></div>
+            <!-- 封面信息卡（双栏，MOOTAIN 同格式）-->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-0 bg-white border border-black/5 shadow-sm rounded-sm overflow-hidden">
+                <!-- 左：CD 画廊 -->
+                <div class="lg:col-span-6 relative overflow-hidden bg-[#f5f3ee]" style="min-height:340px;">
+                    <div class="relative cd-gallery w-full h-full" id="cdg" style="min-height:340px;">
+                        <div class="cd-track" id="cdg-track">
+                            <div class="cd-slide" style="min-height:340px;">
+                                <img src="assets/extra/extra-1-fashion.jpg" alt="旧物新生" class="w-full h-full object-cover" style="min-height:340px;" />
+                                <div class="cd-caption"><h4>《旧物新生》· 服装设计 · 可持续利用材料</h4><p>斜肩挎包 / 挂脖上衣 / 背心 · 2022–23 年级工作坊</p></div>
+                            </div>
+                            <div class="cd-slide cd-dim" style="min-height:340px;">
+                                <img src="assets/extra/extra-2-posters.jpg" alt="商用海报" class="w-full h-full object-cover" style="min-height:340px;" />
+                                <div class="cd-caption"><h4>商用海报设计 · 202N 年级</h4><p>参数化 / 机械臂人机交互 / MR 跨媒介叙事 · 2020–2025</p></div>
+                            </div>
+                            <div class="cd-slide cd-dim" style="min-height:340px;">
+                                <img src="assets/extra/extra-3-arch.jpg" alt="建筑设计" class="w-full h-full object-cover" style="min-height:340px;" />
+                                <div class="cd-caption"><h4>建筑设计四 · 城市阅读 · 手绘速写</h4><p>城市＝日常生活 · 拼贴海报 + 8 幅建筑手绘 · 2021</p></div>
+                            </div>
+                            <div class="cd-slide cd-dim" style="min-height:340px;">
+                                <img src="assets/extra/extra-4-chiwen2.jpg" alt="鸱吻研究" class="w-full object-contain bg-white" style="min-height:340px;max-height:500px;" />
+                                <div class="cd-caption"><h4>鸱吻的前世今生 · 研究海报</h4><p>东南大学 · 张琳媛 · 传统建筑构件文化溯源</p></div>
+                            </div>
+                            <div class="cd-slide cd-dim" style="min-height:340px;">
+                                <img src="assets/extra/extra-5-chiwen1.jpg" alt="螭吻研究" class="w-full object-contain bg-white" style="min-height:340px;max-height:500px;" />
+                                <div class="cd-caption"><h4>螭吻的前世今生 · 研究海报</h4><p>东南大学 · 张琳媛 · 从神兽到脊兽的形态演变</p></div>
+                            </div>
                         </div>
-                        <div class="cd-slide cd-dim">
-                            <img src="assets/extra/extra-2-posters.jpg" alt="商用海报" />
-                            <div class="cd-caption"><h4>商用海报设计 · 202N 年级</h4><p>参数化结构 / 机械臂人机交互 / MR 跨媒介叙事 · 2020–2025</p></div>
-                        </div>
-                        <div class="cd-slide cd-dim">
-                            <img src="assets/extra/extra-3-arch.jpg" alt="建筑设计" />
-                            <div class="cd-caption"><h4>建筑设计四 · 城市阅读 · 手绘速写</h4><p>城市＝日常生活 · 拼贴海报 + 8 幅建筑手绘 · 2021</p></div>
+                        <button class="cd-arr cd-arr-l" onclick="cdMove(-1)">&#8592;</button>
+                        <button class="cd-arr cd-arr-r" onclick="cdMove(1)">&#8594;</button>
+                        <div class="cd-dots" id="cdg-dots" style="position:absolute;bottom:10px;left:0;right:0;">
+                            <div class="cd-dot active" onclick="cdGoto(0)"></div>
+                            <div class="cd-dot" onclick="cdGoto(1)"></div>
+                            <div class="cd-dot" onclick="cdGoto(2)"></div>
+                            <div class="cd-dot" onclick="cdGoto(3)"></div>
+                            <div class="cd-dot" onclick="cdGoto(4)"></div>
                         </div>
                     </div>
-                    <button class="cd-arr cd-arr-l" onclick="cdMove(-1)">&#8592;</button>
-                    <button class="cd-arr cd-arr-r" onclick="cdMove(1)">&#8594;</button>
                 </div>
-                <div class="cd-dots" id="cdg-dots">
-                    <div class="cd-dot active" onclick="cdGoto(0)"></div>
-                    <div class="cd-dot" onclick="cdGoto(1)"></div>
-                    <div class="cd-dot" onclick="cdGoto(2)"></div>
+                <!-- 右：信息卡 -->
+                <div class="lg:col-span-6 p-8 flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-baseline gap-3">
+                            <h3 class="text-4xl font-extrabold tracking-tight text-[#2D2D2A]">其他项目</h3>
+                            <span class="text-[11px] text-[#8C8A84] tracking-widest">2020 – 2025</span>
+                        </div>
+                        <p class="text-[11px] uppercase tracking-[0.18em] text-[#8C8A84] font-bold mt-1.5">建筑学本科阶段 · 设计探索</p>
+                        <div class="mt-4 bg-[#f7f6f3] border-l-2 border-[#2D2D2A] pl-3 py-2 rounded-r-sm">
+                            <p class="text-[10px] uppercase tracking-[0.18em] text-[#2D2D2A] font-extrabold">Background · 背景</p>
+                            <p class="text-xs text-[#3a3a38] leading-relaxed mt-1">建筑学五年本科阶段的设计探索——从可持续服装到商用海报、城市手绘，再到传统建筑构件的文化研究，体现跨媒介的设计思维。</p>
+                        </div>
+                        <div class="space-y-2.5 mt-4 text-sm text-[#5C5A54] leading-relaxed">
+                            <p>🧵 <strong>《旧物新生》</strong>——旧衣物再设计，3件作品探索可持续材料与服装设计语言。</p>
+                            <p>🎨 <strong>商用海报系列</strong>——参数化结构、机械臂人机交互、MR叙事等前沿议题视觉呈现。</p>
+                            <p>🏙️ <strong>城市阅读</strong>——「城市＝日常生活」，拼贴海报与8幅建筑手绘，读写重庆城市空间。</p>
+                            <p>🐉 <strong>鸱吻 / 螭吻研究海报</strong>——传统建筑脊兽的文化溯源与形态演变研究，东南大学课程成果。</p>
+                        </div>
+                        <div class="flex flex-wrap gap-1.5 mt-4">
+                            <span class="mootain-tech" style="background:rgba(45,45,42,0.06);border-color:rgba(45,45,42,0.18);color:#2D2D2A;">服装设计</span>
+                            <span class="mootain-tech" style="background:rgba(45,45,42,0.06);border-color:rgba(45,45,42,0.18);color:#2D2D2A;">平面设计</span>
+                            <span class="mootain-tech" style="background:rgba(45,45,42,0.06);border-color:rgba(45,45,42,0.18);color:#2D2D2A;">建筑手绘</span>
+                            <span class="mootain-tech" style="background:rgba(45,45,42,0.06);border-color:rgba(45,45,42,0.18);color:#2D2D2A;">文化研究</span>
+                            <span class="mootain-tech" style="background:rgba(45,45,42,0.06);border-color:rgba(45,45,42,0.18);color:#2D2D2A;">可持续设计</span>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4 mt-5 border-t border-black/5 pt-4 text-[12px]">
+                            <div>
+                                <span class="text-[#8C8A84] text-[10px] uppercase tracking-wider">院校</span>
+                                <p class="font-semibold text-[#2D2D2A] mt-0.5">四川美术学院 / 东南大学</p>
+                            </div>
+                            <div>
+                                <span class="text-[#8C8A84] text-[10px] uppercase tracking-wider">时间跨度</span>
+                                <p class="font-semibold text-[#2D2D2A] mt-0.5">2020 – 2025</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-6">
+                        <span class="text-[10px] text-[#8C8A84]">← → 切换查看 5 个系列作品</span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -765,7 +815,7 @@
             </div>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-4">
                 <div class="fade-in-item bg-[#fff4f4] border border-[#f5a0a0]/40 rounded-sm p-4">
-                    <p class="text-[10px] uppercase tracking-wider text-[#C9463D] font-bold">v1 · 问题</p>
+                    <p class="text-[10px] uppercase tracking-wider text-[#0160a8] font-bold">v1 · 问题</p>
                     <p class="text-xs font-semibold text-[#2D2D2A] mt-1">所有心情生成同一块地形</p>
                     <p class="text-[11px] text-[#6B6964] mt-1 leading-relaxed">早期版本只按高度缩放，换情绪只有颜色变化，地形结构无差异——用户测试首个反馈。</p>
                 </div>
@@ -1048,7 +1098,7 @@
                 <div class="flex-grow h-px bg-black/5"></div>
             </div>
             <!-- 核心理论：Kiviat 道德可供性 -->
-            <div class="mt-4 bg-[#0f0f13] border border-[#C9463D]/20 rounded-sm p-5">
+            <div class="mt-4 bg-[#1a0a0a] border border-[#C9463D]/20 rounded-sm p-5">
                 <p class="text-[10px] uppercase tracking-[0.18em] text-[#C9463D] font-extrabold mb-2">核心理论框架 · Kiviat (2023) 道德可供性</p>
                 <p class="text-[11px] text-[#9ca3af] leading-relaxed mb-3">Barbara Kiviat 在 <em>Sociological Theory</em> 41(3) 中提出：算法系统将人建构为"案例"（Case）——一组标准化属性的集合——这种认知模式具有特定的<strong>道德可供性</strong>（Moral Affordances），它让比较性分析成为可能，但同时遮蔽了非比较性正义的判断空间。</p>
                 <blockquote class="border-l-2 border-[#C9463D]/60 pl-3 italic text-[#9ca3af] text-[11px]">"那些将案例视为冷漠无情、或将叙事视为感性不科学的人，都在限制自己看见完整道德景观的能力。" — Barbara Kiviat, 2023</blockquote>
@@ -1098,14 +1148,14 @@
                 <span class="text-xs text-[#8C8A84] whitespace-nowrap">Symphony 核心设计逻辑 · 五层对抗结构</span>
                 <div class="flex-grow h-px bg-black/5"></div>
             </div>
-            <div class="mt-4 bg-[#0f0f13] border border-[#C9463D]/20 rounded-sm p-6">
+            <div class="mt-4 bg-[#1a0a0a] border border-[#C9463D]/20 rounded-sm p-6">
                 <div class="grid grid-cols-1 md:grid-cols-5 gap-4 relative">
                     <div class="hidden md:block absolute left-[10%] right-[10%] top-[22px] h-px bg-[#C9463D]/20"></div>
-                    <div class="flex flex-col items-center text-center"><div class="w-11 h-11 rounded-full bg-[#C9463D] text-white flex items-center justify-center font-extrabold text-sm shadow ring-4 ring-[#0f0f13]">A</div><h5 class="font-bold text-[#ff7a72] mt-2.5 text-xs">卷宗摄入</h5><p class="text-[10px] text-[#9ca3af] leading-relaxed mt-1">原始指控 + 官方叙事 + COMPAS 原始评分同步载入</p></div>
-                    <div class="flex flex-col items-center text-center"><div class="w-11 h-11 rounded-full bg-[#C9463D] text-white flex items-center justify-center font-extrabold text-sm shadow ring-4 ring-[#0f0f13]">B</div><h5 class="font-bold text-[#ff7a72] mt-2.5 text-xs">生命轨迹重建</h5><p class="text-[10px] text-[#9ca3af] leading-relaxed mt-1">成长环境 / 教育 / 就业 / 家庭的时间线叙事</p></div>
-                    <div class="flex flex-col items-center text-center"><div class="w-11 h-11 rounded-full bg-[#C9463D] text-white flex items-center justify-center font-extrabold text-sm shadow ring-4 ring-[#0f0f13]">C</div><h5 class="font-bold text-[#ff7a72] mt-2.5 text-xs">情境叙事</h5><p class="text-[10px] text-[#9ca3af] leading-relaxed mt-1">案发诱因 / 社会压力 / 资源匮乏的非比较性呈现</p></div>
-                    <div class="flex flex-col items-center text-center"><div class="w-11 h-11 rounded-full bg-[#C9463D] text-white flex items-center justify-center font-extrabold text-sm shadow ring-4 ring-[#0f0f13]">D</div><h5 class="font-bold text-[#ff7a72] mt-2.5 text-xs">算法审查</h5><p class="text-[10px] text-[#9ca3af] leading-relaxed mt-1">逐特征可视化 + 偏见标注 + Gemini 纠偏研判</p></div>
-                    <div class="flex flex-col items-center text-center"><div class="w-11 h-11 rounded-full bg-[#C9463D] text-white flex items-center justify-center font-extrabold text-sm shadow ring-4 ring-[#0f0f13]">E</div><h5 class="font-bold text-[#ff7a72] mt-2.5 text-xs">综合研判</h5><p class="text-[10px] text-[#9ca3af] leading-relaxed mt-1">算法分 vs 叙事评估并置，法官可主动质疑</p></div>
+                    <div class="flex flex-col items-center text-center"><div class="w-11 h-11 rounded-full bg-[#C9463D] text-white flex items-center justify-center font-extrabold text-sm shadow ring-4 ring-[#1a0a0a]">A</div><h5 class="font-bold text-[#ff7a72] mt-2.5 text-xs">卷宗摄入</h5><p class="text-[10px] text-[#9ca3af] leading-relaxed mt-1">原始指控 + 官方叙事 + COMPAS 原始评分同步载入</p></div>
+                    <div class="flex flex-col items-center text-center"><div class="w-11 h-11 rounded-full bg-[#C9463D] text-white flex items-center justify-center font-extrabold text-sm shadow ring-4 ring-[#1a0a0a]">B</div><h5 class="font-bold text-[#ff7a72] mt-2.5 text-xs">生命轨迹重建</h5><p class="text-[10px] text-[#9ca3af] leading-relaxed mt-1">成长环境 / 教育 / 就业 / 家庭的时间线叙事</p></div>
+                    <div class="flex flex-col items-center text-center"><div class="w-11 h-11 rounded-full bg-[#C9463D] text-white flex items-center justify-center font-extrabold text-sm shadow ring-4 ring-[#1a0a0a]">C</div><h5 class="font-bold text-[#ff7a72] mt-2.5 text-xs">情境叙事</h5><p class="text-[10px] text-[#9ca3af] leading-relaxed mt-1">案发诱因 / 社会压力 / 资源匮乏的非比较性呈现</p></div>
+                    <div class="flex flex-col items-center text-center"><div class="w-11 h-11 rounded-full bg-[#C9463D] text-white flex items-center justify-center font-extrabold text-sm shadow ring-4 ring-[#1a0a0a]">D</div><h5 class="font-bold text-[#ff7a72] mt-2.5 text-xs">算法审查</h5><p class="text-[10px] text-[#9ca3af] leading-relaxed mt-1">逐特征可视化 + 偏见标注 + Gemini 纠偏研判</p></div>
+                    <div class="flex flex-col items-center text-center"><div class="w-11 h-11 rounded-full bg-[#C9463D] text-white flex items-center justify-center font-extrabold text-sm shadow ring-4 ring-[#1a0a0a]">E</div><h5 class="font-bold text-[#ff7a72] mt-2.5 text-xs">综合研判</h5><p class="text-[10px] text-[#9ca3af] leading-relaxed mt-1">算法分 vs 叙事评估并置，法官可主动质疑</p></div>
                 </div>
             </div>
 
@@ -1215,7 +1265,7 @@
             </div>
 
             <!-- 演示入口 -->
-            <div class="mt-6 bg-[#0f0f13] border border-[#C9463D]/15 rounded-sm p-6 flex flex-col items-center text-center gap-4">
+            <div class="mt-6 bg-[#1a0a0a] border border-[#C9463D]/15 rounded-sm p-6 flex flex-col items-center text-center gap-4">
                 <p class="text-[11px] text-[#9ca3af] leading-relaxed max-w-lg">Symphony 包含完整虚构案例演示（Marcus J. · 三级盗窃案），涵盖风险评估雷达图、生命轨迹时间线、叙事司法分析与算法纠偏研判。</p>
                 <a href="compas-app/index.html" target="_blank" rel="noopener"
                    class="inline-flex items-center gap-2 bg-[#C9463D] hover:bg-[#a5392f] text-white font-bold px-6 py-2.5 rounded-sm text-xs uppercase tracking-widest transition-colors">
@@ -1283,8 +1333,14 @@
                             </div>
                         </div>
                     </div>
-                    <div class="mt-6">
-                        <span class="text-[10px] text-[#8C8A84]">完整方案见下方 ↓ 竞品 / 痛点 / 架构 / Agent 设计</span>
+                    <div class="flex items-center gap-4 mt-6">
+                        <a href="https://stitch.withgoogle.com/preview/5742398414685492252?node-id=1d0ed78aaf2342b0bf2399f14b07637c"
+                           target="_blank" rel="noopener"
+                           class="inline-flex items-center gap-2 bg-[#3a8dbf] hover:bg-[#2a6d9f] text-white font-bold px-5 py-2.5 rounded-sm text-xs uppercase tracking-widest transition-colors">
+                            <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+                            打开中控大屏原型
+                        </a>
+                        <span class="text-[10px] text-[#8C8A84]">Google Stitch · 高保真可交互演示</span>
                     </div>
                 </div>
             </div>
@@ -1823,7 +1879,7 @@
             t.querySelectorAll('.cd-slide').forEach((el,i)=>el.classList.toggle('cd-dim',i!==cdIdx));
             document.querySelectorAll('#cdg-dots .cd-dot').forEach((d,i)=>d.classList.toggle('active',i===cdIdx));
         }
-        function cdMove(dir){cdIdx=Math.max(0,Math.min(2,cdIdx+dir));cdRender();}
+        function cdMove(dir){cdIdx=Math.max(0,Math.min(4,cdIdx+dir));cdRender();}
         function cdGoto(i){cdIdx=i;cdRender();}
         (function(){
             const g=document.getElementById('cdg'); if(!g)return;
