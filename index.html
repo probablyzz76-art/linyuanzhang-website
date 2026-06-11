@@ -106,55 +106,60 @@
         .hscroll-track img { height: var(--h, 180px); width: auto; object-fit: cover; border-radius: 6px; transition: transform .35s ease, box-shadow .35s ease; cursor: zoom-in; flex: none; }
         .hscroll-track img:hover { transform: scale(1.16); box-shadow: 0 12px 34px -10px rgba(0,0,0,0.35); position: relative; z-index: 5; }
         @keyframes hscrollmove { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+        /* ===== CD Gallery ===== */
+        .cd-gallery{position:relative;overflow:hidden;user-select:none;cursor:grab;}
+        .cd-gallery:active{cursor:grabbing;}
+        .cd-track{display:flex;transition:transform .45s cubic-bezier(.25,.8,.25,1);will-change:transform;}
+        .cd-slide{flex:none;width:100%;position:relative;}
+        .cd-slide img{width:100%;display:block;object-fit:cover;transition:filter .4s;}
+        .cd-slide.cd-dim img{filter:brightness(.45) blur(1.5px);}
+        .cd-caption{position:absolute;bottom:0;left:0;right:0;padding:18px 24px 16px;background:linear-gradient(transparent,rgba(0,0,0,.7));color:#fff;pointer-events:none;}
+        .cd-caption h4{font-size:13px;font-weight:800;letter-spacing:.05em;margin:0 0 3px;}
+        .cd-caption p{font-size:10px;opacity:.75;margin:0;letter-spacing:.08em;text-transform:uppercase;}
+        .cd-dots{display:flex;justify-content:center;gap:6px;padding:10px 0 4px;}
+        .cd-dot{width:6px;height:6px;border-radius:50%;background:#ccc;cursor:pointer;transition:background .2s,transform .2s;}
+        .cd-dot.active{background:#2D2D2A;transform:scale(1.4);}
+        .cd-arr{position:absolute;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.88);border:none;border-radius:50%;width:32px;height:32px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;z-index:10;transition:background .18s;box-shadow:0 2px 8px rgba(0,0,0,.14);}
+        .cd-arr:hover{background:#fff;}
+        .cd-arr-l{left:12px;}.cd-arr-r{right:12px;}
         /* ===== Gesture Folder System ===== */
-        /* -- parent folder (GESTURE) -- */
-        .pf-wrap { display:inline-flex; flex-direction:column; align-items:flex-start; gap:5px; cursor:pointer; user-select:none; }
-        .pf-box  { position:relative; width:72px; height:58px; transition:transform .22s ease; }
-        .pf-wrap:hover .pf-box { transform:translateY(-5px); }
-        .pf-back { position:relative; width:72px; height:58px; background:#1e1d1b; border-radius:0 8px 8px 8px; }
-        .pf-back::after { content:''; position:absolute; bottom:100%; left:0; width:22px; height:8px; background:#1e1d1b; border-radius:4px 4px 0 0; }
-        .pf-paper { position:absolute; z-index:2; bottom:8%; left:50%; transform:translate(-50%,8%); border-radius:6px; transition:all .3s ease; }
-        .pf-paper:nth-child(1){ width:66%; height:76%; background:#d0cec9; }
-        .pf-paper:nth-child(2){ width:76%; height:66%; background:#e2e0da; }
-        .pf-paper:nth-child(3){ width:86%; height:56%; background:#f5f4f0; }
-        .pf-front  { position:absolute; z-index:3; width:100%; height:100%; background:#2D2D2A; border-radius:4px 8px 8px 8px; transform-origin:bottom; transition:all .3s ease; }
-        .pf-front2 { position:absolute; z-index:3; width:100%; height:100%; background:#2D2D2A; border-radius:4px 8px 8px 8px; transform-origin:bottom; transition:all .3s ease; }
+        /* -- parent folder (GESTURE) 缩小版灰色 -- */
+        .pf-wrap { display:inline-flex; flex-direction:column; align-items:center; gap:3px; cursor:pointer; user-select:none; }
+        .pf-box  { position:relative; width:36px; height:29px; transition:transform .22s ease; }
+        .pf-wrap:hover .pf-box { transform:translateY(-3px); }
+        .pf-back { position:relative; width:36px; height:29px; background:#c8c6c2; border-radius:0 5px 5px 5px; }
+        .pf-back::after { content:''; position:absolute; bottom:100%; left:0; width:11px; height:5px; background:#c8c6c2; border-radius:3px 3px 0 0; }
+        .pf-paper { position:absolute; z-index:2; bottom:8%; left:50%; transform:translate(-50%,8%); border-radius:3px; transition:all .28s ease; }
+        .pf-paper:nth-child(1){ width:66%; height:76%; background:#e8e6e0; }
+        .pf-paper:nth-child(2){ width:76%; height:66%; background:#f0eeea; }
+        .pf-paper:nth-child(3){ width:86%; height:56%; background:#faf9f7; }
+        .pf-front  { position:absolute; z-index:3; width:100%; height:100%; background:#d8d6d2; border-radius:2px 5px 5px 5px; transform-origin:bottom; transition:all .28s ease; }
+        .pf-front2 { position:absolute; z-index:3; width:100%; height:100%; background:#d8d6d2; border-radius:2px 5px 5px 5px; transform-origin:bottom; transition:all .28s ease; }
         .pf-wrap:hover .pf-front,  .pf-wrap.open .pf-front  { transform:skew(14deg) scaleY(0.5); }
         .pf-wrap:hover .pf-front2, .pf-wrap.open .pf-front2 { transform:skew(-14deg) scaleY(0.5); }
-        .pf-wrap:hover .pf-paper:nth-child(1), .pf-wrap.open .pf-paper:nth-child(1){ transform:translate(-118%,-64%) rotateZ(-15deg); }
-        .pf-wrap:hover .pf-paper:nth-child(2), .pf-wrap.open .pf-paper:nth-child(2){ transform:translate(10%,-64%) rotateZ(15deg); }
-        .pf-wrap:hover .pf-paper:nth-child(3), .pf-wrap.open .pf-paper:nth-child(3){ transform:translate(-50%,-92%) rotateZ(4deg); }
-        .pf-label { font-family:"Share Tech Mono",monospace; font-size:9px; font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:#6b7280; transition:color .2s; }
-        .pf-wrap:hover .pf-label, .pf-wrap.open .pf-label { color:#2D2D2A; }
+        .pf-wrap:hover .pf-paper:nth-child(1), .pf-wrap.open .pf-paper:nth-child(1){ transform:translate(-115%,-62%) rotateZ(-14deg); }
+        .pf-wrap:hover .pf-paper:nth-child(2), .pf-wrap.open .pf-paper:nth-child(2){ transform:translate(8%,-62%) rotateZ(14deg); }
+        .pf-wrap:hover .pf-paper:nth-child(3), .pf-wrap.open .pf-paper:nth-child(3){ transform:translate(-50%,-88%) rotateZ(4deg); }
+        .pf-label { font-family:Arial,sans-serif; font-size:8px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:#9ca3af; transition:color .2s; }
+        .pf-wrap:hover .pf-label, .pf-wrap.open .pf-label { color:#6b7280; }
 
-        /* -- child folder row (slides down) -- */
-        .cf-row { display:flex; align-items:flex-end; gap:14px; flex-wrap:nowrap;
+        /* -- emoji 卡片行（从 Folder 下方滑出）-- */
+        .cf-row { display:flex; align-items:center; gap:6px; flex-wrap:nowrap;
                   max-height:0; overflow:hidden; opacity:0;
-                  transition: max-height .38s ease, opacity .28s ease, transform .32s ease;
-                  transform:translateY(-8px); transform-origin:top left; }
-        .pf-wrap.open ~ .cf-row, .cf-row.visible {
-                  max-height:110px; opacity:1; transform:translateY(0); }
-        /* -- single child folder -- */
-        .cf-wrap { display:flex; flex-direction:column; align-items:center; gap:5px; cursor:pointer; }
-        .cf-box  { position:relative; width:46px; height:38px; transition:transform .22s ease; }
-        .cf-wrap:hover .cf-box, .cf-wrap.active .cf-box { transform:translateY(-4px); }
-        .cf-back { position:relative; width:46px; height:38px; border-radius:0 5px 5px 5px; }
-        .cf-back::after { content:''; position:absolute; bottom:100%; left:0; width:13px; height:6px; border-radius:3px 3px 0 0; background:inherit; }
-        .cf-paper { position:absolute; z-index:2; bottom:8%; left:50%; transform:translate(-50%,8%); border-radius:4px; transition:all .26s ease; }
-        .cf-paper:nth-child(1){ width:65%; height:75%; background:#d9d9d9; }
-        .cf-paper:nth-child(2){ width:75%; height:65%; background:#ebebeb; }
-        .cf-paper:nth-child(3){ width:85%; height:55%; background:#fff; }
-        .cf-front  { position:absolute; z-index:3; width:100%; height:100%; border-radius:3px 5px 5px 5px; transform-origin:bottom; transition:all .26s ease; }
-        .cf-front2 { position:absolute; z-index:3; width:100%; height:100%; border-radius:3px 5px 5px 5px; transform-origin:bottom; transition:all .26s ease; }
-        .cf-wrap:hover .cf-front,  .cf-wrap.active .cf-front  { transform:skew(13deg) scaleY(0.52); }
-        .cf-wrap:hover .cf-front2, .cf-wrap.active .cf-front2 { transform:skew(-13deg) scaleY(0.52); }
-        .cf-wrap:hover .cf-paper:nth-child(1),.cf-wrap.active .cf-paper:nth-child(1){ transform:translate(-112%,-58%) rotateZ(-13deg); }
-        .cf-wrap:hover .cf-paper:nth-child(2),.cf-wrap.active .cf-paper:nth-child(2){ transform:translate(8%,-58%) rotateZ(13deg); }
-        .cf-wrap:hover .cf-paper:nth-child(3),.cf-wrap.active .cf-paper:nth-child(3){ transform:translate(-50%,-85%) rotateZ(4deg); }
-        .cf-name { font-family:"Share Tech Mono",monospace; font-size:7.5px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:#8C8A84; transition:color .2s; white-space:nowrap; }
-        .cf-wrap:hover .cf-name { color:#2D2D2A; }
-        .cf-wrap.active .cf-name { color:#C9463D; }
-        .cf-wrap.active::after { content:''; display:block; width:4px; height:4px; border-radius:50%; background:#C9463D; margin-top:-3px; }
+                  transition:max-height .34s ease, opacity .26s ease, transform .3s ease;
+                  transform:translateY(-6px); transform-origin:top left; }
+        .cf-row.visible { max-height:80px; opacity:1; transform:translateY(0); }
+        /* -- emoji 单张卡片 -- */
+        .ec-card { display:flex; flex-direction:column; align-items:center; gap:3px; cursor:pointer;
+                   background:#f0efec; border:1px solid #e0deda; border-radius:5px;
+                   padding:5px 7px; transition:background .18s, transform .18s, border-color .18s; }
+        .ec-card:hover  { background:#e8e6e2; transform:translateY(-2px); border-color:#c8c6c2; }
+        .ec-card.active { background:#2D2D2A; border-color:#2D2D2A; }
+        .ec-card.active .ec-name { color:#fff; }
+        .ec-emoji { font-size:15px; line-height:1; }
+        .ec-name  { font-family:Arial,sans-serif; font-size:7px; font-weight:700; letter-spacing:.08em;
+                    text-transform:uppercase; color:#8C8A84; white-space:nowrap; transition:color .18s; }
 
         /* Scanline and print grain overlay to simulate physical architectural collage */
         .collage-grain {
@@ -213,6 +218,7 @@
                 <button onclick="switchProject(2)" id="nav-proj-2" class="proj-nav-btn"><span class="num">02</span> COMPAS</button>
                 <button onclick="switchProject(3)" id="nav-proj-3" class="proj-nav-btn"><span class="num">03</span> 中控大屏</button>
                 <button onclick="switchProject(4)" id="nav-proj-4" class="proj-nav-btn"><span class="num">04</span> 小小建筑师</button>
+                <button onclick="switchProject(5)" id="nav-proj-5" class="proj-nav-btn"><span class="num">05</span> 其他项目</button>
             </nav>
             <button onclick="triggerAssembleEffect()" title="重置体素方块" class="border border-[#2D2D2A]/30 text-[#2D2D2A] p-2 rounded-sm hover:bg-[#2D2D2A] hover:text-white transition-all">
                 <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
@@ -236,80 +242,36 @@
             <!-- Three.js Container -->
             <div id="voxel-viewport" class="w-full h-full absolute inset-0 z-10 cursor-crosshair"></div>
 
-            <!-- Typography Design Strip (Floating inside Hero) -->
-            <div class="absolute inset-x-0 bottom-24 h-14 bg-white/70 backdrop-blur-md z-20 flex items-center justify-center border-y border-black/5 pointer-events-none">
-                <div class="pixel-mono text-[10px] font-bold tracking-[0.65em] text-[#2D2D2A] uppercase flex items-center gap-4" style="font-family:'Share Tech Mono',monospace;">
-                    SYS.V_02 // <span id="current-gesture-indicator" class="text-[#C9463D]">SPARSE MATRIX NORMAL</span> // MULTI-GESTURE CONTROL
+            <!-- 状态栏 + Gesture Folder 单行 -->
+            <div class="absolute inset-x-0 bottom-0 h-12 bg-white/80 backdrop-blur-md z-20 flex items-center justify-between px-4 border-t border-black/5" id="gesture-system">
+                <!-- 左：状态文字单行 Arial -->
+                <div style="font-family:Arial,sans-serif;font-size:9.5px;font-weight:700;letter-spacing:.55em;text-transform:uppercase;color:#2D2D2A;white-space:nowrap;display:flex;align-items:center;gap:12px;">
+                    SYS.V_02 //
+                    <span id="current-gesture-indicator" style="color:#C9463D;">SPARSE MATRIX NORMAL</span>
+                    // MULTI-GESTURE CONTROL
                 </div>
-            </div>
-
-            <!-- Gesture Folder Cards (Simulator) -->
-            <!-- Gesture Parent Folder + Child Folders -->
-            <div class="absolute bottom-3 left-4 z-30" id="gesture-system">
-                <!-- 父 Folder：点击展开/收起子 Folder -->
-                <div class="pf-wrap" id="pf-gesture" onclick="toggleGestureFolder()">
-                    <div class="pf-box">
-                        <div class="pf-back">
-                            <div class="pf-paper"></div>
-                            <div class="pf-paper"></div>
-                            <div class="pf-paper"></div>
-                            <div class="pf-front"></div>
-                            <div class="pf-front2"></div>
-                        </div>
+                <!-- 右：Folder + emoji 卡片行（卡片从 Folder 上方弹出）-->
+                <div style="position:relative;display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
+                    <!-- emoji 卡片行，默认隐藏，展开时显示在 Folder 上方 -->
+                    <div class="cf-row" id="cf-row" style="justify-content:flex-end;">
+                        <div class="ec-card" id="ec-open"   onclick="activateFolder('open')"  ><span class="ec-emoji">🖐️</span><span class="ec-name">Open</span></div>
+                        <div class="ec-card" id="ec-fist"   onclick="activateFolder('fist')"  ><span class="ec-emoji">✊</span><span class="ec-name">Fist</span></div>
+                        <div class="ec-card" id="ec-vortex" onclick="activateFolder('vortex')"><span class="ec-emoji">☝️</span><span class="ec-name">Vortex</span></div>
+                        <div class="ec-card" id="ec-wave"   onclick="activateFolder('wave')"  ><span class="ec-emoji">🌊</span><span class="ec-name">Wave</span></div>
+                        <div class="ec-card" id="ec-none"   onclick="activateFolder('none')"  ><span class="ec-emoji">🤚</span><span class="ec-name">Reset</span></div>
                     </div>
-                    <span class="pf-label">Gesture</span>
-                </div>
-                <!-- 子 Folder 行（默认隐藏）-->
-                <div class="cf-row" id="cf-row">
-                    <div class="cf-wrap" id="cfw-open" onclick="activateFolder('open')">
-                        <div class="cf-box">
-                            <div class="cf-back" style="background:#1e2d42">
-                                <div class="cf-paper"></div><div class="cf-paper"></div><div class="cf-paper"></div>
-                                <div class="cf-front"  style="background:#2D2D2A"></div>
-                                <div class="cf-front2" style="background:#2D2D2A"></div>
+                    <!-- 父 Folder -->
+                    <div class="pf-wrap" id="pf-gesture" onclick="toggleGestureFolder()">
+                        <div class="pf-box">
+                            <div class="pf-back">
+                                <div class="pf-paper"></div>
+                                <div class="pf-paper"></div>
+                                <div class="pf-paper"></div>
+                                <div class="pf-front"></div>
+                                <div class="pf-front2"></div>
                             </div>
                         </div>
-                        <span class="cf-name">Open Hand</span>
-                    </div>
-                    <div class="cf-wrap" id="cfw-fist" onclick="activateFolder('fist')">
-                        <div class="cf-box">
-                            <div class="cf-back" style="background:#3a2020">
-                                <div class="cf-paper"></div><div class="cf-paper"></div><div class="cf-paper"></div>
-                                <div class="cf-front"  style="background:#2D2D2A"></div>
-                                <div class="cf-front2" style="background:#2D2D2A"></div>
-                            </div>
-                        </div>
-                        <span class="cf-name">Fist Clump</span>
-                    </div>
-                    <div class="cf-wrap" id="cfw-vortex" onclick="activateFolder('vortex')">
-                        <div class="cf-box">
-                            <div class="cf-back" style="background:#2a2038">
-                                <div class="cf-paper"></div><div class="cf-paper"></div><div class="cf-paper"></div>
-                                <div class="cf-front"  style="background:#2D2D2A"></div>
-                                <div class="cf-front2" style="background:#2D2D2A"></div>
-                            </div>
-                        </div>
-                        <span class="cf-name">Vortex</span>
-                    </div>
-                    <div class="cf-wrap" id="cfw-wave" onclick="activateFolder('wave')">
-                        <div class="cf-box">
-                            <div class="cf-back" style="background:#1a3230">
-                                <div class="cf-paper"></div><div class="cf-paper"></div><div class="cf-paper"></div>
-                                <div class="cf-front"  style="background:#2D2D2A"></div>
-                                <div class="cf-front2" style="background:#2D2D2A"></div>
-                            </div>
-                        </div>
-                        <span class="cf-name">Wave Pulse</span>
-                    </div>
-                    <div class="cf-wrap" id="cfw-none" onclick="activateFolder('none')">
-                        <div class="cf-box">
-                            <div class="cf-back" style="background:#252525">
-                                <div class="cf-paper"></div><div class="cf-paper"></div><div class="cf-paper"></div>
-                                <div class="cf-front"  style="background:#2D2D2A"></div>
-                                <div class="cf-front2" style="background:#2D2D2A"></div>
-                            </div>
-                        </div>
-                        <span class="cf-name">Normalize</span>
+                        <span class="pf-label">Gesture</span>
                     </div>
                 </div>
             </div>
@@ -496,6 +458,39 @@
                 <span class="text-[10px] text-green-400 font-bold font-mono">PORT 3000 // RUNNING</span>
             </div>
         </div>
+        <!-- ===== PANEL 5 : 其他项目 ===== -->
+        <div id="dd-panel-5" class="hidden">
+            <div class="bg-white border border-black/5 shadow-sm rounded-sm overflow-hidden">
+                <div class="px-6 pt-6 pb-4 border-b border-black/5 flex items-baseline gap-3 flex-wrap">
+                    <h3 class="text-3xl font-extrabold tracking-tight text-[#2D2D2A]">其他项目</h3>
+                    <span class="text-[11px] text-[#8C8A84] tracking-widest">2020 – 2025</span>
+                    <span class="text-[11px] uppercase tracking-[0.18em] text-[#8C8A84] font-bold ml-auto">建筑学本科阶段 · 设计探索</span>
+                </div>
+                <div class="relative cd-gallery" id="cdg">
+                    <div class="cd-track" id="cdg-track">
+                        <div class="cd-slide">
+                            <img src="assets/extra/extra-1-fashion.jpg" alt="旧物新生" />
+                            <div class="cd-caption"><h4>《旧物新生》· 服装设计 · 可持续利用材料</h4><p>3 件作品 · 斜肩挎包 / 挂脖上衣 / 背心 · 2022–23 年级工作坊</p></div>
+                        </div>
+                        <div class="cd-slide cd-dim">
+                            <img src="assets/extra/extra-2-posters.jpg" alt="商用海报" />
+                            <div class="cd-caption"><h4>商用海报设计 · 202N 年级</h4><p>参数化结构 / 机械臂人机交互 / MR 跨媒介叙事 · 2020–2025</p></div>
+                        </div>
+                        <div class="cd-slide cd-dim">
+                            <img src="assets/extra/extra-3-arch.jpg" alt="建筑设计" />
+                            <div class="cd-caption"><h4>建筑设计四 · 城市阅读 · 手绘速写</h4><p>城市＝日常生活 · 拼贴海报 + 8 幅建筑手绘 · 2021</p></div>
+                        </div>
+                    </div>
+                    <button class="cd-arr cd-arr-l" onclick="cdMove(-1)">&#8592;</button>
+                    <button class="cd-arr cd-arr-r" onclick="cdMove(1)">&#8594;</button>
+                </div>
+                <div class="cd-dots" id="cdg-dots">
+                    <div class="cd-dot active" onclick="cdGoto(0)"></div>
+                    <div class="cd-dot" onclick="cdGoto(1)"></div>
+                    <div class="cd-dot" onclick="cdGoto(2)"></div>
+                </div>
+            </div>
+        </div>
 
     </section>
 
@@ -513,8 +508,8 @@
         <!-- Thumbnail switcher -->
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
             <div id="dd-tab-1" onclick="switchProject(1)" class="dd-tab dd-tab-active">
-                <div class="h-24 sm:h-28 overflow-hidden bg-[#eaedff]">
-                    <img src="assets/mootain-cutout.png" alt="MOOTAIN 缩略图" class="w-full h-full object-cover" />
+                <div class="h-24 sm:h-28 overflow-hidden bg-[#d0d8e8]">
+                    <img src="assets/proj1-cover.jpg" alt="MOOTAIN 缩略图" class="w-full h-full object-cover" />
                 </div>
                 <div class="px-3 py-2 flex items-center justify-between">
                     <span class="text-xs font-bold text-[#2D2D2A]">01 · MOOTAIN</span>
@@ -522,8 +517,8 @@
                 </div>
             </div>
             <div id="dd-tab-2" onclick="switchProject(2)" class="dd-tab">
-                <div class="h-24 sm:h-28 flex items-center justify-center" style="background: radial-gradient(circle at 50% 35%, #26262e 0%, #000 90%);">
-                    <i data-lucide="scale" class="w-7 h-7 text-[#ff3b30]"></i>
+                <div class="h-24 sm:h-28 overflow-hidden bg-[#f0f0f8]">
+                    <img src="assets/compas-thumb.jpg" alt="COMPAS 缩略图" class="w-full h-full object-cover" />
                 </div>
                 <div class="px-3 py-2 flex items-center justify-between">
                     <span class="text-xs font-bold text-[#2D2D2A]">02 · COMPAS</span>
@@ -531,21 +526,31 @@
                 </div>
             </div>
             <div id="dd-tab-3" onclick="switchProject(3)" class="dd-tab">
-                <div class="h-24 sm:h-28 flex items-center justify-center bg-gradient-to-br from-[#e6efe9] to-[#cfe0d6]">
-                    <i data-lucide="monitor" class="w-7 h-7 text-[#5E7A68]"></i>
+                <div class="h-24 sm:h-28 overflow-hidden bg-[#3bbcb4]">
+                    <img src="assets/dashboard-thumb.jpg" alt="多功能车载缩略图" class="w-full h-full object-cover" />
                 </div>
                 <div class="px-3 py-2 flex items-center justify-between">
-                    <span class="text-xs font-bold text-[#2D2D2A]">03 · 中控大屏</span>
-                    <span class="text-[9px] text-[#8C8A84] font-bold uppercase">Soon</span>
+                    <span class="text-xs font-bold text-[#2D2D2A]">03 · 多功能车载</span>
+                    <span class="text-[9px] text-[#3a8dbf] font-bold uppercase">Live</span>
                 </div>
             </div>
             <div id="dd-tab-4" onclick="switchProject(4)" class="dd-tab">
-                <div class="h-24 sm:h-28 overflow-hidden bg-[#e6f4f1]">
-                    <img src="assets/kidarch-1-cover.jpg" alt="小小建筑师 缩略图" class="w-full h-full object-cover" />
+                <div class="h-24 sm:h-28 overflow-hidden bg-[#cfeee9]">
+                    <img src="assets/kidarch-cover.jpg" alt="小小建筑师 缩略图" class="w-full h-full object-cover" />
                 </div>
                 <div class="px-3 py-2 flex items-center justify-between">
                     <span class="text-xs font-bold text-[#2D2D2A]">04 · 小小建筑师</span>
                     <span class="text-[9px] text-[#157f74] font-bold uppercase">Live</span>
+                </div>
+            </div>
+            <!-- Tab 5 其他项目 -->
+            <div id="dd-tab-5" onclick="switchProject(5)" class="dd-tab">
+                <div class="h-24 sm:h-28 overflow-hidden bg-[#f5f3ee]">
+                    <img src="assets/extra/extra-1-fashion.jpg" alt="其他项目缩略图" class="w-full h-full object-cover" />
+                </div>
+                <div class="px-3 py-2 flex items-center justify-between">
+                    <span class="text-xs font-bold text-[#2D2D2A]">05 · 其他项目</span>
+                    <span class="text-[9px] text-[#8C8A84] font-bold uppercase">More</span>
                 </div>
             </div>
         </div>
@@ -809,7 +814,7 @@
             <!-- 封面信息卡 -->
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-0 bg-white border border-black/5 shadow-sm rounded-sm overflow-hidden">
                 <div class="lg:col-span-6 relative min-h-[340px] overflow-hidden bg-[#0b0b0e]">
-                    <img src="assets/compas-cover.jpg" alt="SYMPHONY 叙事司法评估系统界面" class="absolute inset-0 w-full h-full object-contain" />
+                    <img src="assets/compas-cover.jpg" alt="COMPAS 叙事通道设计研究" class="absolute inset-0 w-full h-full object-cover" />
                     <canvas class="cover-fx" data-fx="justice" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;mix-blend-mode:screen;"></canvas>
                     <span class="absolute top-4 left-4 z-10 bg-[#C9463D] text-white text-[9px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-sm shadow">Live · 司法评估系统</span>
                 </div>
@@ -1032,21 +1037,176 @@
         </div>
 
         <!-- ===== PANEL 3 : 中控大屏 (placeholder) ===== -->
-        <div id="dd-panel-3" class="hidden">
-            <div class="bg-white border border-black/5 shadow-sm rounded-sm p-10 flex flex-col items-center text-center relative overflow-hidden">
-                <canvas class="cover-fx" data-fx="dashboard" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;opacity:.42;"></canvas>
-                <div class="w-16 h-16 rounded-full bg-[#5E7A68]/10 flex items-center justify-center mb-4">
-                    <i data-lucide="monitor" class="w-7 h-7 text-[#5E7A68]"></i>
+             <div id="dd-panel-3" class="hidden">
+            <!-- 封面信息卡 -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-0 bg-white border border-black/5 shadow-sm rounded-sm overflow-hidden">
+                <div class="lg:col-span-6 relative min-h-[340px] overflow-hidden bg-[#3bbcb4]">
+                    <img src="assets/dashboard-cover.jpg" alt="多功能车载 · 软件Agent项目建议书" class="absolute inset-0 w-full h-full object-cover" />
+                    <canvas class="cover-fx" data-fx="dashboard" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;opacity:.35;mix-blend-mode:overlay;"></canvas>
+                    <span class="absolute top-4 left-4 z-10 bg-white/20 text-white text-[9px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-sm backdrop-blur-sm">B端 · 软件 Agent</span>
                 </div>
-                <h3 class="text-2xl font-bold text-[#2D2D2A]">智能数字中控大屏</h3>
-                <p class="text-[11px] uppercase tracking-[0.18em] text-[#5E7A68] font-bold mt-1.5">B端产品设计 · 交通调度场景</p>
-                <p class="text-sm text-[#5C5A54] mt-4 max-w-xl leading-relaxed">面向交通调度场景，梳理不同角色的操作路径与信息优先级，输出完整 PRD、高保真交互原型与产品设计说明书。</p>
-                <span class="mt-6 text-[11px] tracking-widest uppercase text-[#8C8A84] border border-black/10 rounded-full px-4 py-1.5">案例整理中 · Coming soon</span>
+                <div class="lg:col-span-6 p-8 flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-baseline gap-3">
+                            <h3 class="text-3xl font-extrabold tracking-tight text-[#2D2D2A]">多功能车载</h3>
+                            <span class="text-[11px] text-[#8C8A84] tracking-widest">2025</span>
+                        </div>
+                        <p class="text-[11px] uppercase tracking-[0.18em] text-[#5bc0eb] font-bold mt-1.5">B端产品设计 · 软件 Agent · 多模态交互</p>
+                        <!-- 问题洞察前置 -->
+                        <div class="mt-4 bg-[#f0f8ff] border-l-2 border-[#5bc0eb] pl-3 py-2 rounded-r-sm">
+                            <p class="text-[10px] uppercase tracking-[0.18em] text-[#3a8dbf] font-extrabold">Problem · 问题洞察</p>
+                            <p class="text-xs text-[#3a3a38] leading-relaxed mt-1">传统车载助手封闭、交互单一、智能不足——仅能被动响应语音指令，无法融合多传感器数据进行<em>主动感知与决策</em>。多屏切换造成驾驶认知负担，驾驶安全与体验存在明显缺口。</p>
+                        </div>
+                        <p class="text-sm leading-relaxed text-[#5C5A54] mt-3">
+                            以<strong>后视镜分屏</strong>为硬件载体，搭载 SR 环境渲染、眼动识别、心率检测等技术，构建"感知 + 决策 + 具身交互"统一软件 Agent。与赵禛晗、周恣帆合作，我负责需求分析、信息架构与交互原型（中控大屏端），探索从"被动信息显示"到"主动智能体"的设计跨越。
+                        </p>
+                        <div class="flex flex-wrap gap-1.5 mt-4">
+                            <span style="display:inline-block;background:rgba(91,192,235,0.1);border:1px solid rgba(91,192,235,0.28);border-radius:3px;padding:3px 9px;font-size:11px;color:#3a8dbf;font-weight:600;">多模态感知</span>
+                            <span style="display:inline-block;background:rgba(91,192,235,0.1);border:1px solid rgba(91,192,235,0.28);border-radius:3px;padding:3px 9px;font-size:11px;color:#3a8dbf;font-weight:600;">软件 Agent</span>
+                            <span style="display:inline-block;background:rgba(91,192,235,0.1);border:1px solid rgba(91,192,235,0.28);border-radius:3px;padding:3px 9px;font-size:11px;color:#3a8dbf;font-weight:600;">具身化交互</span>
+                            <span style="display:inline-block;background:rgba(91,192,235,0.1);border:1px solid rgba(91,192,235,0.28);border-radius:3px;padding:3px 9px;font-size:11px;color:#3a8dbf;font-weight:600;">PRD · Figma</span>
+                            <span style="display:inline-block;background:rgba(91,192,235,0.1);border:1px solid rgba(91,192,235,0.28);border-radius:3px;padding:3px 9px;font-size:11px;color:#3a8dbf;font-weight:600;">Google Stitch</span>
+                        </div>
+                        <div class="grid grid-cols-3 gap-3 mt-4 border-t border-black/5 pt-4 text-[12px]">
+                            <div><span class="text-[#8C8A84] text-[10px] uppercase tracking-wider">角色</span><p class="font-semibold text-[#2D2D2A] mt-0.5">需求 / 交互 / 原型</p></div>
+                            <div><span class="text-[#8C8A84] text-[10px] uppercase tracking-wider">团队</span><p class="font-semibold text-[#2D2D2A] mt-0.5">3 人 · 课程项目</p></div>
+                            <div><span class="text-[#8C8A84] text-[10px] uppercase tracking-wider">核心产出</span><p class="font-semibold text-[#2D2D2A] mt-0.5">建议书 + 交互原型</p></div>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-4 mt-6">
+                        <span class="text-[10px] text-[#8C8A84]">完整方案见下方 ↓ 竞品分析 / 痛点需求 / 系统架构 / Agent 设计</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 用户需求与痛点分析 -->
+            <div class="mt-8 flex items-center gap-3">
+                <span class="text-[12px] uppercase tracking-[0.22em] text-[#3a8dbf] font-extrabold whitespace-nowrap">User Research</span>
+                <span class="text-xs text-[#8C8A84] whitespace-nowrap">需求分析 · 四大痛点驱动的设计方向</span>
+                <div class="flex-grow h-px bg-black/5"></div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
+                <div class="bg-white border border-black/5 rounded-sm p-4">
+                    <p class="text-[11px] font-bold text-[#3a8dbf] mb-1">封闭性强 → 后装切入</p>
+                    <p class="text-[11px] text-[#6B6964] leading-relaxed">车载系统封闭，外部开发者难以接入。<strong>后装设备是最可行的切入点</strong>——不需要 OEM 合作，直接面向存量车型用户，市场更大、落地门槛更低。</p>
+                </div>
+                <div class="bg-white border border-black/5 rounded-sm p-4">
+                    <p class="text-[11px] font-bold text-[#3a8dbf] mb-1">交互单一 → 多模态融合</p>
+                    <p class="text-[11px] text-[#6B6964] leading-relaxed">传统助手仅支持语音响应，缺乏多传感器数据融合。设计目标：语音 + 手势 + 眼动三路输入自然切换，<strong>减少视线离开路面的时间</strong>。</p>
+                </div>
+                <div class="bg-white border border-black/5 rounded-sm p-4">
+                    <p class="text-[11px] font-bold text-[#3a8dbf] mb-1">智能不足 → 主动感知决策</p>
+                    <p class="text-[11px] text-[#6B6964] leading-relaxed">现有后视镜偏"感知层"，缺乏系统级决策能力。引入规则 + LLM 双驱动决策引擎，从"被动响应"升级为<strong>主动推送最优避险建议</strong>。</p>
+                </div>
+                <div class="bg-white border border-black/5 rounded-sm p-4">
+                    <p class="text-[11px] font-bold text-[#3a8dbf] mb-1">认知负担 → 分屏信息分层</p>
+                    <p class="text-[11px] text-[#6B6964] leading-relaxed">多屏切换造成驾驶认知负担。后视镜分屏策略：左侧 SR 可视化 / 右侧风险提示 / 角落状态监测，<strong>信息分层不叠加</strong>，视线移动最小化。</p>
+                </div>
+            </div>
+
+            <!-- 系统架构 -->
+            <div class="mt-7 flex items-center gap-3">
+                <span class="text-[12px] uppercase tracking-[0.22em] text-[#3a8dbf] font-extrabold whitespace-nowrap">System Architecture</span>
+                <span class="text-xs text-[#8C8A84] whitespace-nowrap">一核双载体 · 多模全融合</span>
+                <div class="flex-grow h-px bg-black/5"></div>
+            </div>
+            <div class="mt-4 bg-[#0d1f2d] border border-[#5bc0eb]/15 rounded-sm overflow-hidden">
+                <img src="assets/dashboard/arch-screenshot.jpg" alt="一核双载体系统架构图" class="w-full object-cover" loading="lazy" />
+                <div class="px-4 py-2.5 flex items-center justify-between flex-wrap gap-2 border-t border-[#5bc0eb]/10">
+                    <div class="flex gap-3 flex-wrap">
+                        <span class="text-[9px] bg-[#5bc0eb]/15 text-[#5bc0eb] px-2 py-0.5 rounded font-bold">后装可行</span>
+                        <span class="text-[9px] bg-[#5bc0eb]/15 text-[#5bc0eb] px-2 py-0.5 rounded font-bold">安全优先</span>
+                        <span class="text-[9px] bg-[#5bc0eb]/15 text-[#5bc0eb] px-2 py-0.5 rounded font-bold">自然交互</span>
+                        <span class="text-[9px] bg-[#5bc0eb]/15 text-[#5bc0eb] px-2 py-0.5 rounded font-bold">功能模块化</span>
+                    </div>
+                    <span class="text-[9px] text-[#8da9be] uppercase tracking-widest">后视镜分屏 + 软件 Agent + 中控大屏</span>
+                </div>
+            </div>
+
+            <!-- 关键设计决策 -->
+            <div class="mt-7 flex items-center gap-3">
+                <span class="text-[12px] uppercase tracking-[0.22em] text-[#3a8dbf] font-extrabold whitespace-nowrap">Key Decisions</span>
+                <span class="text-xs text-[#8C8A84] whitespace-nowrap">关键取舍 · 每个决定背后的理由</span>
+                <div class="flex-grow h-px bg-black/5"></div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
+                <div class="bg-white border border-black/5 rounded-sm p-4">
+                    <p class="text-[12px] font-bold text-[#3a8dbf] mb-1">为什么选后视镜而非中控大屏作主载体</p>
+                    <p class="text-[11px] text-[#6B6964] leading-relaxed">中控大屏需要视线大幅偏转，驾驶中操作危险性高；后视镜在驾驶员自然视线路径上，视线切换成本最低。<strong>贴近视线 = 减少认知负担</strong>，这是分屏作为主感知入口的核心理由。</p>
+                </div>
+                <div class="bg-white border border-black/5 rounded-sm p-4">
+                    <p class="text-[12px] font-bold text-[#3a8dbf] mb-1">规则 + LLM 双驱动 vs 纯 LLM</p>
+                    <p class="text-[11px] text-[#6B6964] leading-relaxed">驾驶场景的安全决策不能有延迟——变道预警必须 &lt;100ms 响应，规则引擎保障实时性；LLM 负责情境理解和主动服务推送。<strong>安全链路走规则，体验链路走 LLM</strong>，两条链路分离。</p>
+                </div>
+                <div class="bg-white border border-black/5 rounded-sm p-4">
+                    <p class="text-[12px] font-bold text-[#3a8dbf] mb-1">具身化 IP 的设计边界</p>
+                    <p class="text-[11px] text-[#6B6964] leading-relaxed">IP 形象跟随视线、有情感表达，但<strong>驾驶中不主动发起对话</strong>——只在感知到用户需求（疲劳、超速、偏航）时才介入。"有温度的伙伴"不等于"随时打扰"，这是驾驶场景下的克制设计。</p>
+                </div>
+                <div class="bg-white border border-black/5 rounded-sm p-4">
+                    <p class="text-[12px] font-bold text-[#3a8dbf] mb-1">后装优先的商业路径选择</p>
+                    <p class="text-[11px] text-[#6B6964] leading-relaxed">前装需要 OEM 合作，周期长、门槛高；<strong>后装面向存量 3 亿辆车，单品 SKU 可快速验证 PMF</strong>。设计时功能模块化、接口开放，既能后装独立运行，也能未来接入整车厂生态。</p>
+                </div>
+            </div>
+
+            <!-- Full Case Study 展示图（精选4张）+ 原型入口 -->
+            <div class="mt-7 flex items-center gap-3">
+                <span class="text-[12px] uppercase tracking-[0.22em] text-[#3a8dbf] font-extrabold whitespace-nowrap">Full Case Study</span>
+                <span class="text-xs text-[#8C8A84] whitespace-nowrap">建议书精选 · 竞品 / 痛点 / 架构 / Agent 设计</span>
+                <div class="flex-grow h-px bg-black/5"></div>
+            </div>
+            <div class="space-y-4 mt-4">
+                <figure class="bg-white border border-black/5 rounded-sm overflow-hidden shadow-sm">
+                    <img src="assets/dashboard/dash-1-bg.jpg" alt="竞品背景分析" class="w-full object-cover" loading="lazy" />
+                    <figcaption class="px-4 py-2 text-[11px] text-[#6B6964] border-t border-black/5">01 · 竞品背景：蔚来 NOMI / 流媒体后视镜 / 智能云镜现状分析</figcaption>
+                </figure>
+                <figure class="bg-white border border-black/5 rounded-sm overflow-hidden shadow-sm">
+                    <img src="assets/dashboard/dash-2-pain.jpg" alt="痛点与用户需求" class="w-full object-cover" loading="lazy" />
+                    <figcaption class="px-4 py-2 text-[11px] text-[#6B6964] border-t border-black/5">02 · 四大痛点 × 用户需求：封闭性 / 交互单一 / 智能不足 / 认知负担</figcaption>
+                </figure>
+                <figure class="bg-white border border-black/5 rounded-sm overflow-hidden shadow-sm">
+                    <img src="assets/dashboard/dash-3-system.jpg" alt="系统架构" class="w-full object-cover" loading="lazy" />
+                    <figcaption class="px-4 py-2 text-[11px] text-[#6B6964] border-t border-black/5">03 · 核心设计方案：一核双载体 · 多模全融合系统架构</figcaption>
+                </figure>
+                <figure class="bg-white border border-black/5 rounded-sm overflow-hidden shadow-sm">
+                    <img src="assets/dashboard/dash-4-agent.jpg" alt="具身IP交互设计" class="w-full object-cover" loading="lazy" />
+                    <figcaption class="px-4 py-2 text-[11px] text-[#6B6964] border-t border-black/5">04 · 具身交互设计：情感化 IP 形象 × 多模态交互体验 × 主动智能服务</figcaption>
+                </figure>
+            </div>
+            <!-- 原型演示入口（和 MOOTAIN/COMPAS 风格一致）-->
+            <div class="mt-6 bg-[#0d1f2d] border border-[#5bc0eb]/15 rounded-sm p-6 flex flex-col items-center text-center gap-4">
+                <p class="text-[11px] text-[#8da9be] leading-relaxed max-w-lg">中控大屏高保真原型包含导航规划、语音助手、安全预警与驾驶员状态监测等核心模块，基于 Google Stitch 构建，支持完整交互演示。</p>
+                <a href="https://stitch.withgoogle.com/preview/5742398414685492252?node-id=1d0ed78aaf2342b0bf2399f14b07637c"
+                   target="_blank" rel="noopener"
+                   class="inline-flex items-center gap-2 bg-[#3a8dbf] hover:bg-[#2a6d9f] text-white font-bold px-6 py-2.5 rounded-sm text-xs uppercase tracking-widest transition-colors">
+                    <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+                    打开中控大屏原型
+                </a>
+            </div>
+
+            <!-- 局限与反思 -->
+            <div class="mt-7 flex items-center gap-3">
+                <span class="text-[12px] uppercase tracking-[0.22em] text-[#3a8dbf] font-extrabold whitespace-nowrap">Limitations &amp; Reflection</span>
+                <span class="text-xs text-[#8C8A84] whitespace-nowrap">局限与反思 · 这个方案本身有什么问题</span>
+                <div class="flex-grow h-px bg-black/5"></div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-4">
+                <div class="bg-[#f0f8ff] border border-[#5bc0eb]/20 rounded-sm p-4">
+                    <p class="text-[11px] font-bold text-[#3a8dbf] mb-1">⚠ 硬件落地可行性未验证</p>
+                    <p class="text-[11px] text-[#6B6964] leading-relaxed">SR 渲染 + 眼动 + 心率多传感器融合的算力需求、功耗与车规级认证，在原型阶段完全没有涉及。从软件建议书到真实后装产品，硬件工程是最大的不确定项。</p>
+                </div>
+                <div class="bg-[#f0f8ff] border border-[#5bc0eb]/20 rounded-sm p-4">
+                    <p class="text-[11px] font-bold text-[#3a8dbf] mb-1">⚠ 真实驾驶场景用户测试缺失</p>
+                    <p class="text-[11px] text-[#6B6964] leading-relaxed">所有交互设计基于桌面推演，未在真实驾驶或驾驶模拟器中验证。驾驶中的认知负担、信息分层是否真的有效，需要有眼动仪 + 真实路况的实验数据支撑。</p>
+                </div>
+                <div class="bg-[#f0f8ff] border border-[#5bc0eb]/20 rounded-sm p-4">
+                    <p class="text-[11px] font-bold text-[#3a8dbf] mb-1">⚠ 我的角色边界</p>
+                    <p class="text-[11px] text-[#6B6964] leading-relaxed">这是一个 3 人课程项目，我负责需求分析与中控大屏端交互原型，后视镜分屏方案和整体技术架构是团队协作产出。呈现的是<strong>我参与的部分</strong>，不是个人独立作品。</p>
+                </div>
             </div>
         </div>
-
         <!-- ===== PANEL 4 : 小小建筑师 (项目4) ===== -->
-        <div id="dd-panel-4" class="hidden">
+             <div id="dd-panel-4" class="hidden">
+            <!-- 封面信息卡 -->
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-0 bg-white border border-black/5 shadow-sm rounded-sm overflow-hidden">
                 <div class="lg:col-span-6 relative min-h-[340px] overflow-hidden bg-[#cfeee9]">
                     <img src="assets/kidarch-cover.jpg" alt="小小建筑师 · 等距城市插画" class="absolute inset-0 w-full h-full object-cover" />
@@ -1059,36 +1219,127 @@
                             <h3 class="text-4xl font-extrabold tracking-tight text-[#0f6b61]">小小建筑师</h3>
                             <span class="text-[11px] text-[#8C8A84] tracking-widest">2025</span>
                         </div>
-                        <p class="text-[11px] uppercase tracking-[0.18em] text-[#157f74] font-bold mt-1.5">C端产品设计 · 儿童建筑启蒙游戏</p>
-                        <p class="text-sm leading-relaxed text-[#5C5A54] mt-4">
-                            面向 5–12 岁儿童的叙事驱动设计教育 App：以“AI 城市拯救计划”为故事主线，通过收集城市心跳、智斗直线怪、资源守护者联盟等游戏环节，培养孩子的空间设计思维与 AI 协作能力。我开展 10+ 家长 / 教师深度访谈建立用户画像，完成完整信息架构与高保真原型（老师端数据看板 + 儿童端游戏界面），并针对 5–8 岁具象思维特点设计可用性验证。
-                        </p>
-                        <div class="flex flex-wrap gap-1.5 mt-5">
-                            <span class="kid-tech">用户研究</span>
-                            <span class="kid-tech">信息架构</span>
-                            <span class="kid-tech">游戏化设计</span>
-                            <span class="kid-tech">高保真原型</span>
-                            <span class="kid-tech">SketchUp · Figma</span>
+                        <p class="text-[11px] uppercase tracking-[0.18em] text-[#157f74] font-bold mt-1.5">C端产品设计 · K12 儿童建筑启蒙游戏</p>
+                        <!-- 问题洞察前置 -->
+                        <div class="mt-4 bg-[#f0faf8] border-l-2 border-[#0f6b61] pl-3 py-2 rounded-r-sm">
+                            <p class="text-[10px] uppercase tracking-[0.18em] text-[#0f6b61] font-extrabold">Problem · 问题洞察</p>
+                            <p class="text-xs text-[#3a3a38] leading-relaxed mt-1">现有 K12 建筑/设计教育 App 高度同质化——要么是枯燥的图文知识点，要么是脱离认知规律的成人化工具。<em>5–12 岁儿童的具象思维和游戏驱动本能被完全忽视</em>，导致参与度低、学习效果差。</p>
                         </div>
-                        <div class="grid grid-cols-2 gap-4 mt-5 border-t border-black/5 pt-4 text-[12px]">
-                            <div>
-                                <span class="text-[#8C8A84] text-[10px] uppercase tracking-wider">角色</span>
-                                <p class="font-semibold text-[#2D2D2A] mt-0.5">独立产品设计师</p>
-                            </div>
-                            <div>
-                                <span class="text-[#8C8A84] text-[10px] uppercase tracking-wider">调研</span>
-                                <p class="font-semibold text-[#2D2D2A] mt-0.5">10+ 家长 / 教师访谈</p>
-                            </div>
+                        <p class="text-sm leading-relaxed text-[#5C5A54] mt-3">
+                            以"AI 城市拯救计划"为故事主线，设计面向儿童的空间启蒙游戏：收集城市心跳、智斗直线怪、资源守护者联盟……通过叙事驱动 + 游戏化任务，培养空间设计思维与 AI 协作能力。独立完成从用户访谈 → 信息架构 → 双端高保真原型（老师端 + 儿童端）的完整设计闭环。
+                        </p>
+                        <div class="flex flex-wrap gap-1.5 mt-4">
+                            <span class="kid-tech">用户研究</span><span class="kid-tech">信息架构</span><span class="kid-tech">游戏化设计</span><span class="kid-tech">高保真原型</span><span class="kid-tech">SketchUp · Figma</span>
+                        </div>
+                        <div class="grid grid-cols-3 gap-3 mt-4 border-t border-black/5 pt-4 text-[12px]">
+                            <div><span class="text-[#8C8A84] text-[10px] uppercase tracking-wider">角色</span><p class="font-semibold text-[#2D2D2A] mt-0.5">独立产品设计师</p></div>
+                            <div><span class="text-[#8C8A84] text-[10px] uppercase tracking-wider">用户研究</span><p class="font-semibold text-[#2D2D2A] mt-0.5">10+ 家长/教师访谈</p></div>
+                            <div><span class="text-[#8C8A84] text-[10px] uppercase tracking-wider">核心产出</span><p class="font-semibold text-[#2D2D2A] mt-0.5">双端原型 + 游戏素材库</p></div>
                         </div>
                     </div>
-                    <div class="flex items-center gap-4 mt-7">
+                    <div class="mt-6">
                         <span class="text-[10px] text-[#8C8A84]">完整方案见下方 ↓ 背景 / 竞品 / UI / 游戏素材</span>
                     </div>
                 </div>
             </div>
 
+            <!-- 用户研究快照 -->
             <div class="mt-8 flex items-center gap-3">
-                <span class="text-[10px] uppercase tracking-[0.25em] text-[#157f74] font-bold whitespace-nowrap">Full Case Study</span>
+                <span class="text-[12px] uppercase tracking-[0.22em] text-[#0f6b61] font-extrabold whitespace-nowrap">User Research</span>
+                <span class="text-xs text-[#8C8A84] whitespace-nowrap">用户研究 · 10+ 访谈驱动的核心洞察</span>
+                <div class="flex-grow h-px bg-black/5"></div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-4">
+                <div class="bg-white border border-black/5 rounded-sm p-4">
+                    <div class="text-2xl font-extrabold text-[#0f6b61]">10+</div>
+                    <p class="text-[11px] text-[#157f74] font-bold mt-0.5">家长 + 教师深度访谈</p>
+                    <p class="text-[11px] text-[#6B6964] leading-relaxed mt-1">访谈对象涵盖小学美术老师、家长与建筑设计师父母，系统建立两类核心画像：「焦虑型家长」（重结果轻过程）与「启蒙型教师」（需要可量化的课堂工具）。</p>
+                </div>
+                <div class="bg-white border border-black/5 rounded-sm p-4">
+                    <div class="text-2xl font-extrabold text-[#0f6b61]">#1 痛点</div>
+                    <p class="text-[11px] text-[#157f74] font-bold mt-0.5">现有工具"不好玩也学不到东西"</p>
+                    <p class="text-[11px] text-[#6B6964] leading-relaxed mt-1">"孩子用了两次就不想打开了。" — 家长高频反馈。5–8 岁具象思维阶段的孩子需要故事驱动 + 即时反馈，而非图文知识点堆砌。</p>
+                </div>
+                <div class="bg-white border border-black/5 rounded-sm p-4">
+                    <div class="text-2xl font-extrabold text-[#0f6b61]">双端需求</div>
+                    <p class="text-[11px] text-[#157f74] font-bold mt-0.5">儿童端 + 老师端缺一不可</p>
+                    <p class="text-[11px] text-[#6B6964] leading-relaxed mt-1">老师需要实时数据看板追踪学习进度、布置任务；儿童需要沉浸式游戏体验。两个端的目标截然不同，信息架构必须完全分离设计。</p>
+                </div>
+            </div>
+
+            <!-- 关键设计决策 -->
+            <div class="mt-7 flex items-center gap-3">
+                <span class="text-[12px] uppercase tracking-[0.22em] text-[#0f6b61] font-extrabold whitespace-nowrap">Key Decisions</span>
+                <span class="text-xs text-[#8C8A84] whitespace-nowrap">关键取舍 · 每个决定背后的理由</span>
+                <div class="flex-grow h-px bg-black/5"></div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
+                <div class="bg-white border border-black/5 rounded-sm p-4">
+                    <p class="text-[12px] font-bold text-[#0f6b61] mb-1">为什么选"故事主线"而非"课程体系"</p>
+                    <p class="text-[11px] text-[#6B6964] leading-relaxed">5–8 岁具象思维阶段，抽象概念（结构、空间、比例）需要具体故事情境才能理解。"AI 城市拯救计划"把每个建筑知识点包装成任务关卡——不是"学什么是拱桥"，而是"城市里的拱桥断了，你来修"。</p>
+                </div>
+                <div class="bg-white border border-black/5 rounded-sm p-4">
+                    <p class="text-[12px] font-bold text-[#0f6b61] mb-1">游戏化 vs 教育内容：如何不让游戏喧宾夺主</p>
+                    <p class="text-[11px] text-[#6B6964] leading-relaxed">竞品分析发现大部分教育游戏走向两个极端：纯游戏（无知识点）或纯课程（无趣味）。我的决策是"游戏是载体、知识是目标"——每个游戏关卡必须绑定一个可测量的认知目标，老师端能追踪到具体掌握情况。</p>
+                </div>
+                <div class="bg-white border border-black/5 rounded-sm p-4">
+                    <p class="text-[12px] font-bold text-[#0f6b61] mb-1">为什么设计老师端数据看板</p>
+                    <p class="text-[11px] text-[#6B6964] leading-relaxed">访谈中老师最大的顾虑是"这个用了之后，我不知道孩子学到了什么"。老师端看板是打通 B 端（学校采购决策）的关键——家长愿意玩，老师能汇报，学校才会采购。这是商业闭环，不只是功能需求。</p>
+                </div>
+                <div class="bg-white border border-black/5 rounded-sm p-4">
+                    <p class="text-[12px] font-bold text-[#0f6b61] mb-1">建筑学背景如何转化为产品优势</p>
+                    <p class="text-[11px] text-[#6B6964] leading-relaxed">游戏素材库（功能体块、空间模型）用 SketchUp 亲手建模，确保建筑语言的准确性——不是随便找个方块，而是真实的柱、梁、板、开口的空间逻辑。建筑学背景在这个项目里成了差异化的核心资产。</p>
+                </div>
+            </div>
+
+            <!-- 迭代过程 -->
+            <div class="mt-7 flex items-center gap-3">
+                <span class="text-[12px] uppercase tracking-[0.22em] text-[#0f6b61] font-extrabold whitespace-nowrap">Iteration</span>
+                <span class="text-xs text-[#8C8A84] whitespace-nowrap">关键迭代 · 从访谈洞察到设计决策</span>
+                <div class="flex-grow h-px bg-black/5"></div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-4">
+                <div class="bg-[#f5faf9] border border-[#0f6b61]/15 rounded-sm p-4">
+                    <p class="text-[10px] uppercase tracking-wider text-[#C9463D] font-bold">v1 · 问题</p>
+                    <p class="text-xs font-semibold text-[#2D2D2A] mt-1">年龄跨度太大，一个版本搞不定</p>
+                    <p class="text-[11px] text-[#6B6964] mt-1 leading-relaxed">最初设计面向 5–12 岁的统一体验，用户测试发现 5–8 岁与 9–12 岁的认知模式差异巨大——前者需要具象叙事，后者能接受规则驱动的挑战机制。</p>
+                </div>
+                <div class="bg-[#f0faf8] border border-[#0f6b61]/20 rounded-sm p-4">
+                    <p class="text-[10px] uppercase tracking-wider text-[#0f6b61] font-bold">v2 · 决策</p>
+                    <p class="text-xs font-semibold text-[#2D2D2A] mt-1">拆分年龄段，差异化设计关卡</p>
+                    <p class="text-[11px] text-[#6B6964] mt-1 leading-relaxed">低龄段（5–8 岁）以角色扮演 + 故事任务为主；高龄段（9–12 岁）引入建筑挑战赛、资源限制等策略元素。同一个知识点，两套呈现方式。</p>
+                </div>
+                <div class="bg-[#e8f7f4] border border-[#0f6b61]/20 rounded-sm p-4">
+                    <p class="text-[10px] uppercase tracking-wider text-[#2a7a5b] font-bold">v3 · 结果</p>
+                    <p class="text-xs font-semibold text-[#2D2D2A] mt-1">聚焦低龄段，打磨核心体验</p>
+                    <p class="text-[11px] text-[#6B6964] mt-1 leading-relaxed">资源有限的情况下，优先打磨 5–8 岁具象思维阶段的完整体验，建立可扩展的模块架构——先把一个年龄段做深，而不是两个年龄段都做浅。</p>
+                </div>
+            </div>
+
+            <!-- 局限与反思 -->
+            <div class="mt-7 flex items-center gap-3">
+                <span class="text-[12px] uppercase tracking-[0.22em] text-[#0f6b61] font-extrabold whitespace-nowrap">Limitations &amp; Reflection</span>
+                <span class="text-xs text-[#8C8A84] whitespace-nowrap">局限与反思 · 这个方案本身有什么问题</span>
+                <div class="flex-grow h-px bg-black/5"></div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-4">
+                <div class="bg-[#fff8f0] border border-[#e8a445]/20 rounded-sm p-4">
+                    <p class="text-[11px] font-bold text-[#b07820] mb-1">⚠ 尚未完成真实可用性测试</p>
+                    <p class="text-[11px] text-[#6B6964] leading-relaxed">原型验证停留在家长/教师访谈层面，尚未招募真实儿童用户进行 think-aloud 可用性测试。儿童的实际操作行为与成人代理预测有显著差距，这是最大的验证缺口。</p>
+                </div>
+                <div class="bg-[#fff8f0] border border-[#e8a445]/20 rounded-sm p-4">
+                    <p class="text-[11px] font-bold text-[#b07820] mb-1">⚠ AI 模块的教育边界未定义</p>
+                    <p class="text-[11px] text-[#6B6964] leading-relaxed">"AI 协作"功能目前停留在概念层——AI 辅助设计在儿童教育场景中应扮演什么角色（提示者/合作者/评估者），需要更深入的教育学理论支撑和伦理讨论。</p>
+                </div>
+                <div class="bg-[#fff8f0] border border-[#e8a445]/20 rounded-sm p-4">
+                    <p class="text-[11px] font-bold text-[#b07820] mb-1">⚠ 商业模式与学校采购路径</p>
+                    <p class="text-[11px] text-[#6B6964] leading-relaxed">老师端看板设计考虑了 B 端决策链，但完整的商业模式（订阅制 vs 买断 vs 学校采购）和课程标准对接尚未论证——这是从原型走向真实落地的最大阻力。</p>
+                </div>
+            </div>
+
+            <!-- Full Case Study 展示图 -->
+            <div class="mt-7 flex items-center gap-3">
+                <span class="text-[12px] uppercase tracking-[0.22em] text-[#0f6b61] font-extrabold whitespace-nowrap">Full Case Study</span>
                 <span class="text-xs text-[#8C8A84] whitespace-nowrap">完整方案 · 背景 / 竞品 / UI / 游戏素材</span>
                 <div class="flex-grow h-px bg-black/5"></div>
             </div>
@@ -1136,8 +1387,25 @@
     </section>
 
     <script>
+        // ===== CD Gallery =====
+        let cdIdx=0;
+        function cdRender(){
+            const t=document.getElementById('cdg-track'); if(!t)return;
+            t.style.transform='translateX('+(-cdIdx*100)+'%)';
+            t.querySelectorAll('.cd-slide').forEach((el,i)=>el.classList.toggle('cd-dim',i!==cdIdx));
+            document.querySelectorAll('#cdg-dots .cd-dot').forEach((d,i)=>d.classList.toggle('active',i===cdIdx));
+        }
+        function cdMove(dir){cdIdx=Math.max(0,Math.min(2,cdIdx+dir));cdRender();}
+        function cdGoto(i){cdIdx=i;cdRender();}
+        (function(){
+            const g=document.getElementById('cdg'); if(!g)return;
+            let sx=0;
+            g.addEventListener('pointerdown',e=>{sx=e.clientX;g.setPointerCapture(e.pointerId);});
+            g.addEventListener('pointerup',e=>{const dx=e.clientX-sx;if(Math.abs(dx)>40)cdMove(dx<0?1:-1);});
+        })();
+
         function switchProject(n) {
-            for (let i = 1; i <= 4; i++) {
+            for (let i = 1; i <= 5; i++) {
                 const panel = document.getElementById('dd-panel-' + i);
                 const tab = document.getElementById('dd-tab-' + i);
                 const nav = document.getElementById('nav-proj-' + i);
@@ -1678,13 +1946,11 @@
             row.classList.toggle('visible', !isOpen);
         }
         function activateFolder(type) {
-            // 自动展开父 Folder
             const pf = document.getElementById('pf-gesture');
             const row = document.getElementById('cf-row');
             pf.classList.add('open'); row.classList.add('visible');
-            // 清除所有子 Folder active
-            document.querySelectorAll('.cf-wrap').forEach(el => el.classList.remove('active'));
-            const el = document.getElementById('cfw-' + type);
+            document.querySelectorAll('.ec-card').forEach(el => el.classList.remove('active'));
+            const el = document.getElementById('ec-' + type);
             if (el) el.classList.add('active');
             simulateGesture(type);
         }
