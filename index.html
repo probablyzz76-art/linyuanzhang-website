@@ -208,7 +208,9 @@
     <!-- Header Navigation -->
     <header class="w-full px-8 py-6 flex justify-between items-center z-50">
         <div>
-            <div class="brand-art text-3xl text-[#2D2D2A]" style="letter-spacing:0.02em;">Personal Portfolio</div>
+            <!-- 建筑线框粒子背景（轻量 canvas）-->
+            <canvas id="arch-bg" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;opacity:.18;z-index:0;"></canvas>
+            <div class="brand-art text-3xl text-[#2D2D2A]" style="letter-spacing:0.02em;position:relative;z-index:1;">Personal Portfolio</div>
             <div class="text-[11px] tracking-[0.26em] uppercase text-[#8C8A84] mt-1.5">AI Product &amp; Design Intern · Open to Opportunities</div>
         </div>
         <div class="flex items-center gap-3">
@@ -224,7 +226,39 @@
                 <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
             </button>
         </div>
-    </header>
+    <script>
+    (function(){
+      var cv=document.getElementById('arch-bg'); if(!cv)return;
+      function resize(){cv.width=cv.offsetWidth*Math.min(window.devicePixelRatio,2);cv.height=cv.offsetHeight*Math.min(window.devicePixelRatio,2);}
+      resize(); window.addEventListener('resize',resize);
+      // 简单建筑线框：随机矩形网格漂浮
+      var ctx=cv.getContext('2d');
+      var rects=[];
+      for(var i=0;i<14;i++){
+        rects.push({x:Math.random(),y:Math.random(),w:0.04+Math.random()*0.08,h:0.06+Math.random()*0.12,vx:(Math.random()-.5)*0.0002,vy:(Math.random()-.5)*0.0001,op:0.3+Math.random()*0.5});
+      }
+      function draw(){
+        var W=cv.width,H=cv.height;
+        ctx.clearRect(0,0,W,H);
+        rects.forEach(function(r){
+          r.x+=r.vx; r.y+=r.vy;
+          if(r.x<-.15)r.x=1.1; if(r.x>1.1)r.x=-.15;
+          if(r.y<-.15)r.y=1.1; if(r.y>1.1)r.y=-.15;
+          var px=r.x*W,py=r.y*H,pw=r.w*W,ph=r.h*H;
+          ctx.strokeStyle='rgba(45,45,42,'+r.op+')';
+          ctx.lineWidth=.8;
+          ctx.strokeRect(px,py,pw,ph);
+          // 内部分隔线（像楼层）
+          ctx.beginPath();
+          for(var fl=1;fl<3;fl++){ctx.moveTo(px,py+ph*fl/3);ctx.lineTo(px+pw,py+ph*fl/3);}
+          ctx.stroke();
+        });
+        requestAnimationFrame(draw);
+      }
+      draw();
+    })();
+    </script>
+        </header>
 
     <!-- Main Dynamic Workspace -->
     <main class="flex-grow w-full max-w-[1680px] mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 px-6 py-4 items-center z-20">
@@ -242,14 +276,9 @@
             <!-- Three.js Container -->
             <div id="voxel-viewport" class="w-full h-full absolute inset-0 z-10 cursor-crosshair"></div>
 
-            <!-- 状态栏 + Gesture Folder 单行 -->
-            <div class="absolute inset-x-0 bottom-0 h-12 bg-white/80 backdrop-blur-md z-20 flex items-center justify-between px-4 border-t border-black/5" id="gesture-system">
-                <!-- 左：状态文字单行 Arial -->
-                <div style="font-family:Arial,sans-serif;font-size:9.5px;font-weight:700;letter-spacing:.55em;text-transform:uppercase;color:#2D2D2A;white-space:nowrap;display:flex;align-items:center;gap:12px;">
-                    SYS.V_02 //
-                    <span id="current-gesture-indicator" style="color:#C9463D;">SPARSE MATRIX NORMAL</span>
-                    // MULTI-GESTURE CONTROL
-                </div>
+            <!-- Gesture Folder（状态文字已移除）-->
+            <div class="absolute inset-x-0 bottom-0 h-12 bg-white/80 backdrop-blur-md z-20 flex items-center justify-end px-4 border-t border-black/5" id="gesture-system">
+                <span id="current-gesture-indicator" style="display:none;"></span>
                 <!-- 右：Folder + emoji 卡片行（卡片从 Folder 上方弹出）-->
                 <div style="position:relative;display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
                     <!-- emoji 卡片行，默认隐藏，展开时显示在 Folder 上方 -->
@@ -506,7 +535,7 @@
         </div>
 
         <!-- Thumbnail switcher -->
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        <div class="grid grid-cols-3 md:grid-cols-5 gap-3 mb-6">
             <div id="dd-tab-1" onclick="switchProject(1)" class="dd-tab dd-tab-active">
                 <div class="h-24 sm:h-28 overflow-hidden bg-[#d0d8e8]">
                     <img src="assets/proj1-cover.jpg" alt="MOOTAIN 缩略图" class="w-full h-full object-cover" />
@@ -730,24 +759,26 @@
                 </div>
             </div>
             <!-- 地形效果图 · CircularGallery 曲面旋转画廊（WebGL；不可用时回退静态滚动）-->
-            <div id="terrain-gallery" class="mt-4 rounded-sm border border-black/5 bg-[#f6f7f4] relative overflow-hidden" style="height:300px;">
-                <div id="terrain-gallery-fallback" class="hscroll absolute inset-0 flex items-center" style="--h:180px;">
-                    <div class="hscroll-track px-3">
-                        <img src="assets/terrain/terrain-1.jpg" alt="地形效果 1" />
-                        <img src="assets/terrain/terrain-2.jpg" alt="地形效果 2" />
-                        <img src="assets/terrain/terrain-3.jpg" alt="地形效果 3" />
-                        <img src="assets/terrain/terrain-4.jpg" alt="地形效果 4" />
-                        <img src="assets/terrain/terrain-5.jpg" alt="地形效果 5" />
-                        <img src="assets/terrain/terrain-6.jpg" alt="地形效果 6" />
-                        <img src="assets/terrain/terrain-1.jpg" alt="" aria-hidden="true" />
-                        <img src="assets/terrain/terrain-2.jpg" alt="" aria-hidden="true" />
-                        <img src="assets/terrain/terrain-3.jpg" alt="" aria-hidden="true" />
-                        <img src="assets/terrain/terrain-4.jpg" alt="" aria-hidden="true" />
-                        <img src="assets/terrain/terrain-5.jpg" alt="" aria-hidden="true" />
-                        <img src="assets/terrain/terrain-6.jpg" alt="" aria-hidden="true" />
-                    </div>
-                </div>
+            <div id="terrain-gallery" class="mt-4 rounded-sm border border-black/5 bg-[#f6f7f4] relative overflow-hidden" style="height:150px;">
+                <div id="tg-random-track" style="display:flex;gap:10px;padding:0 10px;height:100%;align-items:center;width:max-content;will-change:transform;"></div>
             </div>
+            <script>
+            (function(){
+              var total=6,copies=18,speed=0.9,x=0;
+              function buildSeq(n){var seq=[],last=-1;for(var i=0;i<n;i++){var pool=[];for(var k=1;k<=total;k++)if(k!==last)pool.push(k);var pick=pool[Math.floor(Math.random()*pool.length)];seq.push(pick);last=pick;}return seq;}
+              var track=document.getElementById('tg-random-track');
+              if(!track)return;
+              var seq=buildSeq(copies);
+              function addImg(n){var img=document.createElement('img');img.src='assets/terrain/terrain-'+n+'.jpg';img.style.cssText='height:116px;width:auto;border-radius:8px;flex-shrink:0;display:block;';track.appendChild(img);}
+              seq.forEach(function(n){addImg(n);});
+              var first=[].slice.call(track.children);
+              first.forEach(function(img){var cl=img.cloneNode(true);track.appendChild(cl);});
+              function loop(){x+=speed;if(x>=track.scrollWidth/2)x=0;track.style.transform='translateX(-'+x+'px)';requestAnimationFrame(loop);}
+              loop();
+              track.addEventListener('pointerenter',function(){speed=0.28;});
+              track.addEventListener('pointerleave',function(){speed=0.9;});
+            })();
+            </script>
 
             <!-- Full case-study spreads: research / competitive analysis / persona / UI -->
             <div class="mt-8 flex items-center gap-3">
@@ -1110,8 +1141,9 @@
                 <span class="text-xs text-[#8C8A84] whitespace-nowrap">一核双载体 · 多模全融合</span>
                 <div class="flex-grow h-px bg-black/5"></div>
             </div>
-            <div class="mt-4 bg-[#0d1f2d] border border-[#5bc0eb]/15 rounded-sm overflow-hidden">
-                <img src="assets/dashboard/arch-screenshot.jpg" alt="一核双载体系统架构图" class="w-full object-cover" loading="lazy" />
+            <div class="mt-4 bg-[#0a1628] border border-[#5bc0eb]/15 rounded-sm overflow-hidden" style="position:relative;">
+                <!-- 交互式系统架构图 Canvas（鼠标悬停高亮节点）-->
+                <canvas id="arch-canvas" style="width:100%;height:200px;display:block;cursor:crosshair;"></canvas>
                 <div class="px-4 py-2.5 flex items-center justify-between flex-wrap gap-2 border-t border-[#5bc0eb]/10">
                     <div class="flex gap-3 flex-wrap">
                         <span class="text-[9px] bg-[#5bc0eb]/15 text-[#5bc0eb] px-2 py-0.5 rounded font-bold">后装可行</span>
@@ -1120,6 +1152,121 @@
                         <span class="text-[9px] bg-[#5bc0eb]/15 text-[#5bc0eb] px-2 py-0.5 rounded font-bold">功能模块化</span>
                     </div>
                     <span class="text-[9px] text-[#8da9be] uppercase tracking-widest">后视镜分屏 + 软件 Agent + 中控大屏</span>
+                </div>
+            </div>
+            <script>
+            (function(){
+              var cv=document.getElementById('arch-canvas');if(!cv)return;
+              function resize(){cv.width=cv.offsetWidth;cv.height=200;}
+              resize();
+              var mx=-999,my=-999;
+              cv.addEventListener('pointermove',function(e){var r=cv.getBoundingClientRect();mx=e.clientX-r.left;my=e.clientY-r.top;});
+              cv.addEventListener('pointerleave',function(){mx=-999;my=-999;});
+
+              // 节点定义（比例坐标）
+              var nodes=[
+                {id:'mirror', label:'后视镜分屏', sub:'SR·眼动·心率', x:.14, y:.5, side:'left'},
+                {id:'agent',  label:'软件 Agent', sub:'具身IP·规则+LLM', x:.5,  y:.5, main:true},
+                {id:'screen', label:'中控大屏',   sub:'AR导航·语音触控', x:.86, y:.5, side:'right'},
+                {id:'env',    label:'环境感知',   sub:'后车·变道·SR', x:.5,  y:.18},
+                {id:'driver', label:'驾驶员监测', sub:'疲劳·心率·预警', x:.28, y:.82},
+                {id:'ip',     label:'具身IP交互', sub:'情感形象·主动推送', x:.5,  y:.82},
+                {id:'sos',    label:'应急保障',   sub:'检测→提醒→处置', x:.72, y:.82},
+              ];
+              var edges=[['mirror','agent'],['screen','agent'],['agent','env'],['agent','driver'],['agent','ip'],['agent','sos']];
+
+              function draw(){
+                var W=cv.width,H=cv.height;
+                var ctx=cv.getContext('2d');
+                ctx.clearRect(0,0,W,H);
+                // 背景渐变
+                var bg=ctx.createLinearGradient(0,0,W,H);
+                bg.addColorStop(0,'#0a1628');bg.addColorStop(1,'#0d1f2d');
+                ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
+
+                // 计算真实坐标
+                var pts={};
+                nodes.forEach(function(n){pts[n.id]={x:n.x*W,y:n.y*H};});
+
+                // 连线
+                edges.forEach(function(e){
+                  var a=pts[e[0]],b=pts[e[1]];
+                  ctx.save();
+                  ctx.strokeStyle='rgba(91,192,235,0.22)';ctx.lineWidth=1;
+                  ctx.setLineDash([4,4]);
+                  ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();
+                  ctx.restore();
+                });
+
+                // 绘制节点
+                nodes.forEach(function(n){
+                  var px=n.x*W,py=n.y*H;
+                  var r=n.main?34:24;
+                  var dx=mx-px,dy=my-py;
+                  var hover=dx*dx+dy*dy<(r+12)*(r+12);
+                  var alpha=hover?1:.72;
+                  var col=n.main?'#5bc0eb':(hover?'#8dd8f0':'#3a6a8a');
+
+                  // 光晕
+                  if(hover){
+                    var glow=ctx.createRadialGradient(px,py,0,px,py,r+16);
+                    glow.addColorStop(0,'rgba(91,192,235,0.18)');
+                    glow.addColorStop(1,'rgba(91,192,235,0)');
+                    ctx.fillStyle=glow;ctx.beginPath();ctx.arc(px,py,r+16,0,6.28);ctx.fill();
+                  }
+
+                  // 圆
+                  ctx.beginPath();ctx.arc(px,py,r,0,6.28);
+                  ctx.fillStyle=n.main?'rgba(91,192,235,0.18)':'rgba(13,31,45,0.9)';ctx.fill();
+                  ctx.strokeStyle=col;ctx.lineWidth=n.main?1.5:1;ctx.stroke();
+
+                  // 标签
+                  ctx.fillStyle='rgba(200,228,245,'+alpha+')';
+                  ctx.font='bold '+(n.main?12:10)+'px Arial,sans-serif';
+                  ctx.textAlign='center';ctx.textBaseline='middle';
+                  ctx.fillText(n.label,px,py-(n.main?6:4));
+                  ctx.fillStyle='rgba(141,169,190,'+alpha+')';
+                  ctx.font='9px Arial,sans-serif';
+                  ctx.fillText(n.sub,px,py+(n.main?10:8));
+                });
+
+                requestAnimationFrame(draw);
+              }
+              draw();
+              window.addEventListener('resize',resize);
+            })();
+            </script>
+
+            <!-- 3D 模型展示 · ToyCar -->
+            <div class="mt-7 flex items-center gap-3">
+                <span class="text-[12px] uppercase tracking-[0.22em] text-[#3a8dbf] font-extrabold whitespace-nowrap">3D Model Preview</span>
+                <span class="text-xs text-[#8C8A84] whitespace-nowrap">车载场景参考 · 拖动旋转 · 滚轮缩放</span>
+                <div class="flex-grow h-px bg-black/5"></div>
+            </div>
+            <div class="mt-4 bg-[#0a1628] border border-[#5bc0eb]/15 rounded-sm overflow-hidden">
+                <model-viewer
+                    src="https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/main/2.0/ToyCar/glTF-Binary/ToyCar.glb"
+                    alt="ToyCar 玩具车 3D 模型"
+                    camera-controls
+                    auto-rotate
+                    auto-rotate-delay="0"
+                    rotation-per-second="18deg"
+                    environment-image="neutral"
+                    exposure="1.2"
+                    shadow-intensity="1.2"
+                    shadow-softness="0.8"
+                    camera-orbit="25deg 75deg 2.5m"
+                    min-field-of-view="20deg"
+                    loading="lazy"
+                    style="width:100%;height:420px;background:linear-gradient(150deg,#0a1628 0%,#0d2540 100%);--poster-color:#0a1628;">
+                    <div slot="progress-bar" style="display:none;"></div>
+                    <div slot="poster" style="background:#0a1628;display:flex;align-items:center;justify-content:center;height:100%;">
+                        <span style="color:#5bc0eb;font-size:11px;letter-spacing:.15em;text-transform:uppercase;font-family:Arial,sans-serif;">Loading 3D Model…</span>
+                    </div>
+                </model-viewer>
+                <div class="px-4 py-2.5 border-t border-[#5bc0eb]/10 flex items-center justify-between flex-wrap gap-2">
+                    <span class="text-[10px] text-[#8da9be]">ToyCar · KhronosGroup glTF Sample · 拖动旋转 · 滚轮缩放 · 双指平移</span>
+                    <span class="text-[9px] text-[#5bc0eb] uppercase tracking-widest font-bold">model-viewer · WebGL</span>
                 </div>
             </div>
 
